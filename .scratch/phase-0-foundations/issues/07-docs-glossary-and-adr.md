@@ -4,12 +4,12 @@
 
 **Blocked by:** 01, 02, 03
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] An ADR records "weights stored in kg as full-precision numbers with the entered unit"
-- [ ] The glossary adds: Streak (already there), Step, Rep step, Clean, Hold, Miss, Deload, Load type, Workout exercise
-- [ ] The data rules say rounding is to the Jump only, and that Targets and acceptances are stored while Records stay derived
-- [ ] Architecture shows the workout exercises table, the load type, the deload flag on workout exercises and plates out of settings
-- [ ] Product says the free rule comes from the exercise's load type
-- [ ] The roadmap wording for plates matches (plates inventory and calculator are not in the engine)
-- [ ] The decisions doc records the library source
+- [x] An ADR records "weights stored in kg as full-precision numbers with the entered unit"
+- [x] The glossary adds: Streak (already there), Step, Rep step, Clean, Hold, Miss, Deload, Load type, Workout exercise
+- [x] The data rules say rounding is to the Jump only, and that Targets and acceptances are stored while Records stay derived
+- [x] Architecture shows the workout exercises table, the load type, the deload flag on workout exercises and plates out of settings
+- [x] Product says the free rule comes from the exercise's load type
+- [x] The roadmap wording for plates matches (plates inventory and calculator are not in the engine)
+- [x] The decisions doc records the library source

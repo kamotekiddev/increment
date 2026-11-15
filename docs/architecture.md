@@ -20,27 +20,29 @@
 | Tests | Jest (logic), Maestro (flows) |
 
 ## Data model (first draft)
-- **exercises**: id, name, muscles, equipment, instructions, is_custom
+- **exercises**: id, slug, name, muscles, equipment, instructions, load_type (weighted, bodyweight, bodyweight_or_weighted), is_custom
 - **routines**: id, name, days (bitmask), position
 - **routine_exercises**: routine_id, exercise_id, position, sets, rep_min, rep_max, rest_s, rule (JSON)
-- **workouts**: id, routine_id, started_at, finished_at, feeling, notes, in_progress
-- **sets**: id, workout_id, exercise_id, index, weight_kg, entered_unit, reps, done, is_warmup
-- **settings**: key/value (unit, jumps per equipment, plates, rest default, theme, reminders, auto-backup)
-- **entitlements**: is_pro, product_id, verified_at (cached locally)
+- **workouts**: id, routine_id, started_at, finished_at, date, feeling, notes, in_progress
+- **workout_exercises**: id, workout_id, exercise_id, position, target_weight_kg, target_reps, progress_accepted, is_deload (the Target shown at the start, and whether the lifter accepted the offered step)
+- **sets**: id, workout_exercise_id, exercise_id, idx, weight_kg, entered_unit, reps, done, is_warmup
+- **settings**: key/value (unit, jump per equipment, rest default, theme, reminders, auto-backup)
+- **entitlements**: is_pro, product_id, proof, verified_at (a cache; `proof` is the store's signed transaction or purchase token, verified in Phase 3 so editing this table alone cannot unlock Pro)
 
-Records (heaviest set, estimated 1RM, most volume) are queried from `sets`, never stored.
+Records (heaviest set, estimated 1RM, most volume) are queried from `sets`, never stored. Weights are explained in [ADR 0001](adr/0001-weights-stored-in-kg.md).
 
 ## Units
 - Store `weight_kg` plus `entered_unit`. Convert only for display.
-- Round displayed targets to loadable weights using the equipment's smallest jump and the plates the user has.
+- Round targets to a multiple of the Jump. Plates and bar weight are not part of the engine; the plate calculator (Pro) is a separate pure function.
 - Switching kg ↔ lb any number of times must never change a stored value. This is a Phase 2 gate.
 
 ## Overload engine
-Plain functions: `(rule, history) → next target`. Rule types:
-- **Weight first**: add the jump once every set hits the top of the rep range (the free rule).
-- **Double progression**: add reps across the range, then add weight and reset the reps.
-- **Reps only**: for bodyweight exercises and fixed weights.
-- Plus miss handling (keep the weight, or drop a percentage after N misses) and deload weeks.
+Plain functions: `nextTarget({rule, planned, loadType, history, jumpKg}) → {target, proposal, reason}`. All weights are kg.
+- **Rule** (stored per exercise in a routine, with a version number): `step` (weight, reps or both), `repStep` (1–3), `sessionsToEarn` (default 3, 1–5), an optional miss rule (after N misses in a row at the same weight: keep, or drop X%) and an optional deload (every N weeks, X% lighter; off unless set).
+- **Earned**: the Streak (clean workouts in a row at the same Target) reaches `sessionsToEarn`. The engine then returns a `proposal`; the lifter chooses whether to accept, and an accepted step becomes the Target of the following workout.
+- **Outcomes** of a past workout: clean (every planned set at or above the Target), hold (short of the Target but every set at or above the rep range minimum), miss (a set below the rep range minimum, or fewer sets than planned). Only the first planned working sets are judged.
+- **Steps**: weight adds the Jump; reps adds the rep step, capped at the top of the range; both does both. Bodyweight exercises can only step by reps.
+- **Free rule**: the step comes from the exercise's `load_type` (weight for weighted, reps otherwise), three clean workouts in a row, no miss rule, no deload.
 
 ## Offline one-time purchase
 - A non-consumable product on both stores, bought through react-native-iap.

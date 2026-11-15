@@ -32,9 +32,9 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - Workout summary: duration, sets, volume, new records, what goes up next time, and how it felt.
 
 ### Progressive overload
-- **Free**: one simple rule. Add the weight jump once every set reaches the top of the rep range.
-- **Pro**: your own rule per exercise. Choose weight first, double progression, or reps only; set the rep range, the jump size, what happens after misses ("if you miss twice in a row: keep the weight / drop 10%"), and deload weeks. A live preview shows the result before you save, e.g. "hit 8 on every set and it becomes 65 kg".
-- Targets round to a weight you can load, based on your equipment's smallest jump and your gym's plates.
+- **Free**: one simple rule, chosen from the exercise's load type. Weighted exercises add the Jump, and bodyweight exercises add reps. Progression is Earned after 3 clean workouts in a row, then the app asks the lifter whether to progress.
+- **Pro**: your own rule per exercise. Choose the step (add weight, add reps, or both), the rep step, how many clean workouts in a row earn progression (1–5), what happens after misses ("if you miss twice in a row: keep the weight / drop 10%"), and deload weeks (off unless you turn them on). A live preview shows the result before you save, e.g. "hit 8 on every set and it becomes 65 kg".
+- Targets round to a multiple of your Jump.
 
 ### Units (kg / lb)
 - A global preference in Settings, also switchable during a workout.
@@ -65,7 +65,7 @@ Welcome → Goal → Experience → Schedule → Equipment → Units → Your pl
 | Exercise library | ✓ | ✓ |
 | Log workouts | Unlimited | Unlimited |
 | Routines | 3 | Unlimited |
-| Overload rules | 1 simple | Your own |
+| Overload rules | 1 simple (by load type) | Your own |
 | Charts and records | – | ✓ |
 | Custom exercises | – | ✓ |
 | Move to a new phone | – | ✓ |

@@ -4,13 +4,13 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** spike run on the iPhone simulator; Android not yet checked
+**Status:** done on iPhone simulator; Android not yet checked
 
 - [x] A typed token module holds the light-theme colours, spacing and type from the design system, with room for a dark set later
 - [x] Sora loads at runtime and the splash screen stays up until fonts are ready
 - [x] A pill-shaped accent button and a Sora text built on Expo UI show on the screen
-- [ ] The owner confirms on both phones that they match the design, in light and dark system mode
-- [ ] Any Expo UI component that cannot match the design is wrapped in our own component and reported to the owner
+- [ ] The owner confirms on Android that they match the design, in light and dark system mode
+- [x] Any Expo UI component that cannot match the design is wrapped in our own component and reported to the owner
 - [x] Type check, lint and Jest all pass
 
 ## Spike result (iPhone simulator, iOS 18.3)

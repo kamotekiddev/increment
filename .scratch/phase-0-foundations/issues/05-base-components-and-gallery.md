@@ -4,10 +4,14 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** built; bottom sheet not yet tapped on a device
 
-- [ ] Each component takes its colours, sizes and fonts from the tokens and has no hard-coded values
-- [ ] Touch targets are at least 44 pt
-- [ ] The gallery route is reachable only in development
+- [x] Each component takes its colours, sizes and fonts from the tokens and has no hard-coded values
+- [x] Touch targets are at least 44 pt
+- [x] The gallery route is reachable only in development
 - [ ] The owner checks every component in the gallery on both phones
-- [ ] Type check, lint and Jest all pass
+- [x] Type check, lint and Jest all pass
+
+## Notes
+- Text and Button are plain React Native (see ticket 04). The bottom sheet wraps the `@expo/ui` one and still needs a tap test on a device.
+- Gallery checked on the iPhone simulator.

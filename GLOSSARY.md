@@ -39,3 +39,35 @@ _Avoid_: PR, personal best (unless shown to the lifter as a label)
 **Pro**:
 The one-time purchase that unlocks the paid features. It works offline.
 _Avoid_: Premium, subscription, paid plan
+
+**Step**:
+How a Target rises once progression is Earned: add weight (by the Jump), add reps (by the Rep step), or both. It is set per exercise.
+_Avoid_: Progression type, mode
+
+**Rep step**:
+The number of reps added to the Target in one Step (1 to 3).
+_Avoid_: Rep increment
+
+**Clean**:
+A workout in which every planned working set reached the Target weight and reps.
+_Avoid_: Successful, perfect
+
+**Hold**:
+A workout that fell short of the Target but kept every planned working set inside the rep range. It keeps the Target and restarts the Streak.
+_Avoid_: Partial, near miss
+
+**Miss**:
+A workout in which a working set fell below the bottom of the rep range, or fewer sets were done than planned.
+_Avoid_: Fail, failure
+
+**Deload**:
+A deliberately lighter workout, scheduled every N weeks when the lifter turns it on. It never counts as a Miss or toward a Streak.
+_Avoid_: Recovery week, reset
+
+**Load type**:
+Whether an exercise can progress by weight, by reps only, or both: weighted, bodyweight, or bodyweight or weighted.
+_Avoid_: Exercise type, category
+
+**Workout exercise**:
+One exercise within one workout, holding the Target that was shown and whether the lifter accepted the offered Step.
+_Avoid_: Session, entry
