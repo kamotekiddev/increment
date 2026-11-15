@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** built; waiting for the owner's on-device check
 
-- [ ] A typed token module holds the light-theme colours, spacing and type from the design system, with room for a dark set later
-- [ ] Sora loads at runtime and the splash screen stays up until fonts are ready
-- [ ] A pill-shaped accent button and a Sora text built on Expo UI show on the screen
+- [x] A typed token module holds the light-theme colours, spacing and type from the design system, with room for a dark set later
+- [x] Sora loads at runtime and the splash screen stays up until fonts are ready
+- [x] A pill-shaped accent button and a Sora text built on Expo UI show on the screen
 - [ ] The owner confirms on both phones that they match the design, in light and dark system mode
 - [ ] Any Expo UI component that cannot match the design is wrapped in our own component and reported to the owner
-- [ ] Type check, lint and Jest all pass
+- [x] Type check, lint and Jest all pass
