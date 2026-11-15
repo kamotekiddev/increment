@@ -1,4 +1,5 @@
 import { sql } from "drizzle-orm";
+import type { OverloadRule } from "../engine/types";
 import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 /** All weights are kg (full-precision REAL). `entered_unit` records what the lifter typed. */
@@ -37,7 +38,7 @@ export const routineExercises = sqliteTable(
     repMax: integer("rep_max").notNull(),
     restS: integer("rest_s").notNull(),
     /** OverloadRule JSON (see src/engine/types.ts); carries its own `v`. */
-    rule: text("rule", { mode: "json" }).notNull(),
+    rule: text("rule", { mode: "json" }).$type<OverloadRule>().notNull(),
   },
   (t) => [index("routine_exercises_routine_idx").on(t.routineId, t.position)],
 );

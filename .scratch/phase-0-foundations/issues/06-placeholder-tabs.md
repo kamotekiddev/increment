@@ -11,3 +11,6 @@
 - [x] The tab bar floats over content and respects the safe area
 - [x] Routes live in the app routes folder only; no logic lives there
 - [x] Type check, lint and Jest all pass
+
+## Notes
+- The tab bar floats over the screen content. Screens with scrollable lists (Phase 1 Library, Routines) must reserve bottom space for it, or the last rows sit under the bar.

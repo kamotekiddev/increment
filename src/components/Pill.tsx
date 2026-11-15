@@ -1,6 +1,6 @@
 import { View } from "react-native";
 
-import { radius, spacing, useColors } from "@/theme";
+import { fontFamily, radius, spacing, useColors } from "@/theme";
 import { Text } from "./Text";
 
 export interface PillProps {
@@ -22,7 +22,7 @@ export function Pill({ label, tone = "progress" }: PillProps) {
         backgroundColor: progress ? colors.accentTint : colors.sunk,
       }}
     >
-      <Text variant="caption" tone={progress ? "accent" : "soft"} style={{ fontFamily: "Sora_600SemiBold" }}>
+      <Text variant="caption" tone={progress ? "accent" : "soft"} style={{ fontFamily: fontFamily.semibold }}>
         {label}
       </Text>
     </View>

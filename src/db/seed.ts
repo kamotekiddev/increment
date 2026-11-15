@@ -1,20 +1,25 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import type { Db } from "./client";
 import library from "./library/exercises.json";
 import { exercises, settings } from "./schema";
 
 const SEED_KEY = "librarySeedVersion";
+/** Bump when exercises.json changes; existing library rows are updated by slug, custom rows are never touched. */
 const SEED_VERSION = 1;
 // 7 columns per row; stay well under SQLite's variable limit.
 const CHUNK = 50;
 
-/** Insert the curated library once. Safe to call on every launch. */
-export async function seedLibrary(db: Db): Promise<void> {
-  const done = await db.select().from(settings).where(eq(settings.key, SEED_KEY));
+/**
+ * Insert or update the curated library. Safe to call on every launch, and runs once per version.
+ * The expo-sqlite driver is synchronous, so the transaction callback is synchronous too; that is
+ * what makes the whole seed one atomic unit.
+ */
+export function seedLibrary(db: Db): void {
+  const done = db.select().from(settings).where(eq(settings.key, SEED_KEY)).all();
   if (done.length > 0 && Number(done[0].value) >= SEED_VERSION) return;
 
-  await db.transaction(async (tx) => {
+  db.transaction((tx) => {
     for (let i = 0; i < library.length; i += CHUNK) {
       const rows = library.slice(i, i + CHUNK).map((e) => ({
         slug: e.slug,
@@ -25,11 +30,23 @@ export async function seedLibrary(db: Db): Promise<void> {
         loadType: e.loadType as "weighted" | "bodyweight" | "bodyweight_or_weighted",
         isCustom: false,
       }));
-      await tx.insert(exercises).values(rows).onConflictDoNothing();
+      tx.insert(exercises)
+        .values(rows)
+        .onConflictDoUpdate({
+          target: exercises.slug,
+          set: {
+            name: sql`excluded.name`,
+            muscles: sql`excluded.muscles`,
+            equipment: sql`excluded.equipment`,
+            instructions: sql`excluded.instructions`,
+            loadType: sql`excluded.load_type`,
+          },
+        })
+        .run();
     }
-    await tx
-      .insert(settings)
+    tx.insert(settings)
       .values({ key: SEED_KEY, value: SEED_VERSION })
-      .onConflictDoUpdate({ target: settings.key, set: { value: SEED_VERSION } });
+      .onConflictDoUpdate({ target: settings.key, set: { value: SEED_VERSION } })
+      .run();
   });
 }

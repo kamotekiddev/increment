@@ -1,4 +1,4 @@
-/** Rounding to multiples of the Jump. A relative epsilon absorbs lb-derived jumps (5 lb = 2.26796185 kg). */
+/** Rounding to multiples of the Jump. A small epsilon on the quotient absorbs float error from lb-derived jumps (5 lb = 2.26796185 kg); realistic weights stay far below the point where it would matter. */
 
 const EPS = 1e-9;
 
