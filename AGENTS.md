@@ -40,6 +40,15 @@ Docs: https://docs.expo.dev/eas/index.md
 - Expo Go only includes its bundled native modules. After adding a library with native code, the app needs a development build: `npx expo run:ios|android` locally, or `eas build --profile development`.
 - Prefer recommended Expo modules over third-party libraries, and check your available skills before adding dependencies. Docs: https://docs.expo.dev/versions/latest/index.md
 
+## Project rules
+
+Read the rule files that touch the area you're working in. They apply to every change.
+
+- `docs/agents/rules/data.md`: kg storage, derived records, pure engine, rounding, migrations
+- `docs/agents/rules/product.md`: offline only, Pro limits in one place, open decisions
+- `docs/agents/rules/code.md`: Expo docs, `npx expo install`, folder layout, design tokens, stack
+- `docs/agents/rules/process.md`: checks before done, roadmap gates, commits, new-feature branches from `main`, docs, secrets
+
 ## Agent skills
 
 ### Issue tracker
