@@ -38,3 +38,5 @@ Thumbs.db
 
 # test output
 coverage/
+.kotlin/
+*.pem
