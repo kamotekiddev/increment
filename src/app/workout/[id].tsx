@@ -5,10 +5,10 @@ import { Pressable, ScrollView, View } from "react-native";
 
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
-import { fontFamily, fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { formatWeight } from "@/units";
 import type { SetEdit } from "@/workout";
-import { editRowIndex, finishCheck, lastColumn, parseReps, parseWeight, stepWeight } from "@/workout";
+import { finishCheck, lastColumn, parseReps, parseWeight } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { FinishWorkoutSheet } from "@/workout/FinishWorkoutSheet";
 import { finishPrompt, type FinishPrompt } from "@/workout/workoutPromptText";
@@ -72,37 +72,13 @@ function ChevronButton({
   );
 }
 
-/** The − and + weight buttons: round, a full touch target wide and tall. */
-function StepButton({ icon, label, onPress }: { icon: "remove" | "add"; label: string; onPress: () => void }) {
-  const colors = useColors();
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        width: minTouch,
-        height: minTouch,
-        borderRadius: radius.pill,
-        backgroundColor: colors.sunk,
-        alignItems: "center",
-        justifyContent: "center",
-        opacity: pressed ? opacity.pressed : 1,
-      })}
-    >
-      <Ionicons name={icon} size={22} color={colors.ink} />
-    </Pressable>
-  );
-}
-
-/** A number field that saves as the lifter types. Shows the saved value again whenever it changes elsewhere (−/+, follow). */
+/** A number field that saves as the lifter types. Shows the saved value again whenever it changes elsewhere. */
 function NumberField({
   value,
   label,
   keyboardType,
   parse,
   onText,
-  onFocus,
   flat,
 }: {
   value: string;
@@ -110,7 +86,6 @@ function NumberField({
   keyboardType: "decimal-pad" | "number-pad";
   parse: (text: string) => number | null | undefined;
   onText: (text: string) => void;
-  onFocus: () => void;
   /** Done rows show the numbers without a tile. */
   flat: boolean;
 }) {
@@ -128,7 +103,6 @@ function NumberField({
         setDraft(t);
         onText(t);
       }}
-      onFocus={onFocus}
       onBlur={() => setDraft(null)}
       style={{
         flex: 1,
@@ -152,8 +126,6 @@ export default function LiveWorkoutScreen() {
   const [current, setCurrent] = useState(0);
   const [startedAt] = useState(() => findInProgressWorkout()?.startedAt ?? Date.now());
   const now = useNow(true);
-  /** The row last focused or marked, per exercise; it shows the weight stepper. */
-  const [touched, setTouched] = useState<{ exerciseId: number; index: number } | null>(null);
   const [discardStep, setDiscardStep] = useState<DiscardSheetStep>("closed");
   const [routineName, setRoutineName] = useState<string | null>(null);
 
@@ -198,12 +170,6 @@ export default function LiveWorkoutScreen() {
   const exercise = workout?.exercises[current];
   const total = workout?.exercises.length ?? 0;
   const last = exercise ? lastColumn(lastExercises[exercise.id] ?? null, exercise.rows.length) : [];
-  const touchedIndex = exercise && touched?.exerciseId === exercise.id ? touched.index : null;
-  const activeIndex = exercise ? editRowIndex(exercise.rows, touchedIndex) : null;
-
-  function touch(index: number) {
-    if (exercise) setTouched({ exerciseId: exercise.id, index });
-  }
 
   function edit(index: number, change: SetEdit) {
     if (!workout || !exercise) return;
@@ -216,7 +182,6 @@ export default function LiveWorkoutScreen() {
 
   function toggle(index: number) {
     if (!workout || !exercise) return;
-    touch(index);
     const row = exercise.rows[index];
     const rows = markSetDone(exercise.rows, index, !row.done);
     if (rows === exercise.rows) return;
@@ -371,7 +336,6 @@ export default function LiveWorkoutScreen() {
               </View>
               {exercise.rows.map((row, index) => {
                 const blocked = !row.done && !canMarkDone(row);
-                const active = index === activeIndex;
                 return (
                   <View
                     key={row.setId}
@@ -381,8 +345,6 @@ export default function LiveWorkoutScreen() {
                       paddingRight: spacing.sm,
                       borderRadius: radius.inset,
                       backgroundColor: colors.card,
-                      borderWidth: 2,
-                      borderColor: active ? colors.accent : colors.card,
                     }}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
@@ -399,7 +361,6 @@ export default function LiveWorkoutScreen() {
                           parse={parseWeight}
                           value={row.weightKg === null ? "" : formatWeight(row.weightKg, "kg")}
                           flat={row.done}
-                          onFocus={() => touch(index)}
                           onText={(t) => {
                             const w = parseWeight(t);
                             if (w !== undefined) edit(index, { weightKg: w });
@@ -413,7 +374,6 @@ export default function LiveWorkoutScreen() {
                           parse={parseReps}
                           value={String(row.reps)}
                           flat={row.done}
-                          onFocus={() => touch(index)}
                           onText={(t) => {
                             const r = parseReps(t);
                             if (r !== undefined) edit(index, { reps: r });
@@ -441,29 +401,6 @@ export default function LiveWorkoutScreen() {
                         <Ionicons name="checkmark" size={20} color={row.done ? colors.accent : colors.iconFaint} />
                       </Pressable>
                     </View>
-                    {active ? (
-                      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: spacing.lg }}>
-                        <StepButton
-                          icon="remove"
-                          label={`Set ${index + 1} weight down`}
-                          onPress={() => {
-                            touch(index);
-                            edit(index, { weightKg: stepWeight(row.weightKg, -1) });
-                          }}
-                        />
-                        <Text variant="caption" tone="muted" style={{ minWidth: size.control, textAlign: "center" }}>
-                          Weight
-                        </Text>
-                        <StepButton
-                          icon="add"
-                          label={`Set ${index + 1} weight up`}
-                          onPress={() => {
-                            touch(index);
-                            edit(index, { weightKg: stepWeight(row.weightKg, 1) });
-                          }}
-                        />
-                      </View>
-                    ) : null}
                   </View>
                 );
               })}

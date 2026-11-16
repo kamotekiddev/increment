@@ -1,19 +1,4 @@
-import { JUMP_KG } from "./jump";
-import { parseReps, parseWeight, stepWeight } from "./stepWeight";
-
-describe("stepWeight", () => {
-  it("moves by the Jump", () => {
-    expect(stepWeight(60, 1)).toBe(60 + JUMP_KG);
-    expect(stepWeight(60, -1)).toBe(60 - JUMP_KG);
-  });
-  it("starts a blank weight at the Jump on +, and leaves it blank on −", () => {
-    expect(stepWeight(null, 1)).toBe(JUMP_KG);
-    expect(stepWeight(null, -1)).toBeNull();
-  });
-  it("never goes below zero", () => {
-    expect(stepWeight(1, -1)).toBe(0);
-  });
-});
+import { parseReps, parseWeight } from "./parseInput";
 
 describe("typed values", () => {
   it("parses a weight, accepting a comma", () => {
