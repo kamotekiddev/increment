@@ -1,12 +1,18 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackHandler, Pressable, ScrollView, View } from "react-native";
 
-import { Button, Input, Text } from "@/components";
+import { Button, RoundButton, Text } from "@/components";
+import { exerciseMeta } from "@/library/exerciseMeta";
+import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { DayPicker } from "@/routines/DayPicker";
-import { DeleteRoutineSheet, type DeleteSheetStep } from "@/routines/DeleteRoutineSheet";
+import { DeleteRoutineSheet } from "@/routines/DeleteRoutineSheet";
+import { EmptyExercises } from "@/routines/EmptyExercises";
 import { ExerciseSetupSheet } from "@/routines/ExerciseSetupSheet";
+import { ExerciseTile } from "@/routines/ExerciseTile";
 import { moveExercise } from "@/routines/moveExercise";
+import { NameField } from "@/routines/NameField";
 import { RemoveExerciseSheet } from "@/routines/RemoveExerciseSheet";
 import { ReorderList } from "@/routines/ReorderList";
 import { saveExerciseOrder } from "@/routines/reorderQueries";
@@ -26,8 +32,9 @@ import {
   useRoutineExercises,
 } from "@/routines/routineQueries";
 import type { ExerciseSetup } from "@/routines/routineSetup";
+import { ScreenHeader } from "@/routines/ScreenHeader";
 import { setupSubtitle } from "@/routines/setupText";
-import { fontSize, lineHeight, minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
 import { findInProgressWorkout, useInProgressOnFocus } from "@/workout/inProgressQueries";
 import { ResumeOrDiscardSheet } from "@/workout/ResumeOrDiscardSheet";
 import { isRoutineLocked, LOCK_MESSAGE } from "@/workout/routineLock";
@@ -45,7 +52,7 @@ export default function EditRoutineScreen() {
   const [name, setName] = useState("");
   const [days, setDays] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [step, setStep] = useState<DeleteSheetStep>("closed");
+  const [deleting, setDeleting] = useState(false);
   const [workoutCount, setWorkoutCount] = useState(0);
   const [savedLabel, setSavedLabel] = useState("");
   const [exerciseVersion, setExerciseVersion] = useState(0);
@@ -169,254 +176,212 @@ export default function EditRoutineScreen() {
     openWorkout(discardAndStartWorkout(prompt.workoutId, id));
   }
 
-  async function openMenu() {
+  async function openDelete() {
     if (locked) return;
     setWorkoutCount(await countRoutineWorkouts(id));
-    setStep("menu");
+    setDeleting(true);
   }
 
   async function confirmDelete() {
     gone.current = true;
     deleteRoutine(id);
-    setStep("closed");
+    setDeleting(false);
     router.back();
   }
 
+  function addExercises() {
+    router.push({ pathname: "/routines/add-exercises", params: { routineId: String(id) } });
+  }
+
+  const textAction = (label: string, onPress: () => void, tone: "muted" | "accent") => (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      onPress={onPress}
+      hitSlop={spacing.sm}
+      style={{ minWidth: minTouch, minHeight: minTouch, justifyContent: "center", alignItems: "center" }}
+    >
+      <Text variant="label" tone={tone} style={{ fontSize: fontSize.body }}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: "",
-          headerBackTitle: "Routines",
-          headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.bg },
-          headerBackVisible: !reordering,
-          headerLeft: reordering
-            ? () => (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Cancel reordering"
-                  onPress={() => setOrder(null)}
-                  hitSlop={spacing.sm}
-                  style={{
-                    minWidth: minTouch,
-                    minHeight: minTouch,
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text tone="accent">Cancel</Text>
-                </Pressable>
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+        {reordering ? (
+          <ScreenHeader
+            align="center"
+            title="Reorder"
+            left={textAction("Cancel", () => setOrder(null), "muted")}
+            right={textAction("Done", doneReordering, "accent")}
+          />
+        ) : (
+          <ScreenHeader
+            align="center"
+            title="Edit routine"
+            left={<RoundButton icon="chevron-back" label="Back" onPress={() => router.back()} />}
+            right={
+              routine ? (
+                <RoundButton icon="ellipsis-horizontal" label="More options" onPress={openDelete} disabled={locked} />
+              ) : (
+                <View style={{ width: 48 }} />
               )
-            : undefined,
-          headerRight: () =>
-            reordering ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Done reordering"
-                onPress={doneReordering}
-                hitSlop={spacing.sm}
-                style={{
-                  minWidth: minTouch,
-                  minHeight: minTouch,
-                  alignItems: "flex-end",
-                  justifyContent: "center",
-                }}
-              >
-                <Text variant="label" tone="accent">
-                  Done
-                </Text>
-              </Pressable>
-            ) : routine ? (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="More"
-                accessibilityState={{ disabled: locked }}
-                disabled={locked}
-                onPress={openMenu}
-                hitSlop={spacing.sm}
-                style={{
-                  minWidth: minTouch,
-                  minHeight: minTouch,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: locked ? opacity.disabled : 1,
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: fontSize.title,
-                    lineHeight: lineHeight.title,
-                  }}
-                >
-                  ⋯
-                </Text>
-              </Pressable>
-            ) : null,
-        }}
-      />
-      {routine ? (
-        <ScrollView
-          style={{ flex: 1, backgroundColor: colors.bg }}
-          contentContainerStyle={{ padding: spacing.xl, gap: spacing.xl }}
-          keyboardShouldPersistTaps="handled"
-        >
-          {locked && inProgress ? (
-            <View style={{ gap: spacing.md }}>
-              <View
-                style={{
-                  padding: spacing.lg,
-                  borderRadius: radius.lg,
-                  backgroundColor: colors.accentTint,
-                  gap: spacing.xs,
-                }}
-              >
-                <Text variant="label">Workout in progress</Text>
-                <Text variant="caption" tone="soft">
-                  {LOCK_MESSAGE}. Then you can edit or delete this routine.
-                </Text>
-              </View>
-              <Button label="Resume workout" onPress={() => openWorkout(inProgress.id)} />
-            </View>
-          ) : null}
-          <View style={{ gap: spacing.sm, opacity: locked ? opacity.disabled : 1 }}>
-            <Text variant="label">Name</Text>
-            <Input
-              value={name}
-              onChangeText={(text) => {
-                setName(text);
-                draft.current = text;
-                setError(null);
-              }}
-              onBlur={() => void commitName()}
-              onSubmitEditing={() => void commitName()}
-              editable={!locked}
-              placeholder="e.g. Push day"
-              accessibilityLabel="Routine name"
-              returnKeyType="done"
-            />
-            {error ? (
-              <Text variant="caption" tone="danger">
-                {error}
-              </Text>
-            ) : null}
-          </View>
-          <View style={{ gap: spacing.sm }}>
-            <Text variant="label">Days (optional)</Text>
-            <DayPicker value={days} onToggle={onToggleDay} disabled={locked} />
-          </View>
-          <View style={{ gap: spacing.sm }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Text variant="label">Exercises</Text>
-              {!reordering && exerciseRows && exerciseRows.length > 1 ? (
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Reorder exercises"
-                  accessibilityState={{ disabled: locked }}
-                  disabled={locked}
-                  onPress={() => setOrder(exerciseRows)}
-                  hitSlop={spacing.sm}
-                  style={{ minHeight: minTouch, justifyContent: "center", opacity: locked ? opacity.disabled : 1 }}
-                >
-                  <Text variant="label" tone="accent">
-                    Reorder
-                  </Text>
-                </Pressable>
-              ) : null}
-            </View>
+            }
+          />
+        )}
+        {routine ? (
+          <ScrollView
+            contentContainerStyle={{
+              padding: spacing.xl,
+              gap: spacing.lg,
+              paddingBottom: reordering ? spacing.xxl : BOTTOM_ACTION_CLEARANCE,
+            }}
+            keyboardShouldPersistTaps="handled"
+          >
             {order ? (
-              <ReorderList
-                rows={order}
-                onMove={(index, direction) =>
-                  setOrder(moveExercise(order, index, direction))
-                }
-              />
-            ) : exerciseRows && exerciseRows.length > 0 ? (
-              <View
-                style={{
-                  borderRadius: radius.md,
-                  backgroundColor: colors.card,
-                  overflow: "hidden",
-                }}
-              >
-                {exerciseRows.map((row, index) => (
-                  <Pressable
-                    key={row.id}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Edit ${row.name}`}
-                    accessibilityState={{ disabled: locked }}
-                    disabled={locked}
-                    onPress={() => setEditing(row)}
-                    style={{
-                      minHeight: minTouch,
-                      justifyContent: "center",
-                      gap: spacing.xs,
-                      padding: spacing.lg,
-                      opacity: locked ? opacity.disabled : 1,
-                      borderTopWidth: index === 0 ? 0 : 1,
-                      borderTopColor: colors.line,
-                    }}
-                  >
-                    <Text variant="label">{row.name}</Text>
-                    <Text variant="caption" tone="muted">
-                      {setupSubtitle(row)}
-                    </Text>
-                  </Pressable>
-                ))}
-              </View>
+              <>
+                <Text tone="muted" style={{ fontSize: fontSize.meta, lineHeight: 19, paddingHorizontal: 2 }}>
+                  Move exercises with the arrows. The new order is saved when you tap Done.
+                </Text>
+                <ReorderList rows={order} onMove={(index, direction) => setOrder(moveExercise(order, index, direction))} />
+              </>
             ) : (
-              <View
-                style={{
-                  padding: spacing.xl,
-                  borderRadius: radius.md,
-                  backgroundColor: colors.card,
-                  borderWidth: 1,
-                  borderColor: colors.line,
-                }}
-              >
-                <Text tone="muted">No exercises yet.</Text>
-              </View>
+              <>
+                {locked && inProgress ? (
+                  <View style={{ gap: spacing.md }}>
+                    <View
+                      style={{
+                        padding: spacing.lg,
+                        borderRadius: radius.lg,
+                        backgroundColor: colors.accentTint,
+                        gap: spacing.xs,
+                      }}
+                    >
+                      <Text variant="label">Workout in progress</Text>
+                      <Text variant="caption" tone="soft">
+                        {LOCK_MESSAGE}. Then you can edit or delete this routine.
+                      </Text>
+                    </View>
+                    <Button label="Resume workout" large onPress={() => openWorkout(inProgress.id)} />
+                  </View>
+                ) : (
+                  <Button
+                    label="Start workout"
+                    large
+                    disabled={!exerciseRows || exerciseRows.length === 0}
+                    onPress={onStartWorkout}
+                  />
+                )}
+                <View pointerEvents={locked ? "none" : "auto"} style={{ opacity: locked ? opacity.disabled : 1 }}>
+                <NameField
+                  value={name}
+                  onChangeText={(text) => {
+                    setName(text);
+                    draft.current = text;
+                    setError(null);
+                  }}
+                  onBlur={() => void commitName()}
+                  onSubmitEditing={() => void commitName()}
+                  placeholder="e.g. Push day"
+                  error={error}
+                  inputSize={fontSize.titleLg}
+                />
+                </View>
+                <View style={{ gap: 6 }}>
+                  <Text variant="caption" tone="muted" style={{ fontSize: fontSize.small, fontFamily: fontFamily.medium }}>
+                    Repeat on (optional)
+                  </Text>
+                  <DayPicker value={days} onToggle={onToggleDay} disabled={locked} />
+                </View>
+                {exerciseRows && exerciseRows.length > 0 ? (
+                  <>
+                    <View style={{ gap: spacing.sm }}>
+                      {exerciseRows.map((row) => (
+                        <Pressable
+                          key={row.id}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Edit ${row.name}`}
+                          accessibilityState={{ disabled: locked }}
+                          disabled={locked}
+                          onPress={() => setEditing(row)}
+                          style={({ pressed }) => ({
+                            height: size.row,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            gap: spacing.md,
+                            paddingLeft: spacing.md,
+                            paddingRight: spacing.lg,
+                            borderRadius: radius.row,
+                            backgroundColor: colors.card,
+                            opacity: locked ? opacity.disabled : pressed ? opacity.pressed : 1,
+                          })}
+                        >
+                          <ExerciseTile equipment={row.equipment} />
+                          <View style={{ flex: 1 }}>
+                            <Text variant="label" style={{ fontSize: fontSize.body }} numberOfLines={1}>
+                              {row.name}
+                            </Text>
+                            <Text variant="caption" tone="muted">
+                              {setupSubtitle(row)}
+                            </Text>
+                          </View>
+                          <Ionicons name="chevron-forward" size={18} color={colors.iconFaint} />
+                        </Pressable>
+                      ))}
+                    </View>
+                    {exerciseRows.length > 1 ? (
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel="Reorder exercises"
+                        accessibilityState={{ disabled: locked }}
+                        disabled={locked}
+                        onPress={() => setOrder(exerciseRows)}
+                        style={{
+                          opacity: locked ? opacity.disabled : 1,
+                          alignSelf: "flex-end",
+                          height: minTouch,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: spacing.sm,
+                          paddingHorizontal: spacing.lg,
+                          borderRadius: radius.pill,
+                          backgroundColor: colors.card,
+                        }}
+                      >
+                        <Ionicons name="swap-vertical-outline" size={16} color={colors.ink} />
+                        <Text variant="label">Reorder</Text>
+                      </Pressable>
+                    ) : null}
+                    <Button label="Add exercise" variant="dashed" large disabled={locked} onPress={addExercises} />
+                  </>
+                ) : exerciseRows ? (
+                  <View pointerEvents={locked ? "none" : "auto"} style={{ opacity: locked ? opacity.disabled : 1 }}>
+                    <EmptyExercises onAdd={addExercises} />
+                  </View>
+                ) : null}
+              </>
             )}
-            {reordering ? null : (
-              <Button
-                label="Add exercises"
-                variant="secondary"
-                disabled={locked}
-                onPress={() =>
-                  router.push({
-                    pathname: "/routines/add-exercises",
-                    params: { routineId: String(id) },
-                  })
-                }
-              />
-            )}
+          </ScrollView>
+        ) : routine === null ? (
+          <View style={{ flex: 1, padding: spacing.xl }}>
+            <Text tone="muted">Routine not found.</Text>
           </View>
-          {reordering || locked ? null : (
-            <Button
-              label="Start workout"
-              disabled={!exerciseRows || exerciseRows.length === 0}
-              onPress={onStartWorkout}
-            />
-          )}
-        </ScrollView>
-      ) : routine === null ? (
-        <View
-          style={{ flex: 1, backgroundColor: colors.bg, padding: spacing.xl }}
-        >
-          <Text tone="muted">Routine not found.</Text>
-        </View>
-      ) : null}
+        ) : null}
+        {routine && !reordering ? (
+          <BottomAction>
+            <Button label="Done" large onPress={() => router.back()} />
+          </BottomAction>
+        ) : null}
+      </View>
       {editing ? (
         <>
           <ExerciseSetupSheet
             visible={!confirmingRemove}
             exerciseName={editing.name}
+            subtitle={exerciseMeta(editing)}
             initial={editing}
             rule={editing.rule}
             primaryLabel="Save"
@@ -442,12 +407,11 @@ export default function EditRoutineScreen() {
         onDismiss={() => setPrompt(null)}
       />
       <DeleteRoutineSheet
-        step={step}
+        visible={deleting}
         routineName={savedLabel}
         workoutCount={workoutCount}
-        onChooseDelete={() => setStep("confirm")}
         onConfirm={confirmDelete}
-        onDismiss={() => setStep("closed")}
+        onDismiss={() => setDeleting(false)}
       />
     </>
   );

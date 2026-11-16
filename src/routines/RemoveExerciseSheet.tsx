@@ -1,8 +1,4 @@
-import { Pressable } from "react-native";
-
-import { BottomSheet, Button, Text } from "@/components";
-import { minTouch, opacity, radius, useColors } from "@/theme";
-
+import { DestructiveSheet } from "./DestructiveSheet";
 import { removeExerciseText } from "./removeExerciseText";
 
 export interface RemoveExerciseSheetProps {
@@ -14,36 +10,16 @@ export interface RemoveExerciseSheetProps {
 }
 
 /** Asks before taking an exercise out of a routine. Logged workouts keep it. */
-export function RemoveExerciseSheet({
-  visible,
-  exerciseName,
-  routineName,
-  onConfirm,
-  onDismiss,
-}: RemoveExerciseSheetProps) {
-  const colors = useColors();
+export function RemoveExerciseSheet({ visible, exerciseName, routineName, onConfirm, onDismiss }: RemoveExerciseSheetProps) {
   const text = removeExerciseText(exerciseName, routineName);
   return (
-    <BottomSheet visible={visible} onDismiss={onDismiss}>
-      <Text variant="title">{text.title}</Text>
-      <Text tone="muted">{text.body}</Text>
-      <Pressable
-        accessibilityRole="button"
-        onPress={onConfirm}
-        style={({ pressed }) => ({
-          minHeight: minTouch,
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: radius.pill,
-          backgroundColor: colors.danger,
-          opacity: pressed ? opacity.pressed : 1,
-        })}
-      >
-        <Text variant="label" tone="onAccent">
-          Remove
-        </Text>
-      </Pressable>
-      <Button label="Cancel" variant="secondary" onPress={onDismiss} />
-    </BottomSheet>
+    <DestructiveSheet
+      visible={visible}
+      title={text.title}
+      body={text.body}
+      confirmLabel="Remove"
+      onConfirm={onConfirm}
+      onDismiss={onDismiss}
+    />
   );
 }

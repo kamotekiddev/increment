@@ -1,13 +1,17 @@
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 
+import { Button, RoundButton } from "@/components";
 import { defaultRule } from "@/engine";
 import { ExerciseBrowser } from "@/library/ExerciseBrowser";
+import { exerciseMeta } from "@/library/exerciseMeta";
 import { useExercises, type LibraryExercise } from "@/library/exerciseQueries";
+import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { ExerciseSetupSheet } from "@/routines/ExerciseSetupSheet";
 import { addRoutineExercise, loadRoutineExercises } from "@/routines/routineQueries";
 import { DEFAULT_SETUP, type ExerciseSetup } from "@/routines/routineSetup";
+import { ScreenHeader } from "@/routines/ScreenHeader";
 import { spacing, useColors } from "@/theme";
 
 export default function AddExercisesScreen() {
@@ -45,28 +49,32 @@ export default function AddExercisesScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: "Add exercises",
-          headerBackTitle: "Back",
-          headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.bg },
-        }}
-      />
-      <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: spacing.sm }}>
-        <ExerciseBrowser
-          exercises={exercises}
-          disabledIds={addedIds}
-          onSelect={(exercise) => {
-            setPicked(exercise);
-            setOpen(true);
-          }}
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+        <ScreenHeader
+          left={<RoundButton icon="chevron-back" label="Back" onPress={() => router.back()} />}
+          title="Add exercises"
         />
+        <View style={{ flex: 1, paddingTop: spacing.md }}>
+          <ExerciseBrowser
+            picker
+            bottomInset={BOTTOM_ACTION_CLEARANCE}
+            exercises={exercises}
+            disabledIds={addedIds}
+            onSelect={(exercise) => {
+              setPicked(exercise);
+              setOpen(true);
+            }}
+          />
+        </View>
+        <BottomAction>
+          <Button label="Done" large onPress={() => router.back()} />
+        </BottomAction>
       </View>
       <ExerciseSetupSheet
         visible={open}
         exerciseName={picked?.name ?? ""}
+        subtitle={picked ? exerciseMeta(picked) : ""}
         initial={DEFAULT_SETUP}
         rule={rule}
         primaryLabel="Add to routine"

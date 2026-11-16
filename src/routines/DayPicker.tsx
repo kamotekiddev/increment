@@ -1,7 +1,7 @@
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { fontFamily, minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { fontFamily, opacity, radius, size, useColors } from "@/theme";
 
 import { DAY_LABELS, isDaySet } from "./routineDays";
 
@@ -13,41 +13,33 @@ export interface DayPickerProps {
   disabled?: boolean;
 }
 
-/** Seven day buttons, Mon to Sun. Each is at least 44 pt wide and tall. */
+/** Seven round day buttons, M to S, 46 pt tall. Selected days use the accent fill. */
 export function DayPicker({ value, onToggle, disabled }: DayPickerProps) {
   const colors = useColors();
   return (
-    <View style={{ flexDirection: "row", opacity: disabled ? opacity.disabled : 1 }}>
+    <View style={{ flexDirection: "row", gap: 6, opacity: disabled ? opacity.disabled : 1 }}>
       {DAY_LABELS.map((label, index) => {
         const on = isDaySet(value, index);
         return (
           <Pressable
             key={label}
-            accessibilityRole="button"
+            accessibilityRole="checkbox"
             accessibilityLabel={label}
-            accessibilityState={{ selected: on }}
+            accessibilityState={{ checked: on, disabled: !!disabled }}
             disabled={disabled}
             onPress={() => onToggle(index)}
-            style={{ flex: 1, minWidth: minTouch, minHeight: minTouch, alignItems: "center", justifyContent: "center" }}
+            style={{
+              flex: 1,
+              height: size.day,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: radius.pill,
+              backgroundColor: on ? colors.accent : colors.card,
+            }}
           >
-            <View
-              style={{
-                width: minTouch - spacing.sm,
-                height: minTouch - spacing.sm,
-                borderRadius: radius.pill,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: on ? colors.accent : colors.sunk,
-              }}
-            >
-              <Text
-                variant="caption"
-                tone={on ? "onAccent" : "soft"}
-                style={{ fontFamily: fontFamily.semibold }}
-              >
-                {label.slice(0, 3)}
-              </Text>
-            </View>
+            <Text variant="label" tone={on ? "onAccent" : "muted"} style={{ fontFamily: fontFamily.semibold }}>
+              {label[0]}
+            </Text>
           </Pressable>
         );
       })}

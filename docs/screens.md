@@ -34,7 +34,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Routines | List with the free-limit counter |
 | New routine | Name and days |
 | Add exercises | Pick from the library |
-| Edit routine | Start workout, name, days, exercise rows; Reorder; ⋯ → Delete |
+| Edit routine | Start workout, name, days, exercise rows; Reorder; ⋯ → Delete confirmation (no menu step) |
 | Edit routine (locked) | While its workout is in progress: edit and delete disabled, Resume workout shown |
 | Routines tab, workout in progress | An "in progress" bar above the tab bar (on every tab) reopens the workout |
 | Exercise setup | Sheet: sets, reps, rest, rule (read-only until Pro); used to add and to edit; Remove from routine |
