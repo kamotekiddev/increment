@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] Rename-to-own-name in another case is allowed; another routine's name is rejected
 - [ ] Delete removes the routine's exercises, workouts, workout exercises and sets

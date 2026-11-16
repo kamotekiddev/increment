@@ -1,7 +1,7 @@
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 
 import migrations from "../../drizzle/migrations";
-import { db } from "./client";
+import { db, enableForeignKeys } from "./client";
 import { seedLibrary } from "./seed";
 
 export type DatabaseState = { ready: boolean; error: Error | null };
@@ -12,6 +12,7 @@ let seedResult: { error: Error | null } | null = null;
 function seedOnce(): { error: Error | null } {
   if (!seedResult) {
     try {
+      enableForeignKeys();
       seedLibrary(db);
       seedResult = { error: null };
     } catch (e) {

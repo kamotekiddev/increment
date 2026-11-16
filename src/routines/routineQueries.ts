@@ -3,7 +3,7 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 
 import { db } from "@/db/client";
-import { routineExercises, routines } from "@/db/schema";
+import { routineExercises, routines, workouts } from "@/db/schema";
 
 export interface RoutineListItem {
   id: number;
@@ -59,4 +59,28 @@ export async function createRoutine(name: string, days: number): Promise<number>
 export async function loadRoutine(id: number) {
   const rows = await db.select().from(routines).where(eq(routines.id, id));
   return rows[0] ?? null;
+}
+
+/** Saves a routine's name. The caller has already validated it. */
+export async function renameRoutine(id: number, name: string): Promise<void> {
+  await db.update(routines).set({ name }).where(eq(routines.id, id));
+}
+
+/** Saves a routine's training days (bitmask, Monday = bit 0). */
+export async function setRoutineDays(id: number, days: number): Promise<void> {
+  await db.update(routines).set({ days }).where(eq(routines.id, id));
+}
+
+/** How many workouts belong to a routine, i.e. how many will go with it (ADR 0002). */
+export async function countRoutineWorkouts(id: number): Promise<number> {
+  const [{ n }] = await db.select({ n: count() }).from(workouts).where(eq(workouts.routineId, id));
+  return n;
+}
+
+/**
+ * Deletes a routine. The database cascades to its routine exercises and its workouts, with their
+ * workout exercises and sets. Workouts with no routine are never touched.
+ */
+export async function deleteRoutine(id: number): Promise<void> {
+  await db.delete(routines).where(eq(routines.id, id));
 }

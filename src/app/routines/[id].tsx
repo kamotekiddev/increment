@@ -1,23 +1,100 @@
-import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Pressable, ScrollView, View } from "react-native";
 
-import { Text } from "@/components";
-import { daysLabel } from "@/routines/routineDays";
-import { loadRoutine } from "@/routines/routineQueries";
-import { spacing, useColors } from "@/theme";
+import { Input, Text } from "@/components";
+import { DayPicker } from "@/routines/DayPicker";
+import { DeleteRoutineSheet, type DeleteSheetStep } from "@/routines/DeleteRoutineSheet";
+import { toggleDay } from "@/routines/routineDays";
+import { validateRoutineName } from "@/routines/routineName";
+import { routineNameMessage } from "@/routines/routineNameMessage";
+import {
+  countRoutineWorkouts,
+  deleteRoutine,
+  loadRoutine,
+  loadRoutines,
+  renameRoutine,
+  setRoutineDays,
+} from "@/routines/routineQueries";
+import { fontSize, minTouch, radius, spacing, useColors } from "@/theme";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
 
-/** Stub: ticket 03 builds the real Edit routine screen here. */
 export default function EditRoutineScreen() {
   const colors = useColors();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id: idParam } = useLocalSearchParams<{ id: string }>();
+  const id = Number(idParam);
+
   const [routine, setRoutine] = useState<Loaded | undefined>(undefined);
+  const [name, setName] = useState("");
+  const [days, setDays] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<DeleteSheetStep>("closed");
+  const [workoutCount, setWorkoutCount] = useState(0);
+  const [savedLabel, setSavedLabel] = useState("");
+
+  // Latest values for the commit that runs when the screen is left.
+  const savedName = useRef("");
+  const draft = useRef("");
+  const gone = useRef(false);
 
   useEffect(() => {
-    loadRoutine(Number(id)).then(setRoutine);
+    loadRoutine(id).then((row) => {
+      setRoutine(row);
+      if (row) {
+        savedName.current = row.name;
+        draft.current = row.name;
+        setName(row.name);
+        setSavedLabel(row.name);
+        setDays(row.days);
+      }
+    });
   }, [id]);
+
+  /** Checks the name and saves it. An invalid name is not saved, so the saved one stays. */
+  const commitName = useCallback(async (): Promise<void> => {
+    if (gone.current || !savedName.current) return;
+    const existing = await loadRoutines();
+    const result = validateRoutineName(draft.current, existing, id);
+    if (!result.ok) {
+      setError(routineNameMessage(result.reason));
+      return;
+    }
+    setError(null);
+    setName(result.name);
+    draft.current = result.name;
+    if (result.name !== savedName.current) {
+      savedName.current = result.name;
+      setSavedLabel(result.name);
+      await renameRoutine(id, result.name);
+    }
+  }, [id]);
+
+  // Leaving the screen: a valid name still being typed is saved; an invalid one is dropped,
+  // which leaves the saved name in place.
+  useEffect(() => {
+    return () => {
+      void commitName();
+    };
+  }, [commitName]);
+
+  async function onToggleDay(index: number) {
+    const next = toggleDay(days, index);
+    setDays(next);
+    await setRoutineDays(id, next);
+  }
+
+  async function openMenu() {
+    setWorkoutCount(await countRoutineWorkouts(id));
+    setStep("menu");
+  }
+
+  async function confirmDelete() {
+    gone.current = true;
+    await deleteRoutine(id);
+    setStep("closed");
+    router.back();
+  }
 
   return (
     <>
@@ -28,18 +105,80 @@ export default function EditRoutineScreen() {
           headerBackTitle: "Routines",
           headerShadowVisible: false,
           headerStyle: { backgroundColor: colors.bg },
+          headerRight: () =>
+            routine ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="More"
+                onPress={openMenu}
+                hitSlop={spacing.sm}
+                style={{ minWidth: minTouch, minHeight: minTouch, alignItems: "center", justifyContent: "center" }}
+              >
+                <Text style={{ fontSize: fontSize.title, lineHeight: fontSize.title + spacing.xs }}>⋯</Text>
+              </Pressable>
+            ) : null,
         }}
       />
-      <View style={{ flex: 1, backgroundColor: colors.bg, padding: spacing.xl, gap: spacing.md }}>
-        {routine ? (
-          <>
-            <Text variant="heading">{routine.name}</Text>
-            <Text tone="muted">{daysLabel(routine.days)}</Text>
-          </>
-        ) : routine === null ? (
+      {routine ? (
+        <ScrollView
+          style={{ flex: 1, backgroundColor: colors.bg }}
+          contentContainerStyle={{ padding: spacing.xl, gap: spacing.xl }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={{ gap: spacing.sm }}>
+            <Text variant="label">Name</Text>
+            <Input
+              value={name}
+              onChangeText={(text) => {
+                setName(text);
+                draft.current = text;
+                setError(null);
+              }}
+              onBlur={() => void commitName()}
+              onSubmitEditing={() => void commitName()}
+              placeholder="e.g. Push day"
+              accessibilityLabel="Routine name"
+              returnKeyType="done"
+            />
+            {error ? (
+              <Text variant="caption" tone="danger">
+                {error}
+              </Text>
+            ) : null}
+          </View>
+          <View style={{ gap: spacing.sm }}>
+            <Text variant="label">Days (optional)</Text>
+            <DayPicker value={days} onToggle={onToggleDay} />
+          </View>
+          {/* Exercise rows: tickets 04 to 06 add the list, Add exercises and Reorder here. */}
+          <View style={{ gap: spacing.sm }}>
+            <Text variant="label">Exercises</Text>
+            <View
+              style={{
+                padding: spacing.xl,
+                borderRadius: radius.md,
+                backgroundColor: colors.card,
+                borderWidth: 1,
+                borderColor: colors.line,
+              }}
+            >
+              <Text tone="muted">No exercises yet.</Text>
+            </View>
+          </View>
+        </ScrollView>
+      ) : routine === null ? (
+        <View style={{ flex: 1, backgroundColor: colors.bg, padding: spacing.xl }}>
           <Text tone="muted">Routine not found.</Text>
-        ) : null}
-      </View>
+        </View>
+      ) : null}
+      <DeleteRoutineSheet
+        step={step}
+        routineName={savedLabel}
+        workoutCount={workoutCount}
+        onChooseDelete={() => setStep("confirm")}
+        onConfirm={confirmDelete}
+        onDismiss={() => setStep("closed")}
+      />
     </>
   );
 }

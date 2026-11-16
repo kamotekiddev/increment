@@ -47,8 +47,8 @@ export const workouts = sqliteTable(
   "workouts",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
-    /** Null for a workout started without a routine; kept if the routine is deleted. */
-    routineId: integer("routine_id").references(() => routines.id, { onDelete: "set null" }),
+    /** Null for a workout started without a routine. Deleting the routine deletes its workouts (ADR 0002). */
+    routineId: integer("routine_id").references(() => routines.id, { onDelete: "cascade" }),
     startedAt: integer("started_at").notNull(),
     finishedAt: integer("finished_at"),
     /** Local calendar date, YYYY-MM-DD, used for streaks and deload weeks. */

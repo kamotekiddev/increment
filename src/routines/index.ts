@@ -6,3 +6,4 @@ export type { RoutineNameRef, RoutineNameResult } from "./routineName";
 export { clampRepMax, clampRepMin, clampRest, clampSets, DEFAULT_SETUP, SETUP_LIMITS } from "./routineSetup";
 export { DAY_LABELS, daysLabel, isDaySet, toggleDay } from "./routineDays";
 export { routineCounter, routineSubtitle } from "./routineListText";
+export { deleteRoutineText } from "./deleteRoutineText";
