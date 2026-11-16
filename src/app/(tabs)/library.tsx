@@ -1,32 +1,32 @@
-import { count } from "drizzle-orm";
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
 
 import { Text } from "@/components";
 import { db } from "@/db/client";
 import { exercises } from "@/db/schema";
+import { ExerciseList, type ExerciseListItem } from "@/library/ExerciseList";
 import { spacing, useColors } from "@/theme";
 
 export default function LibraryScreen() {
   const colors = useColors();
-  const [total, setTotal] = useState<number | null>(null);
+  const [items, setItems] = useState<ExerciseListItem[]>([]);
 
   useEffect(() => {
-    if (!__DEV__) return;
-    db.select({ n: count() })
+    db.select({ id: exercises.id, name: exercises.name, muscles: exercises.muscles, equipment: exercises.equipment })
       .from(exercises)
-      .then((rows) => setTotal(rows[0].n));
+      .then((rows) => setItems([...rows].sort((a, b) => a.name.localeCompare(b.name))));
   }, []);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg, padding: spacing.xl, paddingTop: spacing.xxl * 2, gap: spacing.md }}>
-      <Text variant="heading">Library</Text>
-      <Text tone="muted">The exercise library will appear here.</Text>
-      {__DEV__ && total !== null ? (
-        <Text variant="caption" tone="accent">
-          Dev: {total} exercises in the database
-        </Text>
-      ) : null}
+    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: spacing.xxl * 2 }}>
+      <Text variant="heading" style={{ paddingHorizontal: spacing.xl, paddingBottom: spacing.md }}>
+        Library
+      </Text>
+      <ExerciseList
+        exercises={items}
+        onSelect={(exercise) => router.push({ pathname: "/exercise/[id]", params: { id: String(exercise.id) } })}
+      />
     </View>
   );
 }
