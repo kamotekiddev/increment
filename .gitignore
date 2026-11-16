@@ -40,3 +40,6 @@ Thumbs.db
 coverage/
 .kotlin/
 *.pem
+
+# graphify
+graphify-out/
