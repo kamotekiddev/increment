@@ -27,7 +27,9 @@ import {
 } from "@/routines/routineQueries";
 import type { ExerciseSetup } from "@/routines/routineSetup";
 import { setupSubtitle } from "@/routines/setupText";
-import { fontSize, lineHeight, minTouch, radius, spacing, useColors } from "@/theme";
+import { fontSize, lineHeight, minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { useInProgressOnFocus } from "@/workout/inProgressQueries";
+import { isRoutineLocked, LOCK_MESSAGE } from "@/workout/routineLock";
 import { findInProgressWorkout, startWorkout } from "@/workout/workoutQueries";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
@@ -47,6 +49,8 @@ export default function EditRoutineScreen() {
   const [exerciseVersion, setExerciseVersion] = useState(0);
   const [editing, setEditing] = useState<RoutineExerciseItem | null>(null);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const inProgress = useInProgressOnFocus();
+  const locked = isRoutineLocked(inProgress, id);
   const loadedRows = useRoutineExercises(id, exerciseVersion);
   // Reorder mode: `order` is the in-memory draft (null when not reordering). After Done the saved
   // order shows at once until a fresh load from the hook replaces it.
@@ -93,7 +97,7 @@ export default function EditRoutineScreen() {
 
   /** Checks the name and saves it. An invalid name is not saved, so the saved one stays. */
   const commitName = useCallback(async (): Promise<void> => {
-    if (gone.current || !savedName.current) return;
+    if (gone.current || locked || !savedName.current) return;
     const existing = await loadRoutines();
     const result = validateRoutineName(draft.current, existing, id);
     if (!result.ok) {
@@ -108,7 +112,7 @@ export default function EditRoutineScreen() {
       setSavedLabel(result.name);
       await renameRoutine(id, result.name);
     }
-  }, [id]);
+  }, [id, locked]);
 
   // Leaving the screen: a valid name still being typed is saved; an invalid one is dropped,
   // which leaves the saved name in place.
@@ -146,6 +150,7 @@ export default function EditRoutineScreen() {
   }
 
   async function openMenu() {
+    if (locked) return;
     setWorkoutCount(await countRoutineWorkouts(id));
     setStep("menu");
   }
@@ -206,6 +211,8 @@ export default function EditRoutineScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="More"
+                accessibilityState={{ disabled: locked }}
+                disabled={locked}
                 onPress={openMenu}
                 hitSlop={spacing.sm}
                 style={{
@@ -213,6 +220,7 @@ export default function EditRoutineScreen() {
                   minHeight: minTouch,
                   alignItems: "center",
                   justifyContent: "center",
+                  opacity: locked ? opacity.disabled : 1,
                 }}
               >
                 <Text
@@ -233,7 +241,25 @@ export default function EditRoutineScreen() {
           contentContainerStyle={{ padding: spacing.xl, gap: spacing.xl }}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={{ gap: spacing.sm }}>
+          {locked && inProgress ? (
+            <View style={{ gap: spacing.md }}>
+              <View
+                style={{
+                  padding: spacing.lg,
+                  borderRadius: radius.lg,
+                  backgroundColor: colors.accentTint,
+                  gap: spacing.xs,
+                }}
+              >
+                <Text variant="label">Workout in progress</Text>
+                <Text variant="caption" tone="soft">
+                  {LOCK_MESSAGE}. Then you can edit or delete this routine.
+                </Text>
+              </View>
+              <Button label="Resume workout" onPress={onStartWorkout} />
+            </View>
+          ) : null}
+          <View style={{ gap: spacing.sm, opacity: locked ? opacity.disabled : 1 }}>
             <Text variant="label">Name</Text>
             <Input
               value={name}
@@ -244,6 +270,7 @@ export default function EditRoutineScreen() {
               }}
               onBlur={() => void commitName()}
               onSubmitEditing={() => void commitName()}
+              editable={!locked}
               placeholder="e.g. Push day"
               accessibilityLabel="Routine name"
               returnKeyType="done"
@@ -256,7 +283,7 @@ export default function EditRoutineScreen() {
           </View>
           <View style={{ gap: spacing.sm }}>
             <Text variant="label">Days (optional)</Text>
-            <DayPicker value={days} onToggle={onToggleDay} />
+            <DayPicker value={days} onToggle={onToggleDay} disabled={locked} />
           </View>
           <View style={{ gap: spacing.sm }}>
             <View
@@ -271,9 +298,11 @@ export default function EditRoutineScreen() {
                 <Pressable
                   accessibilityRole="button"
                   accessibilityLabel="Reorder exercises"
+                  accessibilityState={{ disabled: locked }}
+                  disabled={locked}
                   onPress={() => setOrder(exerciseRows)}
                   hitSlop={spacing.sm}
-                  style={{ minHeight: minTouch, justifyContent: "center" }}
+                  style={{ minHeight: minTouch, justifyContent: "center", opacity: locked ? opacity.disabled : 1 }}
                 >
                   <Text variant="label" tone="accent">
                     Reorder
@@ -301,12 +330,15 @@ export default function EditRoutineScreen() {
                     key={row.id}
                     accessibilityRole="button"
                     accessibilityLabel={`Edit ${row.name}`}
+                    accessibilityState={{ disabled: locked }}
+                    disabled={locked}
                     onPress={() => setEditing(row)}
                     style={{
                       minHeight: minTouch,
                       justifyContent: "center",
                       gap: spacing.xs,
                       padding: spacing.lg,
+                      opacity: locked ? opacity.disabled : 1,
                       borderTopWidth: index === 0 ? 0 : 1,
                       borderTopColor: colors.line,
                     }}
@@ -335,6 +367,7 @@ export default function EditRoutineScreen() {
               <Button
                 label="Add exercises"
                 variant="secondary"
+                disabled={locked}
                 onPress={() =>
                   router.push({
                     pathname: "/routines/add-exercises",
@@ -344,7 +377,7 @@ export default function EditRoutineScreen() {
               />
             )}
           </View>
-          {reordering ? null : (
+          {reordering || locked ? null : (
             <Button
               label="Start workout"
               disabled={!exerciseRows || exerciseRows.length === 0}
