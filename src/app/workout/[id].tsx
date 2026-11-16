@@ -6,8 +6,10 @@ import { Button, Input, Text } from "@/components";
 import { fontSize, lineHeight, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { formatWeight } from "@/units";
 import type { SetEdit } from "@/workout";
-import { lastColumn, parseReps, parseWeight, stepWeight } from "@/workout";
+import { finishCheck, lastColumn, parseReps, parseWeight, stepWeight } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
+import { FinishWorkoutSheet } from "@/workout/FinishWorkoutSheet";
+import { finishPrompt, type FinishPrompt } from "@/workout/workoutPromptText";
 import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWorkoutSheet";
 import { canMarkDone } from "@/workout/markDone";
 import {
@@ -15,6 +17,7 @@ import {
   discardWorkout,
   editSet,
   findInProgressWorkoutInfo,
+  finishWorkout,
   markSetDone,
   useLastExercises,
   useWorkout,
@@ -76,6 +79,31 @@ export default function LiveWorkoutScreen() {
     setDiscardStep("closed");
     if (router.canGoBack()) router.back();
     else router.replace("/");
+  }
+
+  const [finishing, setFinishing] = useState<FinishPrompt | null>(null);
+
+  function leave() {
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
+  }
+
+  /** Finish: confirms when sets are unchecked or an exercise is skipped, offers Discard when no set is done. */
+  function onFinish() {
+    if (!workout) return;
+    const prompt = finishPrompt(
+      finishCheck(workout.exercises.map((e) => e.rows)),
+      workout.exercises.map((e) => e.name),
+    );
+    if (prompt) setFinishing(prompt);
+    else confirmFinish(prompt);
+  }
+
+  function confirmFinish(prompt: FinishPrompt | null) {
+    if (prompt?.kind === "discard") discardWorkout(Number(idParam));
+    else finishWorkout(Number(idParam));
+    setFinishing(null);
+    leave();
   }
 
   const exercise = workout?.exercises[current];
@@ -142,6 +170,7 @@ export default function LiveWorkoutScreen() {
         onConfirm={confirmDiscard}
         onDismiss={() => setDiscardStep("closed")}
       />
+      <FinishWorkoutSheet prompt={finishing} onConfirm={() => confirmFinish(finishing)} onDismiss={() => setFinishing(null)} />
       {workout && exercise ? (
         <ScrollView
           style={{ flex: 1, backgroundColor: colors.bg }}
@@ -300,6 +329,7 @@ export default function LiveWorkoutScreen() {
               onPress={() => setCurrent(current + 1)}
             />
           </View>
+          <Button label="Finish workout" variant="secondary" onPress={onFinish} />
         </ScrollView>
       ) : workout === null ? (
         <View style={{ flex: 1, backgroundColor: colors.bg, padding: spacing.xl }}>

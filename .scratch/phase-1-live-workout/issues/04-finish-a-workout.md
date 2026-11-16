@@ -4,10 +4,10 @@
 
 **Blocked by:** 02, 03
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] The prompt names the number of unchecked sets and any skipped exercise
 - [ ] Confirming drops unchecked sets, removes skipped exercises, sets the finish time and clears in-progress
 - [ ] With no done sets at all, Finish offers Discard and saves nothing
 - [ ] The Target shown is saved with each Workout exercise; `progress_accepted` stays false
-- [ ] Type check, lint and tests pass
+- [x] Type check, lint and tests pass
