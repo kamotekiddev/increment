@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] List rows read like "Mon · Thu · 5 exercises", "No days · No exercises yet"
 - [ ] Counter reads "1 of 2 routines"; empty state has Create routine
