@@ -71,3 +71,16 @@ _Avoid_: Exercise type, category
 **Workout exercise**:
 One exercise within one workout, holding the Target that was shown and whether the lifter accepted the offered Step.
 _Avoid_: Session, entry
+
+**Routine**:
+A named workout the lifter repeats, with an ordered list of exercises and the days of the week it is planned for. Its name is unique among the lifter's routines. Each exercise in it can appear once.
+_Avoid_: Plan, program, split, template
+
+**Routine exercise**:
+One exercise within a Routine, holding its planned sets, Rep range, rest length and Overload rule. A Streak and a Target belong to a Routine exercise, so the same exercise in two Routines progresses separately.
+_Avoid_: Slot, entry
+
+**Rest length**:
+The seconds the lifter plans to rest between sets of a Routine exercise.
+_Avoid_: Rest timer (that counts down during a workout)
+

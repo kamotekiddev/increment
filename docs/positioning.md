@@ -6,7 +6,7 @@
 | | Increment | Strong | Hevy | Alpha Progression | Fitbod |
 |---|---|---|---|---|---|
 | Pricing | One-time only | $4.99/mo, $29.99/yr, $99.99 lifetime | $2.99/mo, $23.99/yr, $74.99 lifetime | Subscription only: $12.99/mo, $79.99/yr | $15.99/mo, $95.99/yr |
-| Free routines | 3 | 3 | 4 | Unlimited (manual) | No free tier |
+| Free routines | 2 | 3 | 4 | Unlimited (manual) | No free tier |
 | Tells you when to add weight | Yes, even free | No | Not in free | Yes, Pro only | Yes, AI builds the workout |
 | Your own progression rules | Pro, per exercise, with preview | No | No | Set by the app | Set by the app |
 

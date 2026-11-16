@@ -25,8 +25,16 @@ The full system lives at https://claude.ai/artifact/2eEe2GhySr9xx6LqTbmGhs. This
 
 Other accent shades explored: `#7C3AED`, `#6D28D9`, `#9333EA`. A dark theme is defined in the design system's `tokens.json`.
 
+## Opacity
+| Token | Value | Use |
+|---|---|---|
+| `opacity.pressed` | 0.85 | A filled control while pressed |
+| `opacity.disabled` | 0.4 | Any disabled or unavailable control or row (one value everywhere) |
+
 ## Type
 - **Sora** for everything. Large numbers (weights, reps) use heavy weights with tight tracking.
+
+Line heights that a component sets itself come from `lineHeight` in `src/theme` (`lineHeight.title` = 24, for the title-size header glyph).
 
 ## Components
 - **Button**: pill-shaped; the primary uses the accent fill, the secondary a white or outline style.

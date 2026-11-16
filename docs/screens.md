@@ -31,9 +31,12 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Routines | List with the free-limit counter |
 | New routine | Name and days |
 | Add exercises | Pick from the library |
-| Edit routine | Sets, reps, rest, rule; ⋯ → Delete |
+| Edit routine | Name, days, exercise rows; Reorder; ⋯ → Delete |
+| Exercise setup | Sheet: sets, reps, rest, rule (read-only until Pro); used to add and to edit; Remove from routine |
+| Reorder routine | ▲ ▼ per row; Done saves, Cancel discards |
+| Remove exercise | Confirmation |
 | Overload rule panel (Pro) | Custom rule with a live preview |
-| 3 free routines used | Limit pop-up → Paywall |
+| 2 free routines used | Limit pop-up (no upgrade button in Phase 1; links to the Paywall from Phase 3) |
 | Delete routine | Confirmation |
 
 ## 4 · Exercise library
@@ -72,4 +75,4 @@ These connections aren't yet wired up on the canvas:
 - The Edit button on a custom exercise → Edit custom exercise
 - "See all records" on Progress → All records
 - The plate calculator button on Live workout → Plate calculator
-- New routine → the 3-routine limit pop-up
+- New routine → the 2-routine limit pop-up

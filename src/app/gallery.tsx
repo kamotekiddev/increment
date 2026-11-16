@@ -51,7 +51,7 @@ export default function Gallery() {
       <Text variant="caption" tone="muted">Bottom sheet (tap Start workout)</Text>
       <BottomSheet visible={open} onDismiss={() => setOpen(false)}>
         <Text variant="title">Limit reached</Text>
-        <Text tone="muted">Free includes 3 routines. Unlock Pro for more.</Text>
+        <Text tone="muted">Free includes 2 routines. Unlock Pro for more.</Text>
         <Button label="Close" onPress={() => setOpen(false)} />
       </BottomSheet>
     </ScrollView>

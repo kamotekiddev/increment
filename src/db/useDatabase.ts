@@ -1,13 +1,22 @@
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 
 import migrations from "../../drizzle/migrations";
-import { db } from "./client";
+import { db, enableForeignKeys } from "./client";
 import { seedLibrary } from "./seed";
 
 export type DatabaseState = { ready: boolean; error: Error | null };
 
 // Seeding is synchronous and idempotent; the flag stops a remount or StrictMode from repeating it.
 let seedResult: { error: Error | null } | null = null;
+
+let foreignKeysEnabled = false;
+
+function foreignKeysOnce(): void {
+  if (!foreignKeysEnabled) {
+    enableForeignKeys();
+    foreignKeysEnabled = true;
+  }
+}
 
 function seedOnce(): { error: Error | null } {
   if (!seedResult) {
@@ -28,6 +37,9 @@ function seedOnce(): { error: Error | null } {
  */
 export function useDatabase(): DatabaseState {
   const { success, error: migrationError } = useMigrations(db, migrations);
+  // Foreign keys stay off during migrations (see client.ts); switch them on as a step of its own
+  // once migrations have succeeded, before anything else touches the database.
+  if (success) foreignKeysOnce();
   const seed = success ? seedOnce() : null;
   return { ready: seed !== null && seed.error === null, error: migrationError ?? seed?.error ?? null };
 }
