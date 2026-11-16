@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** built
 
 - [ ] Every example in the spec's Testing Decisions is a passing test
 - [ ] Functions take plain inputs, no database or React
