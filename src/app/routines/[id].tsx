@@ -5,6 +5,8 @@ import { Pressable, ScrollView, View } from "react-native";
 import { Button, Input, Text } from "@/components";
 import { DayPicker } from "@/routines/DayPicker";
 import { DeleteRoutineSheet, type DeleteSheetStep } from "@/routines/DeleteRoutineSheet";
+import { ExerciseSetupSheet } from "@/routines/ExerciseSetupSheet";
+import { RemoveExerciseSheet } from "@/routines/RemoveExerciseSheet";
 import { toggleDay } from "@/routines/routineDays";
 import { validateRoutineName } from "@/routines/routineName";
 import { routineNameMessage } from "@/routines/routineNameMessage";
@@ -13,10 +15,14 @@ import {
   deleteRoutine,
   loadRoutine,
   loadRoutines,
+  removeRoutineExercise,
   renameRoutine,
+  type RoutineExerciseItem,
   setRoutineDays,
+  updateRoutineExercise,
   useRoutineExercises,
 } from "@/routines/routineQueries";
+import type { ExerciseSetup } from "@/routines/routineSetup";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontSize, minTouch, radius, spacing, useColors } from "@/theme";
 
@@ -34,7 +40,10 @@ export default function EditRoutineScreen() {
   const [step, setStep] = useState<DeleteSheetStep>("closed");
   const [workoutCount, setWorkoutCount] = useState(0);
   const [savedLabel, setSavedLabel] = useState("");
-  const exerciseRows = useRoutineExercises(id);
+  const [exerciseVersion, setExerciseVersion] = useState(0);
+  const exerciseRows = useRoutineExercises(id, exerciseVersion);
+  const [editing, setEditing] = useState<RoutineExerciseItem | null>(null);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
 
   // Latest values for the commit that runs when the screen is left.
   const savedName = useRef("");
@@ -85,6 +94,21 @@ export default function EditRoutineScreen() {
     const next = toggleDay(days, index);
     setDays(next);
     await setRoutineDays(id, next);
+  }
+
+  async function saveExercise(setup: ExerciseSetup) {
+    if (!editing) return;
+    await updateRoutineExercise(editing.id, setup);
+    setEditing(null);
+    setExerciseVersion((v) => v + 1);
+  }
+
+  async function confirmRemove() {
+    if (!editing) return;
+    await removeRoutineExercise(editing.id);
+    setConfirmingRemove(false);
+    setEditing(null);
+    setExerciseVersion((v) => v + 1);
   }
 
   async function openMenu() {
@@ -158,8 +182,11 @@ export default function EditRoutineScreen() {
             {exerciseRows && exerciseRows.length > 0 ? (
               <View style={{ borderRadius: radius.md, backgroundColor: colors.card, overflow: "hidden" }}>
                 {exerciseRows.map((row, index) => (
-                  <View
+                  <Pressable
                     key={row.id}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Edit ${row.name}`}
+                    onPress={() => setEditing(row)}
                     style={{
                       minHeight: minTouch,
                       justifyContent: "center",
@@ -173,7 +200,7 @@ export default function EditRoutineScreen() {
                     <Text variant="caption" tone="muted">
                       {setupSubtitle(row)}
                     </Text>
-                  </View>
+                  </Pressable>
                 ))}
               </View>
             ) : (
@@ -200,6 +227,30 @@ export default function EditRoutineScreen() {
         <View style={{ flex: 1, backgroundColor: colors.bg, padding: spacing.xl }}>
           <Text tone="muted">Routine not found.</Text>
         </View>
+      ) : null}
+      {editing ? (
+        <>
+          <ExerciseSetupSheet
+            visible={!confirmingRemove}
+            exerciseName={editing.name}
+            initial={editing}
+            rule={editing.rule}
+            primaryLabel="Save"
+            onSubmit={saveExercise}
+            onDismiss={() => setEditing(null)}
+            onRemove={() => setConfirmingRemove(true)}
+          />
+          <RemoveExerciseSheet
+            visible={confirmingRemove}
+            exerciseName={editing.name}
+            routineName={savedLabel}
+            onConfirm={confirmRemove}
+            onDismiss={() => {
+              setConfirmingRemove(false);
+              setEditing(null);
+            }}
+          />
+        </>
       ) : null}
       <DeleteRoutineSheet
         step={step}

@@ -3,7 +3,7 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 
 import { db } from "@/db/client";
-import { defaultRule } from "@/engine";
+import { defaultRule, type OverloadRule } from "@/engine";
 import { exercises, routineExercises, routines, workouts } from "@/db/schema";
 
 import type { ExerciseSetup } from "./routineSetup";
@@ -93,6 +93,7 @@ export interface RoutineExerciseItem extends ExerciseSetup {
   exerciseId: number;
   name: string;
   position: number;
+  rule: OverloadRule;
 }
 
 /** A routine's exercises in order, with names. */
@@ -107,6 +108,7 @@ export async function loadRoutineExercises(routineId: number): Promise<RoutineEx
       repMin: routineExercises.repMin,
       repMax: routineExercises.repMax,
       restS: routineExercises.restS,
+      rule: routineExercises.rule,
     })
     .from(routineExercises)
     .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
@@ -115,18 +117,19 @@ export async function loadRoutineExercises(routineId: number): Promise<RoutineEx
 }
 
 /** The routine's exercises, reloaded each time the screen gains focus. Undefined until first load. */
-export function useRoutineExercises(routineId: number): RoutineExerciseItem[] | undefined {
+export function useRoutineExercises(routineId: number, version = 0): RoutineExerciseItem[] | undefined {
   const [items, setItems] = useState<RoutineExerciseItem[] | undefined>(undefined);
   useFocusEffect(
     useCallback(() => {
       let live = true;
+      void version; // a change reloads the list after a save or remove
       loadRoutineExercises(routineId).then((rows) => {
         if (live) setItems(rows);
       });
       return () => {
         live = false;
       };
-    }, [routineId]),
+    }, [routineId, version]),
   );
   return items;
 }
@@ -154,4 +157,32 @@ export async function addRoutineExercise(
     .insert(routineExercises)
     .values({ routineId, exerciseId, position: n, ...setup, rule: defaultRule(loadType) });
   return true;
+}
+
+/** Saves new sets, rep range and rest on this routine exercise row only. */
+export async function updateRoutineExercise(routineExerciseId: number, setup: ExerciseSetup): Promise<void> {
+  await db.update(routineExercises).set(setup).where(eq(routineExercises.id, routineExerciseId));
+}
+
+/**
+ * Removes one routine exercise and renumbers the rest to 0..n-1, in one transaction. Logged
+ * workouts and their sets are not touched.
+ */
+export async function removeRoutineExercise(routineExerciseId: number): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [row] = await tx
+      .select({ routineId: routineExercises.routineId })
+      .from(routineExercises)
+      .where(eq(routineExercises.id, routineExerciseId));
+    if (!row) return;
+    await tx.delete(routineExercises).where(eq(routineExercises.id, routineExerciseId));
+    const rest = await tx
+      .select({ id: routineExercises.id })
+      .from(routineExercises)
+      .where(eq(routineExercises.routineId, row.routineId))
+      .orderBy(asc(routineExercises.position), asc(routineExercises.id));
+    for (const [position, r] of rest.entries()) {
+      await tx.update(routineExercises).set({ position }).where(eq(routineExercises.id, r.id));
+    }
+  });
 }

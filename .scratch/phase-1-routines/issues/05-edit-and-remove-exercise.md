@@ -4,7 +4,7 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] Editing one routine's exercise does not change the same exercise in another routine
 - [ ] Remove asks first, renumbers positions, and leaves logged workouts alone

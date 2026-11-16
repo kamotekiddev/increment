@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { BottomSheet, Button, Pill, Text } from "@/components";
 import type { OverloadRule } from "@/engine";
-import { spacing } from "@/theme";
+import { minTouch, spacing } from "@/theme";
 
 import { adjustSetup, canAdjust, type SetupField } from "./adjustSetup";
 import { describeRule } from "./describeRule";
@@ -23,6 +23,8 @@ export interface ExerciseSetupSheetProps {
   primaryLabel: string;
   onSubmit: (setup: ExerciseSetup) => void;
   onDismiss: () => void;
+  /** Editing only: shows a red Remove from routine action that calls this. */
+  onRemove?: () => void;
 }
 
 /** Sets, reps (min and max) and rest steppers, the read-only progression rule and one primary button. */
@@ -34,6 +36,7 @@ export function ExerciseSetupSheet({
   primaryLabel,
   onSubmit,
   onDismiss,
+  onRemove,
 }: ExerciseSetupSheetProps) {
   const [setup, setSetup] = useState<ExerciseSetup>(initial);
 
@@ -74,6 +77,17 @@ export function ExerciseSetupSheet({
         <Text tone="muted">{describeRule(rule)}</Text>
       </View>
       <Button label={primaryLabel} onPress={() => onSubmit(setup)} />
+      {onRemove ? (
+        <Pressable
+          accessibilityRole="button"
+          onPress={onRemove}
+          style={{ minHeight: minTouch, alignItems: "center", justifyContent: "center" }}
+        >
+          <Text variant="label" tone="danger">
+            Remove from routine
+          </Text>
+        </Pressable>
+      ) : null}
     </BottomSheet>
   );
 }
