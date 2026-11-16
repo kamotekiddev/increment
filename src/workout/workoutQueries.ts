@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { useEffect, useState } from "react";
 
 import { db } from "@/db/client";
@@ -6,6 +6,8 @@ import { exercises, routineExercises, routines, sets, workoutExercises, workouts
 import { nextTarget, type Target } from "@/engine";
 
 import { toHistory, type PastExercise } from "./historyInputs";
+import { addSetRow } from "./addSet";
+import { applyEdit, type SetEdit } from "./applyEdit";
 import { initialSetRows } from "./initialSetRows";
 import { JUMP_KG } from "./jump";
 import { setDone } from "./markDone";
@@ -253,4 +255,102 @@ export function discardWorkout(id: number): void {
 export function discardAndStartWorkout(inProgressId: number, routineId: number): number | null {
   discardWorkout(inProgressId);
   return startWorkout(routineId);
+}
+
+/** Applies a typed or stepped edit to one row, following the rule, and writes every row it changed. */
+export function editSet(rows: LiveSet[], index: number, edit: SetEdit): LiveSet[] {
+  const next = applyEdit(rows, index, edit).map((r, i) => ({ ...r, setId: rows[i].setId })) as LiveSet[];
+  db.transaction((tx) => {
+    next.forEach((r, i) => {
+      if (r.weightKg !== rows[i].weightKg || r.reps !== rows[i].reps) {
+        tx.update(sets).set({ weightKg: weightToStore(r.weightKg), reps: r.reps }).where(eq(sets.id, r.setId)).run();
+      }
+    });
+  });
+  return next;
+}
+
+/** Adds a set beyond the plan to a workout exercise, copying the row above, and returns its new rows. */
+export function addSet(workoutExerciseId: number, rows: LiveSet[]): LiveSet[] {
+  const added = addSetRow(rows)[rows.length];
+  return db.transaction((tx) => {
+    const exerciseId = tx
+      .select({ exerciseId: workoutExercises.exerciseId })
+      .from(workoutExercises)
+      .where(eq(workoutExercises.id, workoutExerciseId))
+      .get()?.exerciseId;
+    if (exerciseId === undefined) return rows;
+    const inserted = tx
+      .insert(sets)
+      .values({
+        workoutExerciseId,
+        exerciseId,
+        idx: rows.length,
+        weightKg: weightToStore(added.weightKg),
+        enteredUnit: "kg",
+        reps: added.reps,
+      })
+      .returning({ id: sets.id })
+      .get();
+    return [...rows, { ...added, setId: inserted.id }];
+  });
+}
+
+/**
+ * For each exercise of a workout, the last finished workout's record of that routine exercise
+ * (keyed by workout exercise id), or null when there is none. Feeds the Last column.
+ */
+export async function loadLastExercises(workoutId: number): Promise<Record<number, PastExercise | null>> {
+  const workout = (await db.select().from(workouts).where(eq(workouts.id, workoutId)))[0];
+  const current = await db
+    .select({ id: workoutExercises.id, exerciseId: workoutExercises.exerciseId })
+    .from(workoutExercises)
+    .where(eq(workoutExercises.workoutId, workoutId));
+  const result: Record<number, PastExercise | null> = {};
+  for (const ex of current) {
+    result[ex.id] = null;
+    if (!workout || workout.routineId === null) continue;
+    const past = (
+      await db
+        .select({
+          id: workoutExercises.id,
+          startedAt: workouts.startedAt,
+          date: workouts.date,
+          targetWeightKg: workoutExercises.targetWeightKg,
+          targetReps: workoutExercises.targetReps,
+          progressAccepted: workoutExercises.progressAccepted,
+          isDeload: workoutExercises.isDeload,
+        })
+        .from(workoutExercises)
+        .innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
+        .where(
+          and(
+            eq(workouts.routineId, workout.routineId),
+            eq(workouts.inProgress, false),
+            eq(workoutExercises.exerciseId, ex.exerciseId),
+          ),
+        )
+        .orderBy(desc(workouts.startedAt))
+        .limit(1)
+    )[0];
+    if (!past) continue;
+    const pastSets = await db.select().from(sets).where(eq(sets.workoutExerciseId, past.id));
+    result[ex.id] = { ...past, sets: pastSets };
+  }
+  return result;
+}
+
+/** The Last column's source data, loaded once. Empty until loaded. */
+export function useLastExercises(workoutId: number): Record<number, PastExercise | null> {
+  const [last, setLast] = useState<Record<number, PastExercise | null>>({});
+  useEffect(() => {
+    let live = true;
+    loadLastExercises(workoutId).then((l) => {
+      if (live) setLast(l);
+    });
+    return () => {
+      live = false;
+    };
+  }, [workoutId]);
+  return last;
 }

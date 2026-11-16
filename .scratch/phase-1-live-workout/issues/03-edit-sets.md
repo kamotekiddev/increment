@@ -4,11 +4,11 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] Typing a weight or reps saves at once
 - [ ] − and + move the weight by the Jump
 - [ ] Rows follow an edit only if untouched and not done
 - [ ] Add set adds a row copying the one above; there is no remove control
 - [ ] The Last column shows the previous result per set, and "–" for an added set
-- [ ] Type check, lint and tests pass
+- [x] Type check, lint and tests pass
