@@ -8,15 +8,19 @@ import type { ExerciseSummary } from "./filterExercises";
 
 export type Exercise = typeof exercises.$inferSelect;
 
+/** A list row: the summary plus the load type (the routine picker needs it for the default rule). */
+export type LibraryExercise = ExerciseSummary & { loadType: Exercise["loadType"] };
+
 /** Every exercise in the library, loaded once. Empty until the query returns. */
-export function useExercises(): ExerciseSummary[] {
-  const [rows, setRows] = useState<ExerciseSummary[]>([]);
+export function useExercises(): LibraryExercise[] {
+  const [rows, setRows] = useState<LibraryExercise[]>([]);
 
   useEffect(() => {
     db.select({
       id: exercises.id,
       name: exercises.name,
       muscles: exercises.muscles,
+      loadType: exercises.loadType,
     })
       .from(exercises)
       .then(setRows);

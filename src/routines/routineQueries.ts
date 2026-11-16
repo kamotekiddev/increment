@@ -1,9 +1,12 @@
-import { asc, count, eq } from "drizzle-orm";
+import { and, asc, count, eq } from "drizzle-orm";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 
 import { db } from "@/db/client";
-import { routineExercises, routines, workouts } from "@/db/schema";
+import { defaultRule } from "@/engine";
+import { exercises, routineExercises, routines, workouts } from "@/db/schema";
+
+import type { ExerciseSetup } from "./routineSetup";
 
 export interface RoutineListItem {
   id: number;
@@ -83,4 +86,72 @@ export async function countRoutineWorkouts(id: number): Promise<number> {
  */
 export async function deleteRoutine(id: number): Promise<void> {
   await db.delete(routines).where(eq(routines.id, id));
+}
+
+export interface RoutineExerciseItem extends ExerciseSetup {
+  id: number;
+  exerciseId: number;
+  name: string;
+  position: number;
+}
+
+/** A routine's exercises in order, with names. */
+export async function loadRoutineExercises(routineId: number): Promise<RoutineExerciseItem[]> {
+  return db
+    .select({
+      id: routineExercises.id,
+      exerciseId: routineExercises.exerciseId,
+      name: exercises.name,
+      position: routineExercises.position,
+      sets: routineExercises.sets,
+      repMin: routineExercises.repMin,
+      repMax: routineExercises.repMax,
+      restS: routineExercises.restS,
+    })
+    .from(routineExercises)
+    .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+    .where(eq(routineExercises.routineId, routineId))
+    .orderBy(asc(routineExercises.position), asc(routineExercises.id));
+}
+
+/** The routine's exercises, reloaded each time the screen gains focus. Undefined until first load. */
+export function useRoutineExercises(routineId: number): RoutineExerciseItem[] | undefined {
+  const [items, setItems] = useState<RoutineExerciseItem[] | undefined>(undefined);
+  useFocusEffect(
+    useCallback(() => {
+      let live = true;
+      loadRoutineExercises(routineId).then((rows) => {
+        if (live) setItems(rows);
+      });
+      return () => {
+        live = false;
+      };
+    }, [routineId]),
+  );
+  return items;
+}
+
+/**
+ * Adds an exercise at the end of a routine with the default rule for its load type. One row per
+ * exercise per routine: returns false and changes nothing when it is already there.
+ */
+export async function addRoutineExercise(
+  routineId: number,
+  exerciseId: number,
+  loadType: typeof exercises.$inferSelect.loadType,
+  setup: ExerciseSetup,
+): Promise<boolean> {
+  const [{ present }] = await db
+    .select({ present: count() })
+    .from(routineExercises)
+    .where(and(eq(routineExercises.routineId, routineId), eq(routineExercises.exerciseId, exerciseId)));
+  if (present > 0) return false;
+  const [{ n }] = await db
+    .select({ n: count() })
+    .from(routineExercises)
+    .where(eq(routineExercises.routineId, routineId));
+  await db
+    .insert(routineExercises)
+    .values({ routineId, exerciseId, position: n, ...setup, rule: defaultRule(loadType) });
+  return true;
 }

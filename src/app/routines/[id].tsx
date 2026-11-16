@@ -2,7 +2,7 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
-import { Input, Text } from "@/components";
+import { Button, Input, Text } from "@/components";
 import { DayPicker } from "@/routines/DayPicker";
 import { DeleteRoutineSheet, type DeleteSheetStep } from "@/routines/DeleteRoutineSheet";
 import { toggleDay } from "@/routines/routineDays";
@@ -15,7 +15,9 @@ import {
   loadRoutines,
   renameRoutine,
   setRoutineDays,
+  useRoutineExercises,
 } from "@/routines/routineQueries";
+import { setupSubtitle } from "@/routines/setupText";
 import { fontSize, minTouch, radius, spacing, useColors } from "@/theme";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
@@ -32,6 +34,7 @@ export default function EditRoutineScreen() {
   const [step, setStep] = useState<DeleteSheetStep>("closed");
   const [workoutCount, setWorkoutCount] = useState(0);
   const [savedLabel, setSavedLabel] = useState("");
+  const exerciseRows = useRoutineExercises(id);
 
   // Latest values for the commit that runs when the screen is left.
   const savedName = useRef("");
@@ -150,20 +153,47 @@ export default function EditRoutineScreen() {
             <Text variant="label">Days (optional)</Text>
             <DayPicker value={days} onToggle={onToggleDay} />
           </View>
-          {/* Exercise rows: tickets 04 to 06 add the list, Add exercises and Reorder here. */}
           <View style={{ gap: spacing.sm }}>
             <Text variant="label">Exercises</Text>
-            <View
-              style={{
-                padding: spacing.xl,
-                borderRadius: radius.md,
-                backgroundColor: colors.card,
-                borderWidth: 1,
-                borderColor: colors.line,
-              }}
-            >
-              <Text tone="muted">No exercises yet.</Text>
-            </View>
+            {exerciseRows && exerciseRows.length > 0 ? (
+              <View style={{ borderRadius: radius.md, backgroundColor: colors.card, overflow: "hidden" }}>
+                {exerciseRows.map((row, index) => (
+                  <View
+                    key={row.id}
+                    style={{
+                      minHeight: minTouch,
+                      justifyContent: "center",
+                      gap: spacing.xs,
+                      padding: spacing.lg,
+                      borderTopWidth: index === 0 ? 0 : 1,
+                      borderTopColor: colors.line,
+                    }}
+                  >
+                    <Text variant="label">{row.name}</Text>
+                    <Text variant="caption" tone="muted">
+                      {setupSubtitle(row)}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View
+                style={{
+                  padding: spacing.xl,
+                  borderRadius: radius.md,
+                  backgroundColor: colors.card,
+                  borderWidth: 1,
+                  borderColor: colors.line,
+                }}
+              >
+                <Text tone="muted">No exercises yet.</Text>
+              </View>
+            )}
+            <Button
+              label="Add exercises"
+              variant="secondary"
+              onPress={() => router.push({ pathname: "/routines/add-exercises", params: { routineId: String(id) } })}
+            />
           </View>
         </ScrollView>
       ) : routine === null ? (

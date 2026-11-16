@@ -11,14 +11,20 @@ import { ExerciseList } from "./ExerciseList";
 import { filterExercises, type ExerciseFilter, type ExerciseSummary } from "./filterExercises";
 import { MUSCLE_GROUPS } from "./muscleGroups";
 
-export interface ExerciseBrowserProps {
-  exercises: ExerciseSummary[];
+export interface ExerciseBrowserProps<T extends ExerciseSummary = ExerciseSummary> {
+  exercises: T[];
   /** What happens when a row is tapped. */
-  onSelect: (exercise: ExerciseSummary) => void;
+  onSelect: (exercise: T) => void;
+  /** Ids shown as "Added" and not tappable (the routine picker). */
+  disabledIds?: ReadonlySet<number>;
 }
 
 /** Search box, muscle group chips, the A-Z list and the no-match state with Clear filters. */
-export function ExerciseBrowser({ exercises, onSelect }: ExerciseBrowserProps) {
+export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
+  exercises,
+  onSelect,
+  disabledIds,
+}: ExerciseBrowserProps<T>) {
   const colors = useColors();
   const [filter, setFilter] = useState<ExerciseFilter>(NO_FILTERS);
 
@@ -78,6 +84,7 @@ export function ExerciseBrowser({ exercises, onSelect }: ExerciseBrowserProps) {
     <ExerciseList
       exercises={visible}
       onSelect={onSelect}
+      disabledIds={disabledIds}
       ListHeaderComponent={header}
       ListEmptyComponent={empty}
     />

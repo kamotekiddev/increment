@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 03
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] Added rows are disabled; the same exercise cannot be added twice
 - [ ] Steppers respect the spec limits

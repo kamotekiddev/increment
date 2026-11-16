@@ -11,7 +11,10 @@ export const SETUP_LIMITS = {
 /** What a Routine exercise gets when first added. */
 export const DEFAULT_SETUP = { sets: 3, repMin: 8, repMax: 12, restS: 90 } as const;
 
-const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+/** The per-exercise numbers a lifter sets for a Routine exercise. */
+export type ExerciseSetup = { sets: number; repMin: number; repMax: number; restS: number };
+
+const clamp =(value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 export function clampSets(sets: number): number {
   return clamp(sets, SETUP_LIMITS.setsMin, SETUP_LIMITS.setsMax);

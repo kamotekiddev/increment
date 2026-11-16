@@ -7,3 +7,7 @@ export { clampRepMax, clampRepMin, clampRest, clampSets, DEFAULT_SETUP, SETUP_LI
 export { DAY_LABELS, daysLabel, isDaySet, toggleDay } from "./routineDays";
 export { routineCounter, routineSubtitle } from "./routineListText";
 export { deleteRoutineText } from "./deleteRoutineText";
+export { adjustSetup, canAdjust } from "./adjustSetup";
+export type { SetupField } from "./adjustSetup";
+export { restLabel, setupSubtitle } from "./setupText";
+export type { ExerciseSetup } from "./routineSetup";
