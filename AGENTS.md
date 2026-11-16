@@ -62,3 +62,12 @@ Uses the five default triage labels (`needs-triage`, `needs-info`, `ready-for-ag
 ### Domain docs
 
 Single-context: one `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+### Code graph (graphify)
+
+This project has a knowledge graph at `graphify-out/` (git-ignored; build it with `/graphify .`).
+
+- When `graphify-out/graph.json` exists, run `graphify query "<question>"` before your first grep, search or source-file read for a codebase question, and put this rule in every subagent prompt that explores code. Read raw files only for lines the graph or an earlier read already located.
+- Use `graphify path "<A>" "<B>"` for relationships and `graphify explain "<concept>"` for a focused concept.
+- Read `graphify-out/GRAPH_REPORT.md` only for broad architecture review, or when query/path/explain do not surface enough.
+- After changing code, run `graphify update .` to keep the graph current (AST only, no API cost).
