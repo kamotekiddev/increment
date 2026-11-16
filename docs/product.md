@@ -26,7 +26,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 
 ### Live workout
 - Start a workout from a routine. Each exercise shows its Target in a banner and its set rows prefilled to the Target; a first workout with no Target has a blank weight and reps at the bottom of the rep range.
-- Set table with a read-only Last column (the same set from the last finished workout of this routine exercise), weight and reps inputs with −/+ weight nudges by the Jump, done checks. The set count is fixed to the plan: no Add set and no remove control. A set cannot be done while its weight is blank. Rows below an edited row follow it until touched or done.
+- Set table with a read-only Last column (the same set from the last finished workout of this routine exercise), weight and reps typed into plain number inputs (no −/+ buttons), done checks. The set count is fixed to the plan: no Add set and no remove control. A set cannot be done while its weight is blank. Rows below an edited row follow it until touched or done.
 - The engine judges done sets by plan position, so an unchecked set in the middle is a gap, not a shift.
 - An in-progress workout is saved at every edit and resumes after a crash or a closed app. Only one workout is in progress at a time; starting another asks Resume or Discard. An in-progress bar above the tab bar reopens it.
 - The ⋯ menu has Discard workout behind a confirmation. Finish confirms when sets are unchecked or an exercise is skipped, then drops unchecked sets and leaves out exercises with no done set (not a Miss). With no set done, Finish offers Discard.

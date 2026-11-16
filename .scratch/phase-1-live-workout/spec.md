@@ -19,7 +19,7 @@ The lifter taps Start workout on a routine. Each exercise shows its Target from 
 3. As a lifter, I want set rows prefilled with the Target (for example 60 kg × 10), so that a normal set is one tap.
 4. As a lifter doing an exercise for the first time, I want weight blank and reps prefilled at the bottom of the rep range, with a note to pick a weight I can do for the range, so that the first workout is as quick as later ones.
 5. As a lifter, I want rows below one I edit to follow it until I have touched them or marked them done, so that changing weight is one edit.
-6. As a lifter, I want to type weight and reps, and nudge the weight by the Jump with − and +, so that the usual change is one tap.
+6. As a lifter, I want to type weight and reps in plain number inputs, so that any weight can be entered. There are no − and + buttons.
 7. As a lifter, I want a read-only "Last" column showing the same set from my last finished workout of this routine exercise, so that I can judge whether to go heavier.
 8. As a lifter, I want the number of sets to be the plan's number, so that every workout is judged against the same plan. There is no Add set and no remove-set control.
 9. As a lifter, I want my workout saved as I go, so that nothing is lost.
@@ -78,3 +78,4 @@ The lifter taps Start workout on a routine. Each exercise shows its Target from 
 - Docs to update in the same change: `docs/screens.md` (Last column, in-progress bar, locked state), `docs/product.md`, the Phase 1 map when built.
 - Mockup edits for the Last column and the in-progress bar are prepared locally and published only when the owner asks.
 - Decided: the "edited" mark on a set row is kept in memory only. After an app restart mid-workout, editing an earlier row can overwrite a row the lifter typed into. Revisit in feature 7 (crash resume), which will persist more workout state.
+- Decided: weight and reps are typed only. The −/+ weight buttons (Q14 option A) were built and then removed because the owner did not like the interface.
