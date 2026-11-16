@@ -1,17 +1,25 @@
 import { Pressable, type PressableProps } from "react-native";
 
-import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { Text } from "./Text";
 
 export interface ButtonProps extends Omit<PressableProps, "children" | "style"> {
   label: string;
-  /** Primary is the one loud accent block on a screen; secondary is white with a border. */
-  variant?: "primary" | "secondary";
+  /**
+   * Primary is the one loud accent block on a screen; secondary is white; danger is the red
+   * destructive action; dashed is the outlined "add" action.
+   */
+  variant?: "primary" | "secondary" | "danger" | "dashed";
+  /** Stretches to the full width and uses the taller 56 pt height of the main screen action. */
+  large?: boolean;
 }
 
-export function Button({ label, variant = "primary", disabled, ...rest }: ButtonProps) {
+export function Button({ label, variant = "primary", large = false, disabled, ...rest }: ButtonProps) {
   const colors = useColors();
-  const primary = variant === "primary";
+  const filled = variant === "primary" || variant === "danger";
+  const background =
+    variant === "primary" ? colors.accent : variant === "danger" ? colors.danger : variant === "secondary" ? colors.card : "transparent";
+  const height = large ? 56 : minTouch;
   return (
     <Pressable
       accessibilityRole="button"
@@ -19,20 +27,22 @@ export function Button({ label, variant = "primary", disabled, ...rest }: Button
       disabled={disabled}
       {...rest}
       style={({ pressed }) => ({
-        minHeight: minTouch,
-        alignSelf: "flex-start",
+        minHeight: height,
+        height: large ? height : undefined,
+        alignSelf: large ? "stretch" : "flex-start",
         justifyContent: "center",
         alignItems: "center",
         paddingHorizontal: spacing.xxl,
         paddingVertical: spacing.md,
         borderRadius: radius.pill,
-        backgroundColor: primary ? colors.accent : colors.card,
-        borderWidth: primary ? 0 : 1,
-        borderColor: colors.line,
+        backgroundColor: background,
+        borderWidth: variant === "dashed" ? 1.5 : 0,
+        borderStyle: variant === "dashed" ? "dashed" : "solid",
+        borderColor: colors.iconFaint,
         opacity: disabled ? opacity.disabled : pressed ? opacity.pressed : 1,
       })}
     >
-      <Text variant="label" tone={primary ? "onAccent" : "ink"}>
+      <Text variant="label" tone={filled ? "onAccent" : "ink"} style={large ? { fontSize: fontSize.action } : undefined}>
         {label}
       </Text>
     </Pressable>

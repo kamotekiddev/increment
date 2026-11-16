@@ -17,6 +17,10 @@ export interface ExerciseBrowserProps<T extends ExerciseSummary = ExerciseSummar
   onSelect: (exercise: T) => void;
   /** Ids shown as "Added" and not tappable (the routine picker). */
   disabledIds?: ReadonlySet<number>;
+  /** The routine picker look (see `ExerciseList`), including the white pill search box. */
+  picker?: boolean;
+  /** Extra space under the last row, for a fixed action bar. */
+  bottomInset?: number;
 }
 
 /** Search box, muscle group chips, the A-Z list and the no-match state with Clear filters. */
@@ -24,6 +28,8 @@ export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
   exercises,
   onSelect,
   disabledIds,
+  picker = false,
+  bottomInset,
 }: ExerciseBrowserProps<T>) {
   const colors = useColors();
   const [filter, setFilter] = useState<ExerciseFilter>(NO_FILTERS);
@@ -41,7 +47,11 @@ export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
-          style={{ paddingRight: minTouch }}
+          style={
+            picker
+              ? { paddingRight: minTouch, minHeight: 50, borderRadius: 25, backgroundColor: colors.card, paddingLeft: spacing.xl }
+              : { paddingRight: minTouch }
+          }
         />
         {filter.search.length > 0 ? (
           <Pressable
@@ -85,6 +95,8 @@ export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
       exercises={visible}
       onSelect={onSelect}
       disabledIds={disabledIds}
+      picker={picker}
+      bottomInset={bottomInset}
       ListHeaderComponent={header}
       ListEmptyComponent={empty}
     />

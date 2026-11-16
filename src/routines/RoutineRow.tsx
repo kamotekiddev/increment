@@ -2,17 +2,17 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { fontSize, opacity, radius, spacing, useColors } from "@/theme";
 
+import { routinePreview, routineSubtitle } from "./routineListText";
 import type { RoutineListItem } from "./routineQueries";
-import { routineSubtitle } from "./routineListText";
 
 export interface RoutineRowProps {
   routine: RoutineListItem;
   onPress: () => void;
 }
 
-/** A routine card: name, then days and exercise count. At least 44 pt tall. */
+/** A routine card: name, a preview of its exercises, then a footer with days and exercise count. */
 export function RoutineRow({ routine, onPress }: RoutineRowProps) {
   const colors = useColors();
   return (
@@ -20,25 +20,34 @@ export function RoutineRow({ routine, onPress }: RoutineRowProps) {
       accessibilityRole="button"
       onPress={onPress}
       style={({ pressed }) => ({
-        minHeight: minTouch,
-        flexDirection: "row",
-        alignItems: "center",
-        gap: spacing.md,
+        gap: 10,
         padding: spacing.lg,
-        borderRadius: radius.md,
+        borderRadius: radius.card,
         backgroundColor: colors.card,
         opacity: pressed ? opacity.pressed : 1,
       })}
     >
-      <View style={{ flex: 1, gap: spacing.xs }}>
-        <Text variant="label" numberOfLines={1}>
-          {routine.name}
-        </Text>
-        <Text variant="caption" tone="muted">
+      <Text variant="title" style={{ fontSize: fontSize.input, lineHeight: 24, letterSpacing: -0.4 }} numberOfLines={1}>
+        {routine.name}
+      </Text>
+      <Text tone="muted" style={{ fontSize: fontSize.meta, lineHeight: 19 }} numberOfLines={2}>
+        {routinePreview(routine.exerciseNames, routine.exerciseCount)}
+      </Text>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+          paddingTop: 10,
+          borderTopWidth: 1,
+          borderTopColor: colors.line,
+        }}
+      >
+        <Ionicons name="calendar-outline" size={15} color={colors.inkSoft} />
+        <Text tone="soft" style={{ fontSize: fontSize.small }}>
           {routineSubtitle(routine.days, routine.exerciseCount)}
         </Text>
       </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.iconFaint} />
     </Pressable>
   );
 }

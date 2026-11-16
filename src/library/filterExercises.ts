@@ -5,6 +5,8 @@ export type ExerciseSummary = {
   id: number;
   name: string;
   muscles: string[];
+  /** Present where the list shows an equipment icon (the routine picker). */
+  equipment?: string;
 };
 
 /** The browse state: search words plus at most one muscle group chip. */
