@@ -22,4 +22,12 @@ describe("lastColumn", () => {
   it("gives a dash for a past set that was not done", () => {
     expect(lastColumn(past([s(0, 60, 8, false)]), 1)).toEqual([null]);
   });
+  it("matches by plan position when an unchecked set left a gap", () => {
+    expect(lastColumn(past([s(0, 60, 8), s(1, 60, 8), s(3, 70, 6)]), 4)).toEqual([
+      { weightKg: 60, reps: 8 },
+      { weightKg: 60, reps: 8 },
+      null,
+      { weightKg: 70, reps: 6 },
+    ]);
+  });
 });

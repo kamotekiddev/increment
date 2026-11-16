@@ -38,7 +38,7 @@ export function InProgressBar({ workout, now, onPress }: InProgressBarProps) {
           Workout in progress
         </Text>
         <Text variant="label" tone="onAccent" numberOfLines={1}>
-          {barText(workout.routineName, workout.startedAt, now)}
+          {barText(workout.routineName ?? "Workout",workout.startedAt, now)}
         </Text>
       </View>
       <View

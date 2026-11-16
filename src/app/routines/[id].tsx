@@ -28,11 +28,11 @@ import {
 import type { ExerciseSetup } from "@/routines/routineSetup";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontSize, lineHeight, minTouch, opacity, radius, spacing, useColors } from "@/theme";
-import { useInProgressOnFocus } from "@/workout/inProgressQueries";
+import { findInProgressWorkout, useInProgressOnFocus } from "@/workout/inProgressQueries";
 import { ResumeOrDiscardSheet } from "@/workout/ResumeOrDiscardSheet";
 import { isRoutineLocked, LOCK_MESSAGE } from "@/workout/routineLock";
 import { startDecision } from "@/workout/startDecision";
-import { discardAndStartWorkout, findInProgressWorkoutInfo, startWorkout } from "@/workout/workoutQueries";
+import { discardAndStartWorkout, startWorkout } from "@/workout/workoutQueries";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
 
@@ -152,7 +152,7 @@ export default function EditRoutineScreen() {
 
   /** Starts the routine, or asks Resume or Discard when a workout is already in progress. */
   function onStartWorkout() {
-    const decision = startDecision(findInProgressWorkoutInfo());
+    const decision = startDecision(findInProgressWorkout());
     if (decision.kind === "start") openWorkout(startWorkout(id));
     else setPrompt({ workoutId: decision.workoutId, routineName: decision.routineName });
   }

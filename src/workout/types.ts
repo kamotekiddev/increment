@@ -7,3 +7,13 @@ export interface SetRow {
   /** The lifter typed or nudged this row themselves. Edited rows never follow. */
   edited: boolean;
 }
+
+/** The workout in progress, as the bar, the Resume prompt and the routine lock read it. */
+export interface InProgressWorkout {
+  id: number;
+  /** Null when the routine was deleted. */
+  routineId: number | null;
+  /** Null when the routine was deleted. */
+  routineName: string | null;
+  startedAt: number;
+}

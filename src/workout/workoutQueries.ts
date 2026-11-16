@@ -1,8 +1,8 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { useEffect, useState } from "react";
 
-import { db } from "@/db/client";
-import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
+import { db, type Db } from "@/db/client";
+import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
 import { nextTarget, type Target } from "@/engine";
 
 import { toHistory, type PastExercise } from "./historyInputs";
@@ -12,7 +12,6 @@ import { initialSetRows } from "./initialSetRows";
 import { JUMP_KG } from "./jump";
 import { setDone } from "./markDone";
 import { rowFromStored, weightToStore } from "./setStorage";
-import type { InProgressWorkout } from "./startDecision";
 import type { SetRow } from "./types";
 
 /** Local calendar date as YYYY-MM-DD. */
@@ -21,10 +20,47 @@ function localDate(now: Date): string {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
 }
 
-/** The id of the workout in progress, if there is one. */
-export function findInProgressWorkout(): number | null {
-  const row = db.select({ id: workouts.id }).from(workouts).where(eq(workouts.inProgress, true)).get();
-  return row?.id ?? null;
+/** A database or a transaction on it: what the shared queries below run against. */
+type Queryable = Pick<Db, "select" | "delete">;
+
+/**
+ * Every finished workout's record of one routine exercise (this routine, this exercise), newest
+ * first, each with its sets. Feeds the engine's history and the Last column.
+ */
+function pastExercises(q: Queryable, routineId: number, exerciseId: number): PastExercise[] {
+  const past = q
+    .select({
+      id: workoutExercises.id,
+      startedAt: workouts.startedAt,
+      date: workouts.date,
+      targetWeightKg: workoutExercises.targetWeightKg,
+      targetReps: workoutExercises.targetReps,
+      progressAccepted: workoutExercises.progressAccepted,
+      isDeload: workoutExercises.isDeload,
+    })
+    .from(workoutExercises)
+    .innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
+    .where(and(eq(workouts.routineId, routineId), eq(workouts.inProgress, false), eq(workoutExercises.exerciseId, exerciseId)))
+    .orderBy(desc(workouts.startedAt))
+    .all();
+  if (past.length === 0) return [];
+  const pastSets = q
+    .select()
+    .from(sets)
+    .where(
+      inArray(
+        sets.workoutExerciseId,
+        past.map((p) => p.id),
+      ),
+    )
+    .all();
+  return past.map(({ id, ...p }) => ({ ...p, sets: pastSets.filter((s) => s.workoutExerciseId === id) }));
+}
+
+/** Deletes a Workout exercise and its sets. */
+function deleteWorkoutExercise(q: Queryable, workoutExerciseId: number): void {
+  q.delete(sets).where(eq(sets.workoutExerciseId, workoutExerciseId)).run();
+  q.delete(workoutExercises).where(eq(workoutExercises.id, workoutExerciseId)).run();
 }
 
 /**
@@ -57,48 +93,12 @@ export function startWorkout(routineId: number, now: Date = new Date()): number 
       .get();
 
     planned.forEach((ex, position) => {
-      const past = tx
-        .select({
-          id: workoutExercises.id,
-          startedAt: workouts.startedAt,
-          date: workouts.date,
-          targetWeightKg: workoutExercises.targetWeightKg,
-          targetReps: workoutExercises.targetReps,
-          progressAccepted: workoutExercises.progressAccepted,
-          isDeload: workoutExercises.isDeload,
-        })
-        .from(workoutExercises)
-        .innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
-        .where(
-          and(eq(workouts.routineId, routineId), eq(workouts.inProgress, false), eq(workoutExercises.exerciseId, ex.exerciseId)),
-        )
-        .all();
-      const pastSets = past.length
-        ? tx
-            .select()
-            .from(sets)
-            .where(
-              inArray(
-                sets.workoutExerciseId,
-                past.map((p) => p.id),
-              ),
-            )
-            .all()
-        : [];
-      const rows: PastExercise[] = past.map((p) => ({
-        startedAt: p.startedAt,
-        date: p.date,
-        targetWeightKg: p.targetWeightKg,
-        targetReps: p.targetReps,
-        progressAccepted: p.progressAccepted,
-        isDeload: p.isDeload,
-        sets: pastSets.filter((s) => s.workoutExerciseId === p.id),
-      }));
+      const rows = pastExercises(tx, routineId, ex.exerciseId);
       const target: Target | null = nextTarget({
         rule: ex.rule,
         planned: { sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax },
         loadType: ex.loadType,
-        history: toHistory(rows),
+        history: toHistory(rows, ex.sets),
         jumpKg: JUMP_KG,
       }).target;
 
@@ -221,58 +221,32 @@ export function markSetDone(rows: LiveSet[], index: number, done: boolean): Live
   return next;
 }
 
-/** The workout in progress with its routine's name, or null when there is none. */
-export function findInProgressWorkoutInfo(): InProgressWorkout | null {
-  const row = db
-    .select({ id: workouts.id, routineName: routines.name })
-    .from(workouts)
-    .leftJoin(routines, eq(routines.id, workouts.routineId))
-    .where(eq(workouts.inProgress, true))
-    .get();
-  return row ?? null;
-}
-
 /** Deletes a workout with its Workout exercises and sets, in one transaction. */
 export function discardWorkout(id: number): void {
   db.transaction((tx) => {
     const exRows = tx.select({ id: workoutExercises.id }).from(workoutExercises).where(eq(workoutExercises.workoutId, id)).all();
-    if (exRows.length) {
-      tx.delete(sets)
-        .where(
-          inArray(
-            sets.workoutExerciseId,
-            exRows.map((e) => e.id),
-          ),
-        )
-        .run();
-    }
-    tx.delete(workoutExercises).where(eq(workoutExercises.workoutId, id)).run();
+    exRows.forEach((ex) => deleteWorkoutExercise(tx, ex.id));
     tx.delete(workouts).where(eq(workouts.id, id)).run();
   });
 }
 
 /**
- * Finishes a workout in one transaction: drops sets that are not done, removes exercises with no
- * done set, renumbers the kept sets, then sets the finish time and clears in-progress. The Target
- * on each kept Workout exercise is untouched and progress_accepted stays false.
+ * Finishes a workout in one transaction: drops sets that are not done and removes exercises with no
+ * done set. Kept sets keep their idx, which is their plan position, so a gap left by an unchecked
+ * set stays and an extra set stays beyond the plan; the engine reads history by that position
+ * (judgedPastSets). Then sets the finish time and clears in-progress. The Target on each kept
+ * Workout exercise is untouched and progress_accepted stays false.
  */
 export function finishWorkout(id: number, now: Date = new Date()): void {
   db.transaction((tx) => {
     const exRows = tx.select({ id: workoutExercises.id }).from(workoutExercises).where(eq(workoutExercises.workoutId, id)).all();
     for (const ex of exRows) {
-      const rows = tx.select().from(sets).where(eq(sets.workoutExerciseId, ex.id)).orderBy(asc(sets.idx)).all();
-      const done = rows.filter((r) => r.done);
-      if (done.length === 0) {
-        tx.delete(sets).where(eq(sets.workoutExerciseId, ex.id)).run();
-        tx.delete(workoutExercises).where(eq(workoutExercises.id, ex.id)).run();
+      const rows = tx.select().from(sets).where(eq(sets.workoutExerciseId, ex.id)).all();
+      if (!rows.some((r) => r.done)) {
+        deleteWorkoutExercise(tx, ex.id);
         continue;
       }
-      rows
-        .filter((r) => !r.done)
-        .forEach((r) => tx.delete(sets).where(eq(sets.id, r.id)).run());
-      done.forEach((r, idx) => {
-        if (r.idx !== idx) tx.update(sets).set({ idx }).where(eq(sets.id, r.id)).run();
-      });
+      tx.delete(sets).where(and(eq(sets.workoutExerciseId, ex.id), eq(sets.done, false))).run();
     }
     tx.update(workouts).set({ finishedAt: now.getTime(), inProgress: false }).where(eq(workouts.id, id)).run();
   });
@@ -337,32 +311,7 @@ export async function loadLastExercises(workoutId: number): Promise<Record<numbe
   for (const ex of current) {
     result[ex.id] = null;
     if (!workout || workout.routineId === null) continue;
-    const past = (
-      await db
-        .select({
-          id: workoutExercises.id,
-          startedAt: workouts.startedAt,
-          date: workouts.date,
-          targetWeightKg: workoutExercises.targetWeightKg,
-          targetReps: workoutExercises.targetReps,
-          progressAccepted: workoutExercises.progressAccepted,
-          isDeload: workoutExercises.isDeload,
-        })
-        .from(workoutExercises)
-        .innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
-        .where(
-          and(
-            eq(workouts.routineId, workout.routineId),
-            eq(workouts.inProgress, false),
-            eq(workoutExercises.exerciseId, ex.exerciseId),
-          ),
-        )
-        .orderBy(desc(workouts.startedAt))
-        .limit(1)
-    )[0];
-    if (!past) continue;
-    const pastSets = await db.select().from(sets).where(eq(sets.workoutExerciseId, past.id));
-    result[ex.id] = { ...past, sets: pastSets };
+    result[ex.id] = pastExercises(db, workout.routineId, ex.exerciseId)[0] ?? null;
   }
   return result;
 }
