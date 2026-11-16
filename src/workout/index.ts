@@ -11,7 +11,6 @@ export { canMarkDone, setDone } from "./markDone";
 export { rowFromStored, weightToStore } from "./setStorage";
 export { lastColumn } from "./lastColumn";
 export type { LastSet } from "./lastColumn";
-export { addSetRow } from "./addSet";
 export { stepWeight, parseWeight, parseReps } from "./stepWeight";
 export { toHistory } from "./historyInputs";
 export type { PastExercise } from "./historyInputs";

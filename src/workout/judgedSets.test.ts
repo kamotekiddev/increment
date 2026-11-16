@@ -18,11 +18,6 @@ describe("judgedSets", () => {
     expect(judgedSets(rows, 3)).toHaveLength(2);
   });
 
-  it("does not judge extra sets beyond the planned count", () => {
-    const rows = [row(60, 10, true), row(60, 10, true), row(70, 12, true)];
-    expect(judgedSets(rows, 2)).toHaveLength(2);
-  });
-
   it("skips rows with a blank weight", () => {
     expect(judgedSets([{ weightKg: null, reps: 8, done: true, edited: false }], 1)).toEqual([]);
   });

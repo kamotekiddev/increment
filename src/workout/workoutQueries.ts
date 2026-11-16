@@ -6,7 +6,6 @@ import { exercises, routineExercises, sets, workoutExercises, workouts } from "@
 import { nextTarget, type Target } from "@/engine";
 
 import { toHistory, type PastExercise } from "./historyInputs";
-import { addSetRow } from "./addSet";
 import { applyEdit, type SetEdit } from "./applyEdit";
 import { initialSetRows } from "./initialSetRows";
 import { JUMP_KG } from "./jump";
@@ -233,7 +232,7 @@ export function discardWorkout(id: number): void {
 /**
  * Finishes a workout in one transaction: drops sets that are not done and removes exercises with no
  * done set. Kept sets keep their idx, which is their plan position, so a gap left by an unchecked
- * set stays and an extra set stays beyond the plan; the engine reads history by that position
+ * set stays; the engine reads history by that position
  * (judgedPastSets). Then sets the finish time and clears in-progress. The Target on each kept
  * Workout exercise is untouched and progress_accepted stays false.
  */
@@ -269,32 +268,6 @@ export function editSet(rows: LiveSet[], index: number, edit: SetEdit): LiveSet[
     });
   });
   return next;
-}
-
-/** Adds a set beyond the plan to a workout exercise, copying the row above, and returns its new rows. */
-export function addSet(workoutExerciseId: number, rows: LiveSet[]): LiveSet[] {
-  const added = addSetRow(rows)[rows.length];
-  return db.transaction((tx) => {
-    const exerciseId = tx
-      .select({ exerciseId: workoutExercises.exerciseId })
-      .from(workoutExercises)
-      .where(eq(workoutExercises.id, workoutExerciseId))
-      .get()?.exerciseId;
-    if (exerciseId === undefined) return rows;
-    const inserted = tx
-      .insert(sets)
-      .values({
-        workoutExerciseId,
-        exerciseId,
-        idx: rows.length,
-        weightKg: weightToStore(added.weightKg),
-        enteredUnit: "kg",
-        reps: added.reps,
-      })
-      .returning({ id: sets.id })
-      .get();
-    return [...rows, { ...added, setId: inserted.id }];
-  });
 }
 
 /**

@@ -16,7 +16,7 @@ describe("lastColumn", () => {
       { weightKg: 62.5, reps: 7 },
     ]);
   });
-  it("gives a dash for a row beyond the past sets, such as an added set", () => {
+  it("gives a dash for a row beyond the past sets", () => {
     expect(lastColumn(past([s(0, 60, 8)]), 2)).toEqual([{ weightKg: 60, reps: 8 }, null]);
   });
   it("gives a dash for a past set that was not done", () => {

@@ -14,7 +14,6 @@ import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWor
 import { findInProgressWorkout } from "@/workout/inProgressQueries";
 import { canMarkDone } from "@/workout/markDone";
 import {
-  addSet,
   discardWorkout,
   editSet,
   finishWorkout,
@@ -113,16 +112,6 @@ export default function LiveWorkoutScreen() {
   function edit(index: number, change: SetEdit) {
     if (!workout || !exercise) return;
     const rows = editSet(exercise.rows, index, change);
-    setWorkout({
-      ...workout,
-      exercises: workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e)),
-    });
-  }
-
-  function add() {
-    if (!workout || !exercise) return;
-    const rows = addSet(exercise.id, exercise.rows);
-    if (rows === exercise.rows) return;
     setWorkout({
       ...workout,
       exercises: workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e)),
@@ -314,7 +303,6 @@ export default function LiveWorkoutScreen() {
               );
             })}
           </View>
-          <Button label="Add set" variant="secondary" onPress={add} />
           <View style={{ flexDirection: "row", gap: spacing.md }}>
             <Button
               label="Previous"

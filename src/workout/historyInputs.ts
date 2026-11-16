@@ -13,7 +13,7 @@ export interface PastExercise {
 
 /**
  * The saved sets the engine judges: those at a plan position, idx below `plannedSets`. Finish keeps
- * each set's idx, so an unchecked set leaves a gap and an extra set stays past the plan.
+ * each set's idx, so an unchecked set leaves a gap.
  */
 export function judgedPastSets(sets: PastExercise["sets"], plannedSets: number): PastExercise["sets"] {
   return sets.filter((s) => s.idx < plannedSets);

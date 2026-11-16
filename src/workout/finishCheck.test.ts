@@ -32,7 +32,7 @@ describe("finishCheck", () => {
     expect(result.skippedExercises).toEqual([0, 1]);
   });
 
-  it("counts extra sets beyond the plan like any other set", () => {
+  it("counts an unchecked set", () => {
     const result = finishCheck([[row(true), row(true), row(false)]]);
     expect(result.uncheckedSets).toBe(1);
   });
