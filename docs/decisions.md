@@ -16,6 +16,8 @@
 - **UI components**: Text and Button are plain React Native on our tokens, because `@expo/ui` Text ignores custom fonts on iOS and its Button draws a system blue box (checked in the Phase 0 spike). `@expo/ui` is used for the bottom sheet, switch and picker.
 - **Phase 1 Jump**: one fixed 2.5 kg for every exercise, in one constant, until the Phase 2 Jump setting replaces it.
 - **Live workout**: saved from Start, one in progress at a time, and its routine is locked until it is finished or discarded; see `.scratch/phase-1-live-workout/spec.md`.
+- **Live workout inputs**: weight and reps are typed into plain number inputs. There are no −/+ weight buttons (built, then removed because the owner did not like the interface), no Add set and no remove-set control: the set count is fixed to the plan. A set cannot be marked done while its weight is blank.
+- **Edited rows**: the "edited" mark that stops a row following an earlier edit is kept in memory only and is lost on an app restart. Revisit in feature 7 (crash resume).
 
 ## Open
 - [ ] Pro price and currency for each store
