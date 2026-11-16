@@ -40,7 +40,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Screen | Notes |
 |---|---|
 | Library | Search and filters |
-| No search results | Empty state with a create shortcut |
+| No search results | Message naming what was searched, with a Clear filters button (create shortcut arrives with custom exercises in Phase 3) |
 | Exercise detail | How-to; History tab → Exercise history |
 | Exercise history | Past sessions and record tags |
 | Create custom exercise (Pro) | |
