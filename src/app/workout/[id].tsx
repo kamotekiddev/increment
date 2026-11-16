@@ -1,19 +1,35 @@
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
 import { Button, Text } from "@/components";
-import { fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { fontSize, lineHeight, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { formatWeight } from "@/units";
 import { bannerText } from "@/workout/bannerText";
+import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWorkoutSheet";
 import { canMarkDone } from "@/workout/markDone";
-import { markSetDone, useWorkout } from "@/workout/workoutQueries";
+import { discardWorkout, findInProgressWorkoutInfo, markSetDone, useWorkout } from "@/workout/workoutQueries";
 
 export default function LiveWorkoutScreen() {
   const colors = useColors();
   const { id: idParam } = useLocalSearchParams<{ id: string }>();
   const [workout, setWorkout] = useWorkout(Number(idParam));
   const [current, setCurrent] = useState(0);
+  const [discardStep, setDiscardStep] = useState<DiscardSheetStep>("closed");
+  const [routineName, setRoutineName] = useState<string | null>(null);
+
+  function openMenu() {
+    setRoutineName(findInProgressWorkoutInfo()?.routineName ?? null);
+    setDiscardStep("menu");
+  }
+
+  /** Deletes the workout and returns to where it started (the root when there is nowhere to go back to). */
+  function confirmDiscard() {
+    discardWorkout(Number(idParam));
+    setDiscardStep("closed");
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
+  }
 
   const exercise = workout?.exercises[current];
   const total = workout?.exercises.length ?? 0;
@@ -38,7 +54,26 @@ export default function LiveWorkoutScreen() {
           headerBackTitle: "Back",
           headerShadowVisible: false,
           headerStyle: { backgroundColor: colors.bg },
+          headerRight: () =>
+            workout ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="More"
+                onPress={openMenu}
+                hitSlop={spacing.sm}
+                style={{ minWidth: minTouch, minHeight: minTouch, alignItems: "center", justifyContent: "center" }}
+              >
+                <Text style={{ fontSize: fontSize.title, lineHeight: lineHeight.title }}>⋯</Text>
+              </Pressable>
+            ) : null,
         }}
+      />
+      <DiscardWorkoutSheet
+        step={discardStep}
+        routineName={routineName}
+        onChooseDiscard={() => setDiscardStep("confirm")}
+        onConfirm={confirmDiscard}
+        onDismiss={() => setDiscardStep("closed")}
       />
       {workout && exercise ? (
         <ScrollView

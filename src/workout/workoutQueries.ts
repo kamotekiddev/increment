@@ -2,7 +2,7 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import { useEffect, useState } from "react";
 
 import { db } from "@/db/client";
-import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
+import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { nextTarget, type Target } from "@/engine";
 
 import { toHistory, type PastExercise } from "./historyInputs";
@@ -10,6 +10,7 @@ import { initialSetRows } from "./initialSetRows";
 import { JUMP_KG } from "./jump";
 import { setDone } from "./markDone";
 import { rowFromStored, weightToStore } from "./setStorage";
+import type { InProgressWorkout } from "./startDecision";
 import type { SetRow } from "./types";
 
 /** Local calendar date as YYYY-MM-DD. */
@@ -216,4 +217,40 @@ export function markSetDone(rows: LiveSet[], index: number, done: boolean): Live
   if (next === rows) return rows;
   db.update(sets).set({ done }).where(eq(sets.id, rows[index].setId)).run();
   return next;
+}
+
+/** The workout in progress with its routine's name, or null when there is none. */
+export function findInProgressWorkoutInfo(): InProgressWorkout | null {
+  const row = db
+    .select({ id: workouts.id, routineName: routines.name })
+    .from(workouts)
+    .leftJoin(routines, eq(routines.id, workouts.routineId))
+    .where(eq(workouts.inProgress, true))
+    .get();
+  return row ?? null;
+}
+
+/** Deletes a workout with its Workout exercises and sets, in one transaction. */
+export function discardWorkout(id: number): void {
+  db.transaction((tx) => {
+    const exRows = tx.select({ id: workoutExercises.id }).from(workoutExercises).where(eq(workoutExercises.workoutId, id)).all();
+    if (exRows.length) {
+      tx.delete(sets)
+        .where(
+          inArray(
+            sets.workoutExerciseId,
+            exRows.map((e) => e.id),
+          ),
+        )
+        .run();
+    }
+    tx.delete(workoutExercises).where(eq(workoutExercises.workoutId, id)).run();
+    tx.delete(workouts).where(eq(workouts.id, id)).run();
+  });
+}
+
+/** Discards the workout in progress, then starts the routine. Returns the new workout id (null when the routine is empty). */
+export function discardAndStartWorkout(inProgressId: number, routineId: number): number | null {
+  discardWorkout(inProgressId);
+  return startWorkout(routineId);
 }
