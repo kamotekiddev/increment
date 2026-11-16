@@ -21,7 +21,7 @@ The lifter taps Start workout on a routine. Each exercise shows its Target from 
 5. As a lifter, I want rows below one I edit to follow it until I have touched them or marked them done, so that changing weight is one edit.
 6. As a lifter, I want to type weight and reps, and nudge the weight by the Jump with − and +, so that the usual change is one tap.
 7. As a lifter, I want a read-only "Last" column showing the same set from my last finished workout of this routine exercise, so that I can judge whether to go heavier.
-8. As a lifter, I want to add a set beyond the plan, so that a strong day is logged. The engine judges only the planned sets.
+8. As a lifter, I want the number of sets to be the plan's number, so that every workout is judged against the same plan. There is no Add set and no remove-set control.
 9. As a lifter, I want my workout saved as I go, so that nothing is lost.
 10. As a lifter, I want only one workout in progress; starting another asks Resume or Discard.
 11. As a lifter, I want an "in progress" bar on every tab that reopens the workout, so that I can leave the screen and return.
@@ -44,7 +44,7 @@ The lifter taps Start workout on a routine. Each exercise shows its Target from 
 - Initial set rows: from Target and planned sets, or the no-Target case (blank weight, reps at the range minimum).
 - Follow rule: given rows and an edit, which later rows change (only untouched, not-done rows).
 - Finish check: counts unchecked sets, skipped exercises, and the no-sets-done case.
-- Which sets the engine sees: done working sets only; extra sets beyond plan are logged but not judged.
+- Which sets the engine sees: done working sets only, by plan position.
 
 **Behaviour**
 - A set cannot be marked done while its weight is blank; the done check does nothing until a weight is typed.
@@ -54,7 +54,7 @@ The lifter taps Start workout on a routine. Each exercise shows its Target from 
 - Finish returns to where the workout started.
 
 **Screens** (mockup changes needed)
-- Live workout with set table, Target banner, Add set, ⋯ menu.
+- Live workout with set table, Target banner, ⋯ menu.
 - New in the mockup: the **Last** column, and the **in-progress bar** shown above the tab bar.
 - Finish prompts (unchecked sets, skipped exercises, no sets done) and the Discard confirmation.
 - Resume or Discard prompt; locked state on the routine's Edit screen.
@@ -71,7 +71,7 @@ The lifter taps Start workout on a routine. Each exercise shows its Target from 
 - Today and the week strip (feature 5).
 - Rest timer, keep-awake (feature 6).
 - Crash resume (feature 7). Saving as you go makes it small, but reopening after a kill is its own feature.
-- kg/lb switch and Jump setting (Phase 2); removing a set; notes and how it felt; warm-up sets; swapping or adding exercises mid-workout; plate calculator.
+- kg/lb switch and Jump setting (Phase 2); adding or removing a set (the set count is fixed to the plan); notes and how it felt; warm-up sets; swapping or adding exercises mid-workout; plate calculator.
 
 ## Further Notes
 

@@ -20,7 +20,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Screen | Notes |
 |---|---|
 | Today | Week strip, today's session, settings gear |
-| Live workout | Set rows prefilled with the Target; read-only Last column; Add set; ⋯ → Discard workout; Finish → Finish prompt. Interactive kg/lb arrives in Phase 2 |
+| Live workout | Set rows prefilled with the Target; read-only Last column; fixed set count; ⋯ → Discard workout; Finish → Finish prompt. Interactive kg/lb arrives in Phase 2 |
 | Finish workout | Prompt naming unchecked sets (dropped) and skipped exercises (not a Miss); with no sets done it offers Discard instead |
 | Discard workout | Confirmation; deletes the workout and its sets |
 | Start while one is in progress | Resume, or discard it and start the new one |
