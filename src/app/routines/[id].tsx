@@ -4,7 +4,13 @@ import { Pressable, ScrollView, View } from "react-native";
 
 import { Button, Input, Text } from "@/components";
 import { DayPicker } from "@/routines/DayPicker";
-import { DeleteRoutineSheet, type DeleteSheetStep } from "@/routines/DeleteRoutineSheet";
+import { moveExercise } from "@/routines/moveExercise";
+import { ReorderList } from "@/routines/ReorderList";
+import { saveExerciseOrder } from "@/routines/reorderQueries";
+import {
+  DeleteRoutineSheet,
+  type DeleteSheetStep,
+} from "@/routines/DeleteRoutineSheet";
 import { toggleDay } from "@/routines/routineDays";
 import { validateRoutineName } from "@/routines/routineName";
 import { routineNameMessage } from "@/routines/routineNameMessage";
@@ -16,6 +22,7 @@ import {
   renameRoutine,
   setRoutineDays,
   useRoutineExercises,
+  type RoutineExerciseItem,
 } from "@/routines/routineQueries";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontSize, minTouch, radius, spacing, useColors } from "@/theme";
@@ -34,7 +41,20 @@ export default function EditRoutineScreen() {
   const [step, setStep] = useState<DeleteSheetStep>("closed");
   const [workoutCount, setWorkoutCount] = useState(0);
   const [savedLabel, setSavedLabel] = useState("");
-  const exerciseRows = useRoutineExercises(id);
+  const loadedRows = useRoutineExercises(id);
+  // Reorder mode: `order` is the in-memory draft (null when not reordering). After Done the saved
+  // order shows at once until a fresh load from the hook replaces it.
+  const [order, setOrder] = useState<RoutineExerciseItem[] | null>(null);
+  const [saved, setSaved] = useState<{ base: unknown; rows: RoutineExerciseItem[] } | null>(null);
+  const exerciseRows = saved && saved.base === loadedRows ? saved.rows : loadedRows;
+  const reordering = order !== null;
+
+  function doneReordering() {
+    if (!order) return;
+    saveExerciseOrder(order.map((row) => row.id));
+    setSaved({ base: loadedRows, rows: order });
+    setOrder(null);
+  }
 
   // Latest values for the commit that runs when the screen is left.
   const savedName = useRef("");
@@ -108,16 +128,63 @@ export default function EditRoutineScreen() {
           headerBackTitle: "Routines",
           headerShadowVisible: false,
           headerStyle: { backgroundColor: colors.bg },
+          headerBackVisible: !reordering,
+          headerLeft: reordering
+            ? () => (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Cancel reordering"
+                  onPress={() => setOrder(null)}
+                  hitSlop={spacing.sm}
+                  style={{
+                    minWidth: minTouch,
+                    minHeight: minTouch,
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text tone="accent">Cancel</Text>
+                </Pressable>
+              )
+            : undefined,
           headerRight: () =>
-            routine ? (
+            reordering ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Done reordering"
+                onPress={doneReordering}
+                hitSlop={spacing.sm}
+                style={{
+                  minWidth: minTouch,
+                  minHeight: minTouch,
+                  alignItems: "flex-end",
+                  justifyContent: "center",
+                }}
+              >
+                <Text variant="label" tone="accent">
+                  Done
+                </Text>
+              </Pressable>
+            ) : routine ? (
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="More"
                 onPress={openMenu}
                 hitSlop={spacing.sm}
-                style={{ minWidth: minTouch, minHeight: minTouch, alignItems: "center", justifyContent: "center" }}
+                style={{
+                  minWidth: minTouch,
+                  minHeight: minTouch,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
               >
-                <Text style={{ fontSize: fontSize.title, lineHeight: fontSize.title + spacing.xs }}>⋯</Text>
+                <Text
+                  style={{
+                    fontSize: fontSize.title,
+                    lineHeight: fontSize.title + spacing.xs,
+                  }}
+                >
+                  ⋯
+                </Text>
               </Pressable>
             ) : null,
         }}
@@ -154,9 +221,43 @@ export default function EditRoutineScreen() {
             <DayPicker value={days} onToggle={onToggleDay} />
           </View>
           <View style={{ gap: spacing.sm }}>
-            <Text variant="label">Exercises</Text>
-            {exerciseRows && exerciseRows.length > 0 ? (
-              <View style={{ borderRadius: radius.md, backgroundColor: colors.card, overflow: "hidden" }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Text variant="label">Exercises</Text>
+              {!reordering && exerciseRows && exerciseRows.length > 1 ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Reorder exercises"
+                  onPress={() => setOrder(exerciseRows)}
+                  hitSlop={spacing.sm}
+                  style={{ minHeight: minTouch, justifyContent: "center" }}
+                >
+                  <Text variant="label" tone="accent">
+                    Reorder
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {order ? (
+              <ReorderList
+                rows={order}
+                onMove={(index, direction) =>
+                  setOrder(moveExercise(order, index, direction))
+                }
+              />
+            ) : exerciseRows && exerciseRows.length > 0 ? (
+              <View
+                style={{
+                  borderRadius: radius.md,
+                  backgroundColor: colors.card,
+                  overflow: "hidden",
+                }}
+              >
                 {exerciseRows.map((row, index) => (
                   <View
                     key={row.id}
@@ -189,15 +290,24 @@ export default function EditRoutineScreen() {
                 <Text tone="muted">No exercises yet.</Text>
               </View>
             )}
-            <Button
-              label="Add exercises"
-              variant="secondary"
-              onPress={() => router.push({ pathname: "/routines/add-exercises", params: { routineId: String(id) } })}
-            />
+            {reordering ? null : (
+              <Button
+                label="Add exercises"
+                variant="secondary"
+                onPress={() =>
+                  router.push({
+                    pathname: "/routines/add-exercises",
+                    params: { routineId: String(id) },
+                  })
+                }
+              />
+            )}
           </View>
         </ScrollView>
       ) : routine === null ? (
-        <View style={{ flex: 1, backgroundColor: colors.bg, padding: spacing.xl }}>
+        <View
+          style={{ flex: 1, backgroundColor: colors.bg, padding: spacing.xl }}
+        >
           <Text tone="muted">Routine not found.</Text>
         </View>
       ) : null}
