@@ -4,9 +4,9 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] The bar shows the routine name and elapsed time, and disappears at Finish or Discard
 - [ ] The locked routine's name, days, exercises, reorder, add and delete are disabled; other routines are unaffected
 - [ ] Creating a new routine is still allowed
-- [ ] Type check, lint and tests pass
+- [x] Type check, lint and tests pass

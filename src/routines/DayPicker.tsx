@@ -1,7 +1,7 @@
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { fontFamily, minTouch, radius, spacing, useColors } from "@/theme";
+import { fontFamily, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 
 import { DAY_LABELS, isDaySet } from "./routineDays";
 
@@ -9,13 +9,15 @@ export interface DayPickerProps {
   /** Days bitmask, Monday = bit 0. */
   value: number;
   onToggle: (index: number) => void;
+  /** Dims the buttons and ignores taps (the routine is locked). */
+  disabled?: boolean;
 }
 
 /** Seven day buttons, Mon to Sun. Each is at least 44 pt wide and tall. */
-export function DayPicker({ value, onToggle }: DayPickerProps) {
+export function DayPicker({ value, onToggle, disabled }: DayPickerProps) {
   const colors = useColors();
   return (
-    <View style={{ flexDirection: "row" }}>
+    <View style={{ flexDirection: "row", opacity: disabled ? opacity.disabled : 1 }}>
       {DAY_LABELS.map((label, index) => {
         const on = isDaySet(value, index);
         return (
@@ -24,6 +26,7 @@ export function DayPicker({ value, onToggle }: DayPickerProps) {
             accessibilityRole="button"
             accessibilityLabel={label}
             accessibilityState={{ selected: on }}
+            disabled={disabled}
             onPress={() => onToggle(index)}
             style={{ flex: 1, minWidth: minTouch, minHeight: minTouch, alignItems: "center", justifyContent: "center" }}
           >
