@@ -4,7 +4,7 @@
 
 **Blocked by:** 04
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] First row cannot move up and last cannot move down
 - [ ] Cancel leaves the saved order unchanged

@@ -1,5 +1,6 @@
 export { describeRule } from "./describeRule";
 export { moveExercise } from "./moveExercise";
+export { canMoveExercise } from "./canMoveExercise";
 export { canCreateRoutine, FREE_ROUTINE_LIMIT } from "./routineLimit";
 export { ROUTINE_NAME_MAX, validateRoutineName } from "./routineName";
 export type { RoutineNameRef, RoutineNameResult } from "./routineName";
