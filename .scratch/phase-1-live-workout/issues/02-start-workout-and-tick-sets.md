@@ -4,12 +4,12 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] Start creates the workout in progress, its Workout exercises (with the Target shown, empty on a first workout) and its set rows
 - [ ] Rows are prefilled per the spec; the first-time note appears when there is no Target
-- [ ] A set with a blank weight cannot be marked done
+- [x] A set with a blank weight cannot be marked done
 - [ ] Marking a set done writes to the database straight away
 - [ ] Target history for an exercise comes only from workouts of the same routine (ADR 0002)
-- [ ] The Jump is one named constant
+- [x] The Jump is one named constant
 - [ ] Type check, lint and tests pass; behaviour checked in Expo Go

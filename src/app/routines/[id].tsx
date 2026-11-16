@@ -28,6 +28,7 @@ import {
 import type { ExerciseSetup } from "@/routines/routineSetup";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontSize, lineHeight, minTouch, radius, spacing, useColors } from "@/theme";
+import { findInProgressWorkout, startWorkout } from "@/workout/workoutQueries";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
 
@@ -136,6 +137,12 @@ export default function EditRoutineScreen() {
     setConfirmingRemove(false);
     setEditing(null);
     setExerciseVersion((v) => v + 1);
+  }
+
+  /** Opens the workout in progress if there is one; the Resume or Discard prompt comes in a later ticket. */
+  function onStartWorkout() {
+    const workoutId = findInProgressWorkout() ?? startWorkout(id);
+    if (workoutId !== null) router.push({ pathname: "/workout/[id]", params: { id: String(workoutId) } });
   }
 
   async function openMenu() {
@@ -337,6 +344,13 @@ export default function EditRoutineScreen() {
               />
             )}
           </View>
+          {reordering ? null : (
+            <Button
+              label="Start workout"
+              disabled={!exerciseRows || exerciseRows.length === 0}
+              onPress={onStartWorkout}
+            />
+          )}
         </ScrollView>
       ) : routine === null ? (
         <View

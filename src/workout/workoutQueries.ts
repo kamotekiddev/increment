@@ -1,0 +1,219 @@
+import { and, asc, eq, inArray } from "drizzle-orm";
+import { useEffect, useState } from "react";
+
+import { db } from "@/db/client";
+import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
+import { nextTarget, type Target } from "@/engine";
+
+import { toHistory, type PastExercise } from "./historyInputs";
+import { initialSetRows } from "./initialSetRows";
+import { JUMP_KG } from "./jump";
+import { setDone } from "./markDone";
+import { rowFromStored, weightToStore } from "./setStorage";
+import type { SetRow } from "./types";
+
+/** Local calendar date as YYYY-MM-DD. */
+function localDate(now: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
+}
+
+/** The id of the workout in progress, if there is one. */
+export function findInProgressWorkout(): number | null {
+  const row = db.select({ id: workouts.id }).from(workouts).where(eq(workouts.inProgress, true)).get();
+  return row?.id ?? null;
+}
+
+/**
+ * Starts a workout from a routine as it is now, in one synchronous transaction. Each exercise's
+ * Target comes from the engine, reading only finished workouts of this routine (ADR 0002). Returns
+ * the new workout id, or null when the routine has no exercises.
+ */
+export function startWorkout(routineId: number, now: Date = new Date()): number | null {
+  return db.transaction((tx) => {
+    const planned = tx
+      .select({
+        exerciseId: routineExercises.exerciseId,
+        sets: routineExercises.sets,
+        repMin: routineExercises.repMin,
+        repMax: routineExercises.repMax,
+        rule: routineExercises.rule,
+        loadType: exercises.loadType,
+      })
+      .from(routineExercises)
+      .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+      .where(eq(routineExercises.routineId, routineId))
+      .orderBy(asc(routineExercises.position), asc(routineExercises.id))
+      .all();
+    if (planned.length === 0) return null;
+
+    const workout = tx
+      .insert(workouts)
+      .values({ routineId, startedAt: now.getTime(), date: localDate(now), inProgress: true })
+      .returning({ id: workouts.id })
+      .get();
+
+    planned.forEach((ex, position) => {
+      const past = tx
+        .select({
+          id: workoutExercises.id,
+          startedAt: workouts.startedAt,
+          date: workouts.date,
+          targetWeightKg: workoutExercises.targetWeightKg,
+          targetReps: workoutExercises.targetReps,
+          progressAccepted: workoutExercises.progressAccepted,
+          isDeload: workoutExercises.isDeload,
+        })
+        .from(workoutExercises)
+        .innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
+        .where(
+          and(eq(workouts.routineId, routineId), eq(workouts.inProgress, false), eq(workoutExercises.exerciseId, ex.exerciseId)),
+        )
+        .all();
+      const pastSets = past.length
+        ? tx
+            .select()
+            .from(sets)
+            .where(
+              inArray(
+                sets.workoutExerciseId,
+                past.map((p) => p.id),
+              ),
+            )
+            .all()
+        : [];
+      const rows: PastExercise[] = past.map((p) => ({
+        startedAt: p.startedAt,
+        date: p.date,
+        targetWeightKg: p.targetWeightKg,
+        targetReps: p.targetReps,
+        progressAccepted: p.progressAccepted,
+        isDeload: p.isDeload,
+        sets: pastSets.filter((s) => s.workoutExerciseId === p.id),
+      }));
+      const target: Target | null = nextTarget({
+        rule: ex.rule,
+        planned: { sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax },
+        loadType: ex.loadType,
+        history: toHistory(rows),
+        jumpKg: JUMP_KG,
+      }).target;
+
+      const workoutExercise = tx
+        .insert(workoutExercises)
+        .values({
+          workoutId: workout.id,
+          exerciseId: ex.exerciseId,
+          position,
+          targetWeightKg: target?.weightKg ?? null,
+          targetReps: target?.reps ?? null,
+        })
+        .returning({ id: workoutExercises.id })
+        .get();
+
+      initialSetRows({ sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax }, target).forEach((row, idx) => {
+        tx.insert(sets)
+          .values({
+            workoutExerciseId: workoutExercise.id,
+            exerciseId: ex.exerciseId,
+            idx,
+            weightKg: weightToStore(row.weightKg),
+            enteredUnit: "kg",
+            reps: row.reps,
+          })
+          .run();
+      });
+    });
+    return workout.id;
+  });
+}
+
+export interface LiveSet extends SetRow {
+  setId: number;
+}
+
+export interface LiveExercise {
+  id: number;
+  name: string;
+  target: Target | null;
+  range: { repMin: number; repMax: number } | null;
+  rows: LiveSet[];
+}
+
+export interface LiveWorkout {
+  id: number;
+  routineId: number | null;
+  exercises: LiveExercise[];
+}
+
+/** A workout with its exercises and set rows, or null when it no longer exists. */
+export async function loadWorkout(id: number): Promise<LiveWorkout | null> {
+  const workout = (await db.select().from(workouts).where(eq(workouts.id, id)))[0];
+  if (!workout) return null;
+  const exRows = await db
+    .select({
+      id: workoutExercises.id,
+      name: exercises.name,
+      targetWeightKg: workoutExercises.targetWeightKg,
+      targetReps: workoutExercises.targetReps,
+      repMin: routineExercises.repMin,
+      repMax: routineExercises.repMax,
+    })
+    .from(workoutExercises)
+    .innerJoin(exercises, eq(exercises.id, workoutExercises.exerciseId))
+    .leftJoin(
+      routineExercises,
+      and(eq(routineExercises.routineId, workout.routineId ?? -1), eq(routineExercises.exerciseId, workoutExercises.exerciseId)),
+    )
+    .where(eq(workoutExercises.workoutId, id))
+    .orderBy(asc(workoutExercises.position));
+  const setRows = exRows.length
+    ? await db
+        .select()
+        .from(sets)
+        .where(
+          inArray(
+            sets.workoutExerciseId,
+            exRows.map((e) => e.id),
+          ),
+        )
+        .orderBy(asc(sets.idx))
+    : [];
+  return {
+    id: workout.id,
+    routineId: workout.routineId,
+    exercises: exRows.map((e) => ({
+      id: e.id,
+      name: e.name,
+      target: e.targetWeightKg !== null && e.targetReps !== null ? { weightKg: e.targetWeightKg, reps: e.targetReps } : null,
+      range: e.repMin !== null && e.repMax !== null ? { repMin: e.repMin, repMax: e.repMax } : null,
+      rows: setRows.filter((s) => s.workoutExerciseId === e.id).map((s) => ({ ...rowFromStored(s), setId: s.id })),
+    })),
+  };
+}
+
+/** The workout, loaded once. Undefined until loaded; null when it does not exist. */
+export function useWorkout(id: number): [LiveWorkout | null | undefined, (w: LiveWorkout) => void] {
+  const [workout, setWorkout] = useState<LiveWorkout | null | undefined>(undefined);
+  useEffect(() => {
+    let live = true;
+    loadWorkout(id).then((w) => {
+      if (live) setWorkout(w);
+    });
+    return () => {
+      live = false;
+    };
+  }, [id]);
+  return [workout, setWorkout];
+}
+
+/**
+ * Marks a set done or not done and writes it at once. A set with a blank weight is not marked
+ * (the write is skipped). Returns the updated rows of that exercise.
+ */
+export function markSetDone(rows: LiveSet[], index: number, done: boolean): LiveSet[] {
+  const next = setDone(rows, index, done) as LiveSet[];
+  if (next === rows) return rows;
+  db.update(sets).set({ done }).where(eq(sets.id, rows[index].setId)).run();
+  return next;
+}
