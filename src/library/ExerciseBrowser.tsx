@@ -1,8 +1,9 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useMemo, useState } from "react";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Button, Input, Text } from "@/components";
-import { spacing } from "@/theme";
+import { minTouch, spacing, useColors } from "@/theme";
 
 import { emptyMessage, NO_FILTERS, toggleChip } from "./browseState";
 import { ChipRow } from "./ChipRow";
@@ -18,13 +19,14 @@ export interface ExerciseBrowserProps {
 
 /** Search box, muscle group chips, the A-Z list and the no-match state with Clear filters. */
 export function ExerciseBrowser({ exercises, onSelect }: ExerciseBrowserProps) {
+  const colors = useColors();
   const [filter, setFilter] = useState<ExerciseFilter>(NO_FILTERS);
 
   const visible = useMemo(() => filterExercises(exercises, filter), [exercises, filter]);
 
   const header = (
     <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
-      <View style={{ paddingHorizontal: spacing.xl }}>
+      <View style={{ paddingHorizontal: spacing.xl, justifyContent: "center" }}>
         <Input
           value={filter.search}
           onChangeText={(search) => setFilter({ ...filter, search })}
@@ -32,9 +34,26 @@ export function ExerciseBrowser({ exercises, onSelect }: ExerciseBrowserProps) {
           accessibilityLabel="Search exercises"
           autoCapitalize="none"
           autoCorrect={false}
-          clearButtonMode="while-editing"
           returnKeyType="search"
+          style={{ paddingRight: minTouch }}
         />
+        {filter.search.length > 0 ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Clear search"
+            onPress={() => setFilter({ ...filter, search: "" })}
+            style={{
+              position: "absolute",
+              right: spacing.xl,
+              width: minTouch,
+              height: minTouch,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Ionicons name="close-circle" size={20} color={colors.iconFaint} />
+          </Pressable>
+        ) : null}
       </View>
       <ChipRow
         label="Muscle group"

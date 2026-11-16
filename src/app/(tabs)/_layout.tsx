@@ -22,11 +22,13 @@ export default function TabsLayout() {
           padding: spacing.sm,
           borderRadius: radius.pill,
           backgroundColor: colors.card,
+          borderWidth: 1,
+          borderColor: colors.line,
           shadowColor: colors.ink,
           shadowOpacity: 0.08,
           shadowRadius: 16,
           shadowOffset: { width: 0, height: 4 },
-          elevation: 6,
+          elevation: 3,
         }}
       >
         <TabTrigger name="index" href="/" asChild>
