@@ -3,17 +3,17 @@ import { Pressable, ScrollView } from "react-native";
 import { Text } from "@/components";
 import { minTouch, radius, spacing, useColors } from "@/theme";
 
-export interface ChipRowProps {
-  options: string[];
+export interface ChipRowProps<T extends string> {
+  options: readonly T[];
   /** The one active chip, or null. */
-  active: string | null;
-  onToggle: (option: string) => void;
+  active: T | null;
+  onToggle: (option: T) => void;
   /** Spoken label for the row, e.g. "Muscle". */
   label: string;
 }
 
 /** Sideways-scrolling single-select chips; the active chip uses the accent style. */
-export function ChipRow({ options, active, onToggle, label }: ChipRowProps) {
+export function ChipRow<T extends string>({ options, active, onToggle, label }: ChipRowProps<T>) {
   const colors = useColors();
   return (
     <ScrollView

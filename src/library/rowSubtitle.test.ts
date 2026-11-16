@@ -1,11 +1,16 @@
 import { rowSubtitle } from "./rowSubtitle";
 
 describe("rowSubtitle", () => {
-  it("joins the first muscle and the equipment", () => {
-    expect(rowSubtitle({ muscles: ["Chest", "Triceps"], equipment: "Barbell" })).toBe("Chest · Barbell");
+  it("lists each group once in muscle order", () => {
+    expect(rowSubtitle({ muscles: ["chest", "shoulders", "triceps"] })).toBe("Chest · Shoulders · Arms");
+    expect(rowSubtitle({ muscles: ["biceps", "forearms"] })).toBe("Arms");
   });
 
-  it("shows only the equipment when no muscle is listed", () => {
-    expect(rowSubtitle({ muscles: [], equipment: "Cable" })).toBe("Cable");
+  it("reads a single group for a squat", () => {
+    expect(rowSubtitle({ muscles: ["quadriceps", "glutes", "hamstrings"] })).toBe("Legs");
+  });
+
+  it("is empty when no muscle is listed", () => {
+    expect(rowSubtitle({ muscles: [] })).toBe("");
   });
 });

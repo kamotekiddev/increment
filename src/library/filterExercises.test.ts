@@ -1,28 +1,18 @@
-import { filterExercises, getFilterOptions, type ExerciseFilter } from "./filterExercises";
+import { filterExercises, type ExerciseFilter } from "./filterExercises";
 
 let nextId = 0;
-const ex = (name: string, muscles: string[], equipment: string, instructions: string[] = ["Do it."]) => ({
-  id: nextId++,
-  name,
-  muscles,
-  equipment,
-  instructions,
-});
+const ex = (name: string, muscles: string[]) => ({ id: nextId++, name, muscles });
 
 const LIST = [
-  ex("Squat", ["Quads", "Glutes"], "barbell", ["Keep your chest up."]),
-  ex("Dumbbell Bench Press", ["Chest", "Triceps"], "dumbbell"),
-  ex("Barbell Bench Press", ["Chest", "Triceps", "Shoulders"], "barbell"),
-  ex("Incline Dumbbell Bench Press", ["Chest", "Shoulders"], "dumbbell"),
-  ex("Cable Curl", ["Biceps"], "cable", ["Squeeze the bench of your palm."]),
+  ex("Squat", ["quadriceps", "glutes"]),
+  ex("Dumbbell Bench Press", ["chest", "triceps"]),
+  ex("Barbell Bench Press", ["chest", "shoulders", "triceps"]),
+  ex("Incline Dumbbell Bench Press", ["chest", "shoulders"]),
+  ex("Cable Curl", ["biceps"]),
+  ex("Plank", ["abdominals"]),
 ];
 
-const filter = (set: Partial<ExerciseFilter>): ExerciseFilter => ({
-  search: "",
-  muscle: null,
-  equipment: null,
-  ...set,
-});
+const filter = (set: Partial<ExerciseFilter>): ExerciseFilter => ({ search: "", group: null, ...set });
 const names = (r: { name: string }[]) => r.map((e) => e.name);
 
 describe("filterExercises", () => {
@@ -37,26 +27,25 @@ describe("filterExercises", () => {
     ]);
   });
 
-  it("does not match words found only in the how-to text", () => {
-    expect(filterExercises(LIST, filter({ search: "palm" }))).toEqual([]);
+  it("searches names only, not muscles", () => {
     expect(filterExercises(LIST, filter({ search: "chest" }))).toEqual([]);
   });
 
-  it("matches a muscle listed anywhere", () => {
-    expect(names(filterExercises(LIST, filter({ muscle: "Triceps" })))).toEqual([
+  it("matches a group when any muscle falls in it", () => {
+    expect(names(filterExercises(LIST, filter({ group: "Arms" })))).toEqual([
       "Barbell Bench Press",
+      "Cable Curl",
       "Dumbbell Bench Press",
     ]);
+    expect(names(filterExercises(LIST, filter({ group: "Legs" })))).toEqual(["Squat"]);
+    expect(names(filterExercises(LIST, filter({ group: "Core" })))).toEqual(["Plank"]);
   });
 
-  it("matches equipment on equal value", () => {
-    expect(names(filterExercises(LIST, filter({ equipment: "cable" })))).toEqual(["Cable Curl"]);
-  });
-
-  it("combines search, muscle and equipment", () => {
-    expect(
-      names(filterExercises(LIST, filter({ search: "press", muscle: "Shoulders", equipment: "dumbbell" }))),
-    ).toEqual(["Incline Dumbbell Bench Press"]);
+  it("combines search and group", () => {
+    expect(names(filterExercises(LIST, filter({ search: "press", group: "Shoulders" })))).toEqual([
+      "Barbell Bench Press",
+      "Incline Dumbbell Bench Press",
+    ]);
   });
 
   it("returns everything in A-Z order when nothing is set", () => {
@@ -65,6 +54,7 @@ describe("filterExercises", () => {
       "Cable Curl",
       "Dumbbell Bench Press",
       "Incline Dumbbell Bench Press",
+      "Plank",
       "Squat",
     ]);
   });
@@ -81,18 +71,5 @@ describe("filterExercises", () => {
     const before = names(LIST);
     filterExercises(LIST, filter({}));
     expect(names(LIST)).toEqual(before);
-  });
-});
-
-describe("getFilterOptions", () => {
-  it("lists the distinct muscles and equipment found in the library, A-Z", () => {
-    expect(getFilterOptions(LIST)).toEqual({
-      muscles: ["Biceps", "Chest", "Glutes", "Quads", "Shoulders", "Triceps"],
-      equipment: ["barbell", "cable", "dumbbell"],
-    });
-  });
-
-  it("returns empty options for an empty library", () => {
-    expect(getFilterOptions([])).toEqual({ muscles: [], equipment: [] });
   });
 });

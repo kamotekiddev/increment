@@ -16,7 +16,7 @@ export interface ExerciseListProps<T extends ExerciseSummary = ExerciseSummary> 
   ListEmptyComponent?: FlatListProps<T>["ListEmptyComponent"];
 }
 
-/** Reusable virtualised exercise list: name plus a muted "Muscle · Equipment" line per row. */
+/** Reusable virtualised exercise list: name plus a muted line of muscle groups per row. */
 export function ExerciseList<T extends ExerciseSummary = ExerciseSummary>({
   exercises,
   onSelect,

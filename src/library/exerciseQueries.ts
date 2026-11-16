@@ -17,7 +17,6 @@ export function useExercises(): ExerciseSummary[] {
       id: exercises.id,
       name: exercises.name,
       muscles: exercises.muscles,
-      equipment: exercises.equipment,
     })
       .from(exercises)
       .then(setRows);

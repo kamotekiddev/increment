@@ -16,7 +16,7 @@ Phase 1 is split into seven features so work doesn't move as one large spec. Eac
 | 6 | Rest timer | 3 |
 | 7 | Crash resume | 3, 6 |
 
-### 1 · Library browse
+### 1 · Library browse (built; owner check on phones pending, see its ticket 04)
 Search and filter the seeded exercises, and open an exercise detail with how-to text. Read-only. Gives routines a picker to add exercises from.
 
 ### 2 · Routines

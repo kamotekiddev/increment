@@ -10,27 +10,27 @@ The Library tab is a placeholder. The lifter has 178 exercises seeded on their p
 
 ## Solution
 
-The Library tab shows every exercise in A–Z order. The lifter can type to search by name and tap one muscle chip and one equipment chip to narrow the list. Tapping an exercise opens a read-only detail screen with its muscles, equipment and numbered how-to steps. The list, search box and chips are built as one reusable piece, so Routines can later show the same list as its exercise picker with a different action on tap.
+The Library tab shows every exercise in A–Z order. The lifter can type to search by name and tap one muscle-group chip (Arms, Back, Chest, Core, Legs or Shoulders) to narrow the list. Tapping an exercise opens a read-only detail screen with its specific muscles, equipment and numbered how-to steps. The list, search box and chips are built as one reusable piece, so Routines can later show the same list as its exercise picker with a different action on tap.
 
 ## User Stories
 
 1. As a lifter, I want the Library tab to list all the exercises on my phone, so that I can see what is available.
 2. As a lifter, I want the list in A–Z order, so that I can find a name by scanning.
 3. As a lifter, I want each exercise shown with its name exactly as in the library, so that names match what I see elsewhere in the app.
-4. As a lifter, I want each row to show a small line with the muscle and equipment, so that I can tell similar exercises apart without opening them.
+4. As a lifter, I want each row to show the muscle groups the exercise works (for example "Chest · Shoulders · Arms"), so that I can tell what it trains without opening it.
 5. As a lifter, I want to tap a row to open the exercise, so that I can read about it.
 6. As a lifter, I want a search box at the top of the list, so that I can find an exercise by typing.
 7. As a lifter, I want search to match words from the name in any order, so that "dumbbell bench" finds "Dumbbell Bench Press" and "Incline Dumbbell Bench Press".
 8. As a lifter, I want search to ignore capital letters, so that I do not have to think about how I type.
 9. As a lifter, I want search to look at names only, so that results are predictable and not cluttered by words from how-to text.
 10. As a lifter, I want the list to update as I type, so that I do not have to press a search button.
-11. As a lifter, I want a row of muscle chips, so that I can narrow the list to one muscle.
-12. As a lifter, I want a muscle chip to match an exercise that lists that muscle anywhere, so that "Triceps" also shows Barbell Bench Press.
-13. As a lifter, I want the muscle chips to scroll sideways, so that all 16 muscles fit without crowding the screen.
-14. As a lifter, I want a row of equipment chips, so that I can narrow the list to the equipment I have.
-15. As a lifter, I want to select only one muscle chip at a time, so that picking a second muscle replaces the first instead of emptying the list.
-16. As a lifter, I want to select only one equipment chip at a time, for the same reason.
-17. As a lifter, I want the muscle chip, the equipment chip and the search text to combine, so that I can find dumbbell triceps exercises with "press" in the name.
+11. As a lifter, I want one row of muscle-group chips (Arms, Back, Chest, Core, Legs, Shoulders), so that I can narrow the list to a part of the body without wading through specific muscles.
+12. As a lifter, I want a group chip to match an exercise when any of its muscles belongs to that group, so that "Arms" also shows Barbell Bench Press (it works the triceps).
+13. As a lifter, I want the chips in A–Z order with capitalised labels, so that they are easy to scan.
+14. As a lifter, I want the exercise detail to still show the specific muscles and the equipment, so that the list stays simple but I can see the detail when I open one.
+15. As a lifter, I want to select only one group chip at a time, so that picking a second group replaces the first instead of emptying the list.
+16. As a lifter, I want the row to list each group once, in the order the exercise's muscles are listed, so that a squat reads "Legs" and not "Legs · Legs · Legs".
+17. As a lifter, I want the group chip and the search text to combine, so that I can find arm exercises with "press" in the name.
 18. As a lifter, I want to tap the active chip again to turn it off, so that I can clear a filter without a separate control.
 19. As a lifter, I want the active chip to look clearly different from the others, so that I know which filters are on.
 20. As a lifter, I want a message when nothing matches, so that I know the list is empty on purpose.
@@ -59,16 +59,16 @@ The Library tab shows every exercise in A–Z order. The lifter can type to sear
 - Names are shown exactly as seeded. Any renaming is a separate change to the curated library, not part of this feature.
 
 **Filter function** (pure; no I/O)
-- Takes the list of exercises, the search text, an optional muscle and an optional equipment. Returns the matching exercises in A–Z order by name.
+- Takes the list of exercises, the search text and an optional muscle group. Returns the matching exercises in A–Z order by name.
 - Search splits the text into words. Every word must appear somewhere in the exercise name, in any order, ignoring capitals. Only names are searched. There is no typo forgiveness.
-- A muscle matches when the exercise's muscle list contains it anywhere. Equipment matches on equal value.
-- Search, muscle and equipment combine: an exercise must satisfy all that are set. With nothing set, all exercises are returned.
-- The muscle and equipment options shown as chips come from the library's own values, not a hard-coded list, so a later library change does not need a code change here.
+- A group matches when any of the exercise's muscles belongs to it. The six groups and their muscles are: Arms (biceps, triceps, forearms), Back (lats, middle back, lower back, traps), Chest (chest), Core (abdominals), Legs (quadriceps, hamstrings, glutes, calves, adductors, abductors), Shoulders (shoulders). The mapping lives in one place and a test checks that every muscle in the library belongs to a group.
+- Search and group combine: an exercise must satisfy both when both are set. With nothing set, all exercises are returned. There is no equipment filter.
+- The chips are the six groups, sorted A–Z. They are fixed, not read from the library.
 
 **List component** (reusable)
-- One component renders the search box, the two chip rows, the list and the empty state. It takes a "what happens when a row is tapped" option. The Library tab passes "open the detail". Routines will pass "add to routine".
-- Each row shows the name and a muted line "Muscle · Equipment", using the first listed muscle.
-- Chip rows scroll sideways. One muscle and one equipment can be active at a time. Tapping the active chip clears it. The active chip uses the accent style from the design system.
+- One component renders the search box, the chip row, the list and the empty state. It takes a "what happens when a row is tapped" option. The Library tab passes "open the detail". Routines will pass "add to routine".
+- Each row shows the name and a muted line of the muscle groups the exercise works, each once, in the order its muscles are listed, joined with " · " (for example "Chest · Shoulders · Arms"). No equipment on the row.
+- The chip row scrolls sideways. One group can be active at a time. Tapping the active chip clears it. The active chip uses the accent style from the design system.
 - The empty state says no exercises match what was searched, with a Clear filters button. There is no create-exercise shortcut; that waits for custom exercises in Phase 3.
 - The list is virtualised so 178 rows scroll smoothly.
 
@@ -82,9 +82,9 @@ The Library tab shows every exercise in A–Z order. The lifter can type to sear
 
 ## Testing Decisions
 
-- A good test checks external behaviour only: given a list of exercises and a search, muscle and equipment, assert which exercises come back and in what order. Tests never reach into helpers.
-- **Seam 1: the filter function.** One seam, plain inputs and outputs. Examples to cover: a word in the name matches ("bench"); several words in any order match ("dumbbell bench"); capitals are ignored; a word that is only in the how-to text does not match; a muscle matches when it is listed anywhere in an exercise's muscles ("Triceps" finds Barbell Bench Press); equipment matches exactly; search, muscle and equipment combine; nothing set returns all exercises in A–Z order; a search with no match returns an empty list; extra spaces around the text are ignored.
-- **Seam 2: on the device.** No automated test. The owner opens the Library in Expo Go on an iPhone and an Android phone: scrolls the list, searches, uses both chip rows, hits the empty state and clears it, opens a detail, goes back to find the filters still set. Jest cannot run the native database, so this stays a manual check, plus the type checker and lint.
+- A good test checks external behaviour only: given a list of exercises, a search and a group, assert which exercises come back and in what order. Tests never reach into helpers.
+- **Seam 1: the filter function.** One seam, plain inputs and outputs. Examples to cover: a word in the name matches ("bench"); several words in any order match ("dumbbell bench"); capitals are ignored; a word that is only in the how-to text does not match; a group matches when any muscle belongs to it ("Arms" finds Barbell Bench Press); search and group combine; nothing set returns all exercises in A–Z order; a search with no match returns an empty list; extra spaces around the text are ignored; every muscle in the library belongs to a group; a row's groups are listed once each in muscle order.
+- **Seam 2: on the device.** No automated test. The owner opens the Library in Expo Go on an iPhone and an Android phone: scrolls the list, searches, uses the group chips, hits the empty state and clears it, opens a detail, goes back to find the filters still set. Jest cannot run the native database, so this stays a manual check, plus the type checker and lint.
 - Prior art: the engine and units test suites, which test pure functions with plain inputs and outputs.
 
 ## Out of Scope
@@ -92,13 +92,15 @@ The Library tab shows every exercise in A–Z order. The lifter can type to sear
 - Creating, editing or deleting custom exercises (Phase 3, Pro) and the create shortcut on the empty state.
 - Exercise history, records, charts and the History tab on the detail (Phase 2 and 3).
 - The exercise picker screen inside Routines. This feature only builds the reusable list it will use (feature 2).
-- Choosing several muscles or several equipment at once, filtering by load type, searching muscles or how-to text, and typo-tolerant search.
+- Choosing several groups at once, filtering by equipment or load type, searching muscles or how-to text, and typo-tolerant search.
 - Images or videos; the library has none.
 - Renaming or cleaning the seeded exercise names.
 - Favourites, recently used and sorting options other than A–Z.
 - Dark theme values.
 
 ## Further Notes
+
+- Refined after the first build: the equipment chip row was dropped, and the muscle chips became six groups so the list stays simple. The specific muscles and equipment are shown on the detail screen.
 
 - Library records and Pro limits are not touched, so there is no free-versus-Pro check in this feature.
 - Docs to update in the same change: `docs/screens.md` (the "No search results" row loses its create shortcut until Phase 3) and the Phase 1 map once this feature is built.

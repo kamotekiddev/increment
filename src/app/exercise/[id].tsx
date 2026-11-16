@@ -2,6 +2,7 @@ import { Stack, useLocalSearchParams } from "expo-router";
 import { ScrollView, View } from "react-native";
 
 import { Pill, Text } from "@/components";
+import { capitalise } from "@/library/muscleGroups";
 import { useExercise } from "@/library/exerciseQueries";
 import { spacing, useColors } from "@/theme";
 
@@ -30,9 +31,9 @@ export default function ExerciseDetailScreen() {
             <Text variant="heading">{exercise.name}</Text>
             <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
               {exercise.muscles.map((muscle) => (
-                <Pill key={muscle} label={muscle} />
+                <Pill key={muscle} label={capitalise(muscle)} />
               ))}
-              <Pill label={exercise.equipment} tone="neutral" />
+              <Pill label={capitalise(exercise.equipment)} tone="neutral" />
             </View>
             <Text variant="title" style={{ marginTop: spacing.md }}>
               How to

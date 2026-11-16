@@ -7,12 +7,8 @@ import { spacing } from "@/theme";
 import { emptyMessage, NO_FILTERS, toggleChip } from "./browseState";
 import { ChipRow } from "./ChipRow";
 import { ExerciseList } from "./ExerciseList";
-import {
-  filterExercises,
-  getFilterOptions,
-  type ExerciseFilter,
-  type ExerciseSummary,
-} from "./filterExercises";
+import { filterExercises, type ExerciseFilter, type ExerciseSummary } from "./filterExercises";
+import { MUSCLE_GROUPS } from "./muscleGroups";
 
 export interface ExerciseBrowserProps {
   exercises: ExerciseSummary[];
@@ -20,11 +16,10 @@ export interface ExerciseBrowserProps {
   onSelect: (exercise: ExerciseSummary) => void;
 }
 
-/** Search box, muscle and equipment chips, the A-Z list and the no-match state with Clear filters. */
+/** Search box, muscle group chips, the A-Z list and the no-match state with Clear filters. */
 export function ExerciseBrowser({ exercises, onSelect }: ExerciseBrowserProps) {
   const [filter, setFilter] = useState<ExerciseFilter>(NO_FILTERS);
 
-  const options = useMemo(() => getFilterOptions(exercises), [exercises]);
   const visible = useMemo(() => filterExercises(exercises, filter), [exercises, filter]);
 
   const header = (
@@ -42,18 +37,10 @@ export function ExerciseBrowser({ exercises, onSelect }: ExerciseBrowserProps) {
         />
       </View>
       <ChipRow
-        label="Muscle"
-        options={options.muscles}
-        active={filter.muscle}
-        onToggle={(muscle) => setFilter({ ...filter, muscle: toggleChip(filter.muscle, muscle) })}
-      />
-      <ChipRow
-        label="Equipment"
-        options={options.equipment}
-        active={filter.equipment}
-        onToggle={(equipment) =>
-          setFilter({ ...filter, equipment: toggleChip(filter.equipment, equipment) })
-        }
+        label="Muscle group"
+        options={MUSCLE_GROUPS}
+        active={filter.group}
+        onToggle={(group) => setFilter({ ...filter, group: toggleChip(filter.group, group) })}
       />
     </View>
   );
