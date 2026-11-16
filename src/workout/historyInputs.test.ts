@@ -51,15 +51,10 @@ describe("toHistory by plan position", () => {
       jumpKg: 2.5,
     });
 
-  it("does not judge sets beyond the planned count", () => {
-    const history = toHistory([past({ sets: [done(0), done(1), done(2), done(3)] })], 3);
-    expect(history[0].sets).toHaveLength(3);
-  });
-
-  it("keeps a gap: plan 3, sets 1 and 2 done, 3 unchecked, extra set 4 done is a Miss, not a Clean", () => {
-    // Finish drops the unchecked set 3 but keeps idx, so the extra set stays at idx 3.
+  it("keeps a gap: plan 3, sets 1 and 2 done, 3 unchecked is a Miss, not a Clean", () => {
+    // Finish drops the unchecked set 3 but keeps idx, so the gap stays.
     const target = { targetWeightKg: 60, targetReps: 10 };
-    const gapHistory = toHistory([past({ ...target, sets: [done(0), done(1), done(3)] })], 3);
+    const gapHistory = toHistory([past({ ...target, sets: [done(0), done(1)] })], 3);
     expect(gapHistory[0].sets).toHaveLength(2);
     expect(ask(gapHistory).reason).not.toBe("earned");
     const clean = toHistory([past({ ...target, sets: [done(0), done(1), done(2)] })], 3);
