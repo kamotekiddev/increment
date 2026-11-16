@@ -23,7 +23,7 @@ Search and filter the seeded exercises, and open an exercise detail with how-to 
 Create, edit and delete a routine. Add exercises from the library, and set sets, rep range and rest per exercise; the step is shown, not chosen (choosing arrives with Pro in Phase 3). Deleting a routine deletes its workouts, see ADR 0002. Spec: `.scratch/phase-1-routines/spec.md`.
 
 ### 3 · Live workout core
-Start a routine and log sets. Each exercise shows the free-rule Target from the engine. Finish saves the workout and the Target that was shown. No summary, timer or Today yet; Finish returns to where the workout started.
+Start a routine and log sets. Each exercise shows the free-rule Target from the engine. Finish saves the workout and the Target that was shown. No summary, timer or Today yet; Finish returns to where the workout started. Spec: `.scratch/phase-1-live-workout/spec.md`.
 
 ### 4 · Summary and step offer
 After Finish, show the workout summary (volume and what goes up next time). When progression is Earned, offer the step: Accept makes it the next Target, Decline leaves the Target unchanged and the offer returns after the next clean workout.

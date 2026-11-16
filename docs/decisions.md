@@ -14,6 +14,8 @@
 - **Routines**: deleting a routine deletes its workouts, and Target history is per routine; see [ADR 0002](adr/0002-deleting-a-routine-deletes-its-workouts.md).
 - **Visual direction**: minimal light UI, neutral base, purple accent `#5B3DF5`, Sora font.
 - **UI components**: Text and Button are plain React Native on our tokens, because `@expo/ui` Text ignores custom fonts on iOS and its Button draws a system blue box (checked in the Phase 0 spike). `@expo/ui` is used for the bottom sheet, switch and picker.
+- **Phase 1 Jump**: one fixed 2.5 kg for every exercise, in one constant, until the Phase 2 Jump setting replaces it.
+- **Live workout**: saved from Start, one in progress at a time, and its routine is locked until it is finished or discarded; see `.scratch/phase-1-live-workout/spec.md`.
 
 ## Open
 - [ ] Pro price and currency for each store
