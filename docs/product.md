@@ -21,8 +21,8 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 ### Routines
 - Create a routine with a name, the days it repeats, and its exercises from the library.
 - For each exercise, set sets, a rep range and rest, plus its overload rule.
-- Reorder and remove exercises, or delete the routine with a confirmation.
-- Free users can have up to **3 routines**. Adding a 4th shows a limit pop-up that leads to the paywall.
+- Reorder exercises in a reorder mode (saved on Done), remove them with a confirmation, or delete the routine with a confirmation that says its workouts are deleted too.
+- Free users can have up to **2 routines**. Adding a 3rd shows a limit pop-up that leads to the paywall.
 
 ### Live workout
 - Set table with the previous set, weight and reps inputs, done checks, add set, and notes.
@@ -54,7 +54,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 ### Onboarding
 Welcome → Goal → Experience → Schedule → Equipment → Units → Your plan → Reminders, with a Quick start path for people who skip.
 - Every question can be skipped.
-- The answers pick a starter split (full body, push/pull/legs, upper/lower) that fits within the 3-routine free limit.
+- The answers pick a starter split (full body, push/pull/legs, upper/lower) that fits within the 2-routine free limit. **Open:** push/pull/legs is 3 routines, so the plan generator in Phase 4 must change the split or the limit.
 - Permission for reminders is asked after the plan is shown, not before.
 - **"I already have Increment"** goes straight to Welcome back to restore a Pro purchase and a backup, skipping the questions.
 
@@ -64,7 +64,7 @@ Welcome → Goal → Experience → Schedule → Equipment → Units → Your pl
 |---|---|---|
 | Exercise library | ✓ | ✓ |
 | Log workouts | Unlimited | Unlimited |
-| Routines | 3 | Unlimited |
+| Routines | 2 | Unlimited |
 | Overload rules | 1 simple (by load type) | Your own |
 | Charts and records | – | ✓ |
 | Custom exercises | – | ✓ |
