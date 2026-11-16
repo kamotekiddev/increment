@@ -251,6 +251,33 @@ export function discardWorkout(id: number): void {
   });
 }
 
+/**
+ * Finishes a workout in one transaction: drops sets that are not done, removes exercises with no
+ * done set, renumbers the kept sets, then sets the finish time and clears in-progress. The Target
+ * on each kept Workout exercise is untouched and progress_accepted stays false.
+ */
+export function finishWorkout(id: number, now: Date = new Date()): void {
+  db.transaction((tx) => {
+    const exRows = tx.select({ id: workoutExercises.id }).from(workoutExercises).where(eq(workoutExercises.workoutId, id)).all();
+    for (const ex of exRows) {
+      const rows = tx.select().from(sets).where(eq(sets.workoutExerciseId, ex.id)).orderBy(asc(sets.idx)).all();
+      const done = rows.filter((r) => r.done);
+      if (done.length === 0) {
+        tx.delete(sets).where(eq(sets.workoutExerciseId, ex.id)).run();
+        tx.delete(workoutExercises).where(eq(workoutExercises.id, ex.id)).run();
+        continue;
+      }
+      rows
+        .filter((r) => !r.done)
+        .forEach((r) => tx.delete(sets).where(eq(sets.id, r.id)).run());
+      done.forEach((r, idx) => {
+        if (r.idx !== idx) tx.update(sets).set({ idx }).where(eq(sets.id, r.id)).run();
+      });
+    }
+    tx.update(workouts).set({ finishedAt: now.getTime(), inProgress: false }).where(eq(workouts.id, id)).run();
+  });
+}
+
 /** Discards the workout in progress, then starts the routine. Returns the new workout id (null when the routine is empty). */
 export function discardAndStartWorkout(inProgressId: number, routineId: number): number | null {
   discardWorkout(inProgressId);
