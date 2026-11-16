@@ -4,9 +4,9 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
 - [ ] Discard deletes the workout, its Workout exercises and its sets, and returns to where it started
 - [ ] Start with a workout already in progress shows the prompt; Resume reopens it, Discard deletes it then starts the new one
 - [ ] Only one workout in progress can exist
-- [ ] Type check, lint and tests pass
+- [x] Type check, lint and tests pass
