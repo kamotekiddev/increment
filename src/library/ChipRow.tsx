@@ -1,0 +1,52 @@
+import { Pressable, ScrollView } from "react-native";
+
+import { Text } from "@/components";
+import { minTouch, radius, spacing, useColors } from "@/theme";
+
+export interface ChipRowProps<T extends string> {
+  options: readonly T[];
+  /** The one active chip, or null. */
+  active: T | null;
+  onToggle: (option: T) => void;
+  /** Spoken label for the row, e.g. "Muscle". */
+  label: string;
+}
+
+/** Sideways-scrolling single-select chips; the active chip uses the accent style. */
+export function ChipRow<T extends string>({ options, active, onToggle, label }: ChipRowProps<T>) {
+  const colors = useColors();
+  return (
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      accessibilityLabel={label}
+      contentContainerStyle={{ paddingHorizontal: spacing.xl, gap: spacing.sm }}
+    >
+      {options.map((option) => {
+        const selected = option === active;
+        return (
+          <Pressable
+            key={option}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            onPress={() => onToggle(option)}
+            style={{
+              minHeight: minTouch,
+              justifyContent: "center",
+              paddingHorizontal: spacing.lg,
+              borderRadius: radius.pill,
+              borderWidth: 1,
+              borderColor: selected ? colors.accent : colors.line,
+              backgroundColor: selected ? colors.accent : colors.card,
+            }}
+          >
+            <Text variant="label" tone={selected ? "onAccent" : "ink"}>
+              {option}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </ScrollView>
+  );
+}

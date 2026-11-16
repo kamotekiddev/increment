@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View, type PressableProps } from "react-native";
 
-import { minTouch, radius, spacing, useColors } from "@/theme";
+import { minTouch, spacing, useColors } from "@/theme";
 import { Text } from "./Text";
 
 type IconName = keyof typeof Ionicons.glyphMap;
@@ -20,12 +20,14 @@ export function TabButton({ icon, label, isFocused, ...props }: TabButtonProps) 
     <Pressable {...props} accessibilityRole="tab" accessibilityLabel={label} accessibilityState={{ selected: !!isFocused }}>
       <View
         style={{
-          minHeight: minTouch,
+          height: minTouch,
           flexDirection: "row",
           alignItems: "center",
           gap: spacing.xs,
           paddingHorizontal: isFocused ? spacing.lg : spacing.md,
-          borderRadius: radius.pill,
+          // Half the height, not 999: Android drew a huge radius as a square.
+          borderRadius: minTouch / 2,
+          overflow: "hidden",
           backgroundColor: isFocused ? colors.accent : "transparent",
         }}
       >
