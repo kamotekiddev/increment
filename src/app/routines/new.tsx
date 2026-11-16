@@ -2,15 +2,19 @@ import { router, Stack } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 
-import { Button, Input, Text } from "@/components";
+import { Button, RoundButton, Text } from "@/components";
+import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { DayPicker } from "@/routines/DayPicker";
+import { EmptyExercises } from "@/routines/EmptyExercises";
 import { LimitSheet } from "@/routines/LimitSheet";
+import { NameField } from "@/routines/NameField";
 import { canCreateRoutine } from "@/routines/routineLimit";
 import { validateRoutineName } from "@/routines/routineName";
 import { routineNameMessage } from "@/routines/routineNameMessage";
 import { toggleDay } from "@/routines/routineDays";
 import { createRoutine, loadRoutines, useIsPro } from "@/routines/routineQueries";
-import { spacing, useColors } from "@/theme";
+import { ScreenHeader } from "@/routines/ScreenHeader";
+import { fontFamily, fontSize, spacing, useColors } from "@/theme";
 
 export default function NewRoutineScreen() {
   const colors = useColors();
@@ -21,7 +25,8 @@ export default function NewRoutineScreen() {
   const [limitOpen, setLimitOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  async function save() {
+  /** Saves the routine, then opens it; with `thenAdd` the exercise picker opens on top of it. */
+  async function save(thenAdd: boolean) {
     if (saving) return;
     setSaving(true);
     try {
@@ -38,6 +43,7 @@ export default function NewRoutineScreen() {
       }
       const id = createRoutine(result.name, days);
       router.replace({ pathname: "/routines/[id]", params: { id: String(id) } });
+      if (thenAdd) router.push({ pathname: "/routines/add-exercises", params: { routineId: String(id) } });
     } finally {
       setSaving(false);
     }
@@ -45,45 +51,36 @@ export default function NewRoutineScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: "New routine",
-          headerBackTitle: "Routines",
-          headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.bg },
-        }}
-      />
-      <ScrollView
-        style={{ flex: 1, backgroundColor: colors.bg }}
-        contentContainerStyle={{ padding: spacing.xl, gap: spacing.xl }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <View style={{ gap: spacing.sm }}>
-          <Text variant="label">Name</Text>
-          <Input
+      <Stack.Screen options={{ headerShown: false }} />
+      <View style={{ flex: 1, backgroundColor: colors.bg }}>
+        <ScreenHeader left={<RoundButton icon="close" label="Cancel" onPress={() => router.back()} />} title="New routine" />
+        <ScrollView
+          contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg, paddingBottom: BOTTOM_ACTION_CLEARANCE }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <NameField
             value={name}
             onChangeText={(text) => {
               setName(text);
               setError(null);
             }}
-            placeholder="e.g. Push day"
-            accessibilityLabel="Routine name"
-            returnKeyType="done"
+            placeholder="e.g. Upper body"
+            error={error}
+            inputSize={fontSize.input}
             autoFocus
           />
-          {error ? (
-            <Text variant="caption" tone="danger">
-              {error}
+          <View style={{ gap: 6 }}>
+            <Text variant="caption" tone="muted" style={{ fontSize: fontSize.small, fontFamily: fontFamily.medium }}>
+              Repeat on (optional)
             </Text>
-          ) : null}
-        </View>
-        <View style={{ gap: spacing.sm }}>
-          <Text variant="label">Days (optional)</Text>
-          <DayPicker value={days} onToggle={(i) => setDays(toggleDay(days, i))} />
-        </View>
-        <Button label="Create" onPress={save} disabled={saving} />
-      </ScrollView>
+            <DayPicker value={days} onToggle={(i) => setDays(toggleDay(days, i))} />
+          </View>
+          <EmptyExercises onAdd={() => save(true)} disabled={saving || name.trim() === ""} />
+        </ScrollView>
+        <BottomAction>
+          <Button label="Create routine" large disabled={saving || name.trim() === ""} onPress={() => save(false)} />
+        </BottomAction>
+      </View>
       <LimitSheet visible={limitOpen} onDismiss={() => setLimitOpen(false)} />
     </>
   );

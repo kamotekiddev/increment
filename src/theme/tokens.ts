@@ -9,18 +9,22 @@ export const lightColors = {
   inkSoft: "#3A3A3F",
   inkMuted: "#6B6B70",
   iconFaint: "#85858B",
+  /** Dashed outlines of empty states. */
+  lineStrong: "#C9C9CC",
   accent: "#5B3DF5",
   /** Progress pills and highlights (alias: pr). */
   accentTint: "#EFEAFF",
   onAccent: "#FFFFFF",
   danger: "#C62828",
+  /** Soft red behind a destructive icon (delete and remove sheets). */
+  dangerTint: "#FDECEC",
 } as const;
 
 export type Colors = { [K in keyof typeof lightColors]: string };
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 
-export const radius = { sm: 10, md: 16, lg: 24, pill: 999 } as const;
+export const radius = { sm: 10, md: 16, lg: 24, tile: 14, inset: 20, row: 22, card: 26, pill: 999 } as const;
 
 /** Sora weights. Names match what useFonts registers. */
 export const fontFamily = {
@@ -31,7 +35,25 @@ export const fontFamily = {
   extrabold: "Sora_800ExtraBold",
 } as const;
 
-export const fontSize = { caption: 12, body: 15, label: 14, title: 20, heading: 28, numeral: 40 } as const;
+export const fontSize = {
+  caption: 12,
+  small: 13,
+  meta: 13.5,
+  label: 14,
+  body: 15,
+  lead: 16,
+  action: 17,
+  input: 18,
+  title: 20,
+  titleLg: 22,
+  screen: 24,
+  heading: 28,
+  display: 32,
+  numeral: 40,
+} as const;
+
+/** Fixed heights and widths of the routine screens' controls and rows, in points. */
+export const size = { round: 48, control: 56, row: 66, pickerRow: 62, day: 46, tile: 40 } as const;
 
 /** Minimum touch target, in points. */
 export const minTouch = 44;

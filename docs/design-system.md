@@ -22,6 +22,8 @@ The full system lives at https://claude.ai/artifact/2eEe2GhySr9xx6LqTbmGhs. This
 | accent | `#5B3DF5` | Actions, active tab, progress |
 | accent-tint | `#EFEAFF` | Progress pills, highlights (alias: `pr`) |
 | danger | `#C62828` | Destructive actions |
+| danger-tint | `#FDECEC` | Icon circle on the delete and remove sheets |
+| line-strong | `#C9C9CC` | Dashed outline of an empty state |
 
 Other accent shades explored: `#7C3AED`, `#6D28D9`, `#9333EA`. A dark theme is defined in the design system's `tokens.json`.
 
@@ -37,9 +39,11 @@ Other accent shades explored: `#7C3AED`, `#6D28D9`, `#9333EA`. A dark theme is d
 Line heights that a component sets itself come from `lineHeight` in `src/theme` (`lineHeight.title` = 24, for the title-size header glyph).
 
 ## Components
-- **Button**: pill-shaped; the primary uses the accent fill, the secondary a white or outline style.
+- **Button**: pill-shaped; the primary uses the accent fill, the secondary is white, `danger` is the red destructive action and `dashed` is the outlined "add" action. `large` stretches it to full width at 56 pt (the main action of a screen).
+- **Round button**: 48 pt white circle with an icon (back, close, more); accent-filled for add.
 - **Set row**: set number, previous set, weight, reps and a done check. The overload target appears in `ink-muted` so it's visible at a glance.
 - **Overload badge**: describes a routine exercise's overload rule.
 - **Tab bar**: a floating white pill; the active tab is an accent pill. Tabs: Today, Routines, Library, Progress.
-- **Bottom sheet**: white, with rounded top corners, over a dimmed backdrop. Used for pop-ups, confirmations and pickers.
+- **Bottom sheet**: `bg` colour (not white), with rounded top corners, over a dimmed backdrop. Used for pop-ups, confirmations and pickers. Its React Native content sits in an `RNHostView` (never a `Host`) inside the native sheet.
+- **Routine screens**: in-page headers with round buttons instead of the native header, white cards on `bg`, and the main action fixed at the bottom. Sizes come from `size` in `src/theme`.
 - Touch targets are at least 44 pt.

@@ -14,6 +14,8 @@ export interface RoutineListItem {
   days: number;
   position: number;
   exerciseCount: number;
+  /** Every exercise name in routine order; the list card shows the first few. */
+  exerciseNames: string[];
 }
 
 /** Phase 3 wires the real purchase state; until then every lifter is on the free plan. */
@@ -23,15 +25,24 @@ export function useIsPro(): boolean {
 
 /** Every routine in creation order, with its exercise count. */
 export async function loadRoutines(): Promise<RoutineListItem[]> {
-  const [rows, counts] = await Promise.all([
+  const [rows, named] = await Promise.all([
     db.select().from(routines).orderBy(asc(routines.position), asc(routines.id)),
     db
-      .select({ routineId: routineExercises.routineId, n: count() })
+      .select({ routineId: routineExercises.routineId, name: exercises.name })
       .from(routineExercises)
-      .groupBy(routineExercises.routineId),
+      .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
+      .orderBy(asc(routineExercises.position), asc(routineExercises.id)),
   ]);
-  const byRoutine = new Map(counts.map((c) => [c.routineId, c.n]));
-  return rows.map((r) => ({ ...r, exerciseCount: byRoutine.get(r.id) ?? 0 }));
+  const namesByRoutine = new Map<number, string[]>();
+  for (const { routineId, name } of named) {
+    const names = namesByRoutine.get(routineId) ?? [];
+    names.push(name);
+    namesByRoutine.set(routineId, names);
+  }
+  return rows.map((r) => {
+    const exerciseNames = namesByRoutine.get(r.id) ?? [];
+    return { ...r, exerciseCount: exerciseNames.length, exerciseNames };
+  });
 }
 
 /** The routine list, reloaded each time the screen gains focus. Undefined until first load. */
@@ -108,6 +119,8 @@ export interface RoutineExerciseItem extends ExerciseSetup {
   id: number;
   exerciseId: number;
   name: string;
+  muscles: string[];
+  equipment: string;
   position: number;
   rule: OverloadRule;
 }
@@ -119,6 +132,8 @@ export async function loadRoutineExercises(routineId: number): Promise<RoutineEx
       id: routineExercises.id,
       exerciseId: routineExercises.exerciseId,
       name: exercises.name,
+      muscles: exercises.muscles,
+      equipment: exercises.equipment,
       position: routineExercises.position,
       sets: routineExercises.sets,
       repMin: routineExercises.repMin,

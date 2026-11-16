@@ -8,8 +8,29 @@ export function routineSubtitle(days: number, exerciseCount: number): string {
   return `${daysLabel(days)} · ${exercises}`;
 }
 
-/** Pure: the counter above the list, e.g. "1 of 2 routines" (free) or "3 routines" (Pro). */
+/**
+ * Pure: the counter above the list in two parts, so the number can be bold:
+ * "2 of 2" + "free routines used" (free), or "3" + "routines" (Pro).
+ */
+export function routineCounterParts(count: number, isPro: boolean): { strong: string; rest: string } {
+  if (isPro) return { strong: String(count), rest: count === 1 ? "routine" : "routines" };
+  return { strong: `${count} of ${FREE_ROUTINE_LIMIT}`, rest: "free routines used" };
+}
+
+/** Pure: the counter as one line, e.g. "1 of 2 free routines used" (free) or "3 routines" (Pro). */
 export function routineCounter(count: number, isPro: boolean): string {
-  if (isPro) return `${count} ${count === 1 ? "routine" : "routines"}`;
-  return `${count} of ${FREE_ROUTINE_LIMIT} routines`;
+  const { strong, rest } = routineCounterParts(count, isPro);
+  return `${strong} ${rest}`;
+}
+
+/** Pure: the names of the first three exercises, then "and N more", e.g. "Bench press, Row, Curl and 2 more". */
+export function routinePreview(names: readonly string[], total: number): string {
+  if (total === 0) return "No exercises yet";
+  const shown = names.slice(0, 3);
+  const more = total - shown.length;
+  if (more <= 0) {
+    if (shown.length === 1) return shown[0];
+    return `${shown.slice(0, -1).join(", ")} and ${shown[shown.length - 1]}`;
+  }
+  return `${shown.join(", ")} and ${more} more`;
 }

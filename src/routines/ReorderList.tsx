@@ -1,9 +1,11 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
 
 import { canMoveExercise } from "./canMoveExercise";
+import { ExerciseTile } from "./ExerciseTile";
 import type { RoutineExerciseItem } from "./routineQueries";
 import { setupSubtitle } from "./setupText";
 
@@ -12,28 +14,29 @@ export interface ReorderListProps {
   onMove: (index: number, direction: "up" | "down") => void;
 }
 
-/** Exercise rows with ▲ ▼ buttons (44 pt). No tap-to-edit and no ⋯ while reordering. */
+/** Exercise cards with up and down buttons (44 pt). No tap-to-edit while reordering. */
 export function ReorderList({ rows, onMove }: ReorderListProps) {
   const colors = useColors();
   return (
-    <View style={{ borderRadius: radius.md, backgroundColor: colors.card, overflow: "hidden" }}>
+    <View style={{ gap: spacing.sm }}>
       {rows.map((row, index) => (
         <View
           key={row.id}
           style={{
-            minHeight: minTouch,
+            minHeight: size.row,
             flexDirection: "row",
             alignItems: "center",
-            gap: spacing.sm,
+            gap: 10,
             paddingVertical: spacing.sm,
-            paddingLeft: spacing.lg,
-            paddingRight: spacing.sm,
-            borderTopWidth: index === 0 ? 0 : 1,
-            borderTopColor: colors.line,
+            paddingLeft: spacing.md,
+            paddingRight: 10,
+            borderRadius: radius.row,
+            backgroundColor: colors.card,
           }}
         >
-          <View style={{ flex: 1, gap: spacing.xs }}>
-            <Text variant="label" numberOfLines={1}>
+          <ExerciseTile equipment={row.equipment} />
+          <View style={{ flex: 1 }}>
+            <Text variant="label" style={{ fontSize: fontSize.body }} numberOfLines={1}>
               {row.name}
             </Text>
             <Text variant="caption" tone="muted">
@@ -41,13 +44,13 @@ export function ReorderList({ rows, onMove }: ReorderListProps) {
             </Text>
           </View>
           <MoveButton
-            glyph="▲"
+            icon="chevron-up"
             label={`Move ${row.name} up`}
             disabled={!canMoveExercise(rows.length, index, "up")}
             onPress={() => onMove(index, "up")}
           />
           <MoveButton
-            glyph="▼"
+            icon="chevron-down"
             label={`Move ${row.name} down`}
             disabled={!canMoveExercise(rows.length, index, "down")}
             onPress={() => onMove(index, "down")}
@@ -59,12 +62,12 @@ export function ReorderList({ rows, onMove }: ReorderListProps) {
 }
 
 function MoveButton({
-  glyph,
+  icon,
   label,
   disabled,
   onPress,
 }: {
-  glyph: string;
+  icon: "chevron-up" | "chevron-down";
   label: string;
   disabled: boolean;
   onPress: () => void;
@@ -82,14 +85,12 @@ function MoveButton({
         height: minTouch,
         alignItems: "center",
         justifyContent: "center",
-        borderRadius: radius.sm,
-        backgroundColor: pressed ? colors.accentTint : "transparent",
+        borderRadius: radius.pill,
+        backgroundColor: pressed ? colors.line : colors.sunk,
         opacity: disabled ? opacity.disabled : 1,
       })}
     >
-      <Text variant="label" tone="accent">
-        {glyph}
-      </Text>
+      <Ionicons name={icon} size={20} color={colors.ink} />
     </Pressable>
   );
 }

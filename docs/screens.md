@@ -31,7 +31,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Routines | List with the free-limit counter |
 | New routine | Name and days |
 | Add exercises | Pick from the library |
-| Edit routine | Name, days, exercise rows; Reorder; ⋯ → Delete |
+| Edit routine | Name, days, exercise rows; Reorder; ⋯ → Delete confirmation (no menu step) |
 | Exercise setup | Sheet: sets, reps, rest, rule (read-only until Pro); used to add and to edit; Remove from routine |
 | Reorder routine | ▲ ▼ per row; Done saves, Cancel discards |
 | Remove exercise | Confirmation |

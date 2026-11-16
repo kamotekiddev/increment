@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 
 export interface SetupStepperProps {
   label: string;
@@ -14,18 +14,32 @@ export interface SetupStepperProps {
   canIncrease: boolean;
 }
 
-/** A label with a value between minus and plus buttons, each at least 44 pt. */
+/** A tile with the label, the value, and minus and plus buttons, each at least 44 pt. */
 export function SetupStepper({ label, valueText, onDecrease, onIncrease, canDecrease, canIncrease }: SetupStepperProps) {
+  const colors = useColors();
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", minHeight: minTouch }}>
-      <Text variant="label" style={{ flex: 1 }}>
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        gap: 6,
+        paddingTop: spacing.md,
+        paddingBottom: spacing.sm,
+        paddingHorizontal: spacing.sm,
+        borderRadius: radius.inset,
+        backgroundColor: colors.sunk,
+      }}
+    >
+      <Text variant="caption" tone="muted" style={{ fontFamily: fontFamily.medium }}>
         {label}
       </Text>
-      <StepButton icon="remove" label={`Decrease ${label}`} onPress={onDecrease} disabled={!canDecrease} />
-      <Text variant="label" style={{ minWidth: minTouch + spacing.md, textAlign: "center" }}>
+      <Text variant="title" style={{ fontSize: fontSize.titleLg, lineHeight: 26, letterSpacing: -0.4 }}>
         {valueText}
       </Text>
-      <StepButton icon="add" label={`Increase ${label}`} onPress={onIncrease} disabled={!canIncrease} />
+      <View style={{ flexDirection: "row", gap: 6 }}>
+        <StepButton icon="remove" label={`Decrease ${label}`} onPress={onDecrease} disabled={!canDecrease} />
+        <StepButton icon="add" label={`Increase ${label}`} onPress={onIncrease} disabled={!canIncrease} />
+      </View>
     </View>
   );
 }
@@ -55,7 +69,7 @@ function StepButton({
         alignItems: "center",
         justifyContent: "center",
         borderRadius: radius.pill,
-        backgroundColor: pressed ? colors.line : colors.sunk,
+        backgroundColor: pressed ? colors.line : colors.card,
         opacity: disabled ? opacity.disabled : 1,
       })}
     >
