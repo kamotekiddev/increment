@@ -2,28 +2,22 @@ import { FlatList, Pressable, View, type FlatListProps } from "react-native";
 
 import { Text } from "@/components";
 import { minTouch, spacing, useColors } from "@/theme";
+import type { ExerciseSummary } from "./filterExercises";
 import { rowSubtitle } from "./rowSubtitle";
 
-export interface ExerciseListItem {
-  id: number;
-  name: string;
-  muscles: string[];
-  equipment: string;
-}
-
-export interface ExerciseListProps<T extends ExerciseListItem = ExerciseListItem> {
+export interface ExerciseListProps<T extends ExerciseSummary = ExerciseSummary> {
   /** Already filtered and ordered; the list only displays them. */
   exercises: T[];
-  /** What happens when a row is tapped. The Library opens the detail; Routines will add to the routine. */
+  /** What happens when a row is tapped. */
   onSelect: (exercise: T) => void;
-  /** Search box and chips go here (ticket 03); scrolls with the list. */
+  /** Rendered above the rows; scrolls with the list. */
   ListHeaderComponent?: FlatListProps<T>["ListHeaderComponent"];
   /** Shown when `exercises` is empty. */
   ListEmptyComponent?: FlatListProps<T>["ListEmptyComponent"];
 }
 
 /** Reusable virtualised exercise list: name plus a muted "Muscle · Equipment" line per row. */
-export function ExerciseList<T extends ExerciseListItem = ExerciseListItem>({
+export function ExerciseList<T extends ExerciseSummary = ExerciseSummary>({
   exercises,
   onSelect,
   ListHeaderComponent,
@@ -33,7 +27,7 @@ export function ExerciseList<T extends ExerciseListItem = ExerciseListItem>({
   return (
     <FlatList
       data={exercises}
-      keyExtractor={(e) => String(e.id)}
+      keyExtractor={(exercise) => String(exercise.id)}
       keyboardShouldPersistTaps="handled"
       ListHeaderComponent={ListHeaderComponent}
       ListEmptyComponent={ListEmptyComponent}

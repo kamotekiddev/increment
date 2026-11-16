@@ -1,35 +1,18 @@
-export type BrowseFilters = {
-  search: string;
-  muscle: string | null;
-  equipment: string | null;
-};
+import type { ExerciseFilter } from "./filterExercises";
+
+export const NO_FILTERS: ExerciseFilter = { search: "", muscle: null, equipment: null };
 
 /** One chip per row: tapping another replaces it, tapping the active one clears it. */
-export function toggleChip(
-  current: string | null,
-  tapped: string,
-): string | null {
+export function toggleChip(current: string | null, tapped: string): string | null {
   return current === tapped ? null : tapped;
 }
 
-export function hasActiveFilters({
-  search,
-  muscle,
-  equipment,
-}: BrowseFilters): boolean {
-  return search.trim() !== "" || muscle !== null || equipment !== null;
-}
-
-/** The empty-state sentence, naming what was searched. */
-export function emptyMessage({
-  search,
-  muscle,
-  equipment,
-}: BrowseFilters): string {
-  const parts: string[] = [];
+/** The empty-state sentence, e.g. No exercises match "press" with Triceps and Dumbbell. */
+export function emptyMessage({ search, muscle, equipment }: ExerciseFilter): string {
   const text = search.trim();
-  if (text) parts.push(`"${text}"`);
-  if (muscle) parts.push(muscle);
-  if (equipment) parts.push(equipment);
-  return `No exercises match ${parts.join(", ")}.`;
+  const chips = [muscle, equipment].filter(Boolean).join(" and ");
+  const subject = [text ? `"${text}"` : "", text && chips ? "with" : "", chips]
+    .filter(Boolean)
+    .join(" ");
+  return `No exercises match ${subject}.`;
 }
