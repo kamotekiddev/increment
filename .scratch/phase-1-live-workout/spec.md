@@ -77,3 +77,4 @@ The lifter taps Start workout on a routine. Each exercise shows its Target from 
 
 - Docs to update in the same change: `docs/screens.md` (Last column, in-progress bar, locked state), `docs/product.md`, the Phase 1 map when built.
 - Mockup edits for the Last column and the in-progress bar are prepared locally and published only when the owner asks.
+- Decided: the "edited" mark on a set row is kept in memory only. After an app restart mid-workout, editing an earlier row can overwrite a row the lifter typed into. Revisit in feature 7 (crash resume), which will persist more workout state.
