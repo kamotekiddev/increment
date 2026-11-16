@@ -47,6 +47,7 @@ The lifter taps Start workout on a routine. Each exercise shows its Target from 
 - Which sets the engine sees: done working sets only; extra sets beyond plan are logged but not judged.
 
 **Behaviour**
+- A set cannot be marked done while its weight is blank; the done check does nothing until a weight is typed.
 - One workout in progress at a time. Start on any routine while one exists prompts Resume or Discard.
 - Lock: Edit and Delete on the in-progress routine are disabled with "Finish or discard your workout first". This changes the feature 2 screens.
 - Discard deletes the workout, its exercises and its sets.
