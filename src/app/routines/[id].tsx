@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { BackHandler, Pressable, ScrollView, View } from "react-native";
 
 import { Button, Input, Text } from "@/components";
 import { DayPicker } from "@/routines/DayPicker";
@@ -27,7 +27,7 @@ import {
 } from "@/routines/routineQueries";
 import type { ExerciseSetup } from "@/routines/routineSetup";
 import { setupSubtitle } from "@/routines/setupText";
-import { fontSize, minTouch, radius, spacing, useColors } from "@/theme";
+import { fontSize, lineHeight, minTouch, radius, spacing, useColors } from "@/theme";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
 
@@ -60,6 +60,17 @@ export default function EditRoutineScreen() {
     setSaved({ base: loadedRows, rows: order });
     setOrder(null);
   }
+
+  // Android hardware back during reorder mode cancels the reorder (drops the draft) instead of
+  // leaving the screen.
+  useEffect(() => {
+    if (!reordering) return;
+    const sub = BackHandler.addEventListener("hardwareBackPress", () => {
+      setOrder(null);
+      return true;
+    });
+    return () => sub.remove();
+  }, [reordering]);
 
   // Latest values for the commit that runs when the screen is left.
   const savedName = useRef("");
@@ -121,7 +132,7 @@ export default function EditRoutineScreen() {
 
   async function confirmRemove() {
     if (!editing) return;
-    await removeRoutineExercise(editing.id);
+    removeRoutineExercise(editing.id);
     setConfirmingRemove(false);
     setEditing(null);
     setExerciseVersion((v) => v + 1);
@@ -134,7 +145,7 @@ export default function EditRoutineScreen() {
 
   async function confirmDelete() {
     gone.current = true;
-    await deleteRoutine(id);
+    deleteRoutine(id);
     setStep("closed");
     router.back();
   }
@@ -200,7 +211,7 @@ export default function EditRoutineScreen() {
                 <Text
                   style={{
                     fontSize: fontSize.title,
-                    lineHeight: fontSize.title + spacing.xs,
+                    lineHeight: lineHeight.title,
                   }}
                 >
                   ⋯
@@ -351,10 +362,7 @@ export default function EditRoutineScreen() {
             exerciseName={editing.name}
             routineName={savedLabel}
             onConfirm={confirmRemove}
-            onDismiss={() => {
-              setConfirmingRemove(false);
-              setEditing(null);
-            }}
+            onDismiss={() => setConfirmingRemove(false)}
           />
         </>
       ) : null}

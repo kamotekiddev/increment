@@ -1,5 +1,5 @@
 import { Stack, useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 
 import { defaultRule } from "@/engine";
@@ -18,6 +18,8 @@ export default function AddExercisesScreen() {
   const [addedIds, setAddedIds] = useState<ReadonlySet<number>>(new Set());
   const [picked, setPicked] = useState<LibraryExercise | null>(null);
   const [open, setOpen] = useState(false);
+  const [adding, setAdding] = useState(false);
+  const addingRef = useRef(false);
 
   useEffect(() => {
     loadRoutineExercises(routineId).then((rows) => setAddedIds(new Set(rows.map((r) => r.exerciseId))));
@@ -25,11 +27,20 @@ export default function AddExercisesScreen() {
 
   const rule = useMemo(() => defaultRule(picked?.loadType ?? "weighted"), [picked]);
 
-  async function onSubmit(setup: ExerciseSetup) {
-    if (!picked) return;
-    setOpen(false);
-    await addRoutineExercise(routineId, picked.id, picked.loadType, setup);
-    setAddedIds((prev) => new Set(prev).add(picked.id));
+  function onSubmit(setup: ExerciseSetup) {
+    // The ref blocks a second tap before state has re-rendered.
+    if (!picked || addingRef.current) return;
+    addingRef.current = true;
+    setAdding(true);
+    try {
+      // False means the exercise was already in the routine; it is marked added either way.
+      addRoutineExercise(routineId, picked.id, picked.loadType, setup);
+      setAddedIds((prev) => new Set(prev).add(picked.id));
+      setOpen(false);
+    } finally {
+      addingRef.current = false;
+      setAdding(false);
+    }
   }
 
   return (
@@ -59,6 +70,7 @@ export default function AddExercisesScreen() {
         initial={DEFAULT_SETUP}
         rule={rule}
         primaryLabel="Add to routine"
+        busy={adding}
         onSubmit={onSubmit}
         onDismiss={() => setOpen(false)}
       />

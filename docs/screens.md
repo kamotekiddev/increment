@@ -36,7 +36,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Reorder routine | ▲ ▼ per row; Done saves, Cancel discards |
 | Remove exercise | Confirmation |
 | Overload rule panel (Pro) | Custom rule with a live preview |
-| 2 free routines used | Limit pop-up → Paywall |
+| 2 free routines used | Limit pop-up (no upgrade button in Phase 1; links to the Paywall from Phase 3) |
 | Delete routine | Confirmation |
 
 ## 4 · Exercise library

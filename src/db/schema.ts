@@ -40,7 +40,10 @@ export const routineExercises = sqliteTable(
     /** OverloadRule JSON (see src/engine/types.ts); carries its own `v`. */
     rule: text("rule", { mode: "json" }).$type<OverloadRule>().notNull(),
   },
-  (t) => [index("routine_exercises_routine_idx").on(t.routineId, t.position)],
+  (t) => [
+    index("routine_exercises_routine_idx").on(t.routineId, t.position),
+    uniqueIndex("routine_exercises_routine_exercise_uniq").on(t.routineId, t.exerciseId),
+  ],
 );
 
 export const workouts = sqliteTable(

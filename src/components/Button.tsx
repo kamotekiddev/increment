@@ -1,6 +1,6 @@
 import { Pressable, type PressableProps } from "react-native";
 
-import { minTouch, radius, spacing, useColors } from "@/theme";
+import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { Text } from "./Text";
 
 export interface ButtonProps extends Omit<PressableProps, "children" | "style"> {
@@ -29,7 +29,7 @@ export function Button({ label, variant = "primary", disabled, ...rest }: Button
         backgroundColor: primary ? colors.accent : colors.card,
         borderWidth: primary ? 0 : 1,
         borderColor: colors.line,
-        opacity: disabled ? 0.4 : pressed ? 0.85 : 1,
+        opacity: disabled ? opacity.disabled : pressed ? opacity.pressed : 1,
       })}
     >
       <Text variant="label" tone={primary ? "onAccent" : "ink"}>

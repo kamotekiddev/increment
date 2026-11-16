@@ -1,7 +1,7 @@
 import { Pressable } from "react-native";
 
 import { BottomSheet, Button, Text } from "@/components";
-import { minTouch, radius, spacing, useColors } from "@/theme";
+import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
 
 import { deleteRoutineText } from "./deleteRoutineText";
 
@@ -42,7 +42,7 @@ export function DeleteRoutineSheet({
               justifyContent: "center",
               borderRadius: radius.pill,
               backgroundColor: colors.danger,
-              opacity: pressed ? 0.85 : 1,
+              opacity: pressed ? opacity.pressed : 1,
             })}
           >
             <Text variant="label" tone="onAccent">

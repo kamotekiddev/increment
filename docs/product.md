@@ -22,7 +22,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - Create a routine with a name, the days it repeats, and its exercises from the library.
 - For each exercise, set sets, a rep range and rest, plus its overload rule.
 - Reorder exercises in a reorder mode (saved on Done), remove them with a confirmation, or delete the routine with a confirmation that says its workouts are deleted too.
-- Free users can have up to **2 routines**. Adding a 3rd shows a limit pop-up that leads to the paywall.
+- Free users can have up to **2 routines**. Adding a 3rd shows a limit pop-up. In Phase 1 the pop-up has no upgrade button; the link to the paywall arrives in Phase 3.
 
 ### Live workout
 - Set table with the previous set, weight and reps inputs, done checks, add set, and notes.

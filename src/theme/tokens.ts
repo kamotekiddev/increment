@@ -35,3 +35,9 @@ export const fontSize = { caption: 12, body: 15, label: 14, title: 20, heading: 
 
 /** Minimum touch target, in points. */
 export const minTouch = 44;
+
+/** Opacity for interactive states. One disabled value everywhere. */
+export const opacity = { pressed: 0.85, disabled: 0.4 } as const;
+
+/** Line heights for text that sets its own size. */
+export const lineHeight = { title: 24 } as const;

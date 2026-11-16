@@ -1,7 +1,7 @@
 import { Pressable } from "react-native";
 
 import { BottomSheet, Button, Text } from "@/components";
-import { minTouch, radius, useColors } from "@/theme";
+import { minTouch, opacity, radius, useColors } from "@/theme";
 
 import { removeExerciseText } from "./removeExerciseText";
 
@@ -36,7 +36,7 @@ export function RemoveExerciseSheet({
           justifyContent: "center",
           borderRadius: radius.pill,
           backgroundColor: colors.danger,
-          opacity: pressed ? 0.85 : 1,
+          opacity: pressed ? opacity.pressed : 1,
         })}
       >
         <Text variant="label" tone="onAccent">

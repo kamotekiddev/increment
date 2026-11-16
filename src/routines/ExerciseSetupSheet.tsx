@@ -21,6 +21,8 @@ export interface ExerciseSetupSheetProps {
   rule: OverloadRule;
   /** The primary button, for example "Add to routine" or "Save". */
   primaryLabel: string;
+  /** Disables the primary button while a save is in flight. */
+  busy?: boolean;
   onSubmit: (setup: ExerciseSetup) => void;
   onDismiss: () => void;
   /** Editing only: shows a red Remove from routine action that calls this. */
@@ -34,6 +36,7 @@ export function ExerciseSetupSheet({
   initial,
   rule,
   primaryLabel,
+  busy = false,
   onSubmit,
   onDismiss,
   onRemove,
@@ -76,7 +79,7 @@ export function ExerciseSetupSheet({
         </View>
         <Text tone="muted">{describeRule(rule)}</Text>
       </View>
-      <Button label={primaryLabel} onPress={() => onSubmit(setup)} />
+      <Button label={primaryLabel} disabled={busy} onPress={() => onSubmit(setup)} />
       {onRemove ? (
         <Pressable
           accessibilityRole="button"

@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { minTouch, radius, spacing, useColors } from "@/theme";
+import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
 
 export interface SetupStepperProps {
   label: string;
@@ -56,7 +56,7 @@ function StepButton({
         justifyContent: "center",
         borderRadius: radius.pill,
         backgroundColor: pressed ? colors.line : colors.sunk,
-        opacity: disabled ? 0.4 : 1,
+        opacity: disabled ? opacity.disabled : 1,
       })}
     >
       <Ionicons name={icon} size={20} color={colors.ink} />

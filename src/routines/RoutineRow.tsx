@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { minTouch, radius, spacing, useColors } from "@/theme";
+import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
 
 import type { RoutineListItem } from "./routineQueries";
 import { routineSubtitle } from "./routineListText";
@@ -27,7 +27,7 @@ export function RoutineRow({ routine, onPress }: RoutineRowProps) {
         padding: spacing.lg,
         borderRadius: radius.md,
         backgroundColor: colors.card,
-        opacity: pressed ? 0.85 : 1,
+        opacity: pressed ? opacity.pressed : 1,
       })}
     >
       <View style={{ flex: 1, gap: spacing.xs }}>

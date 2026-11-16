@@ -1,7 +1,7 @@
 import { FlatList, Pressable, View, type FlatListProps } from "react-native";
 
 import { Text } from "@/components";
-import { minTouch, spacing, useColors } from "@/theme";
+import { minTouch, opacity, spacing, useColors } from "@/theme";
 import type { ExerciseSummary } from "./filterExercises";
 import { rowSubtitle } from "./rowSubtitle";
 
@@ -47,7 +47,7 @@ export function ExerciseList<T extends ExerciseSummary = ExerciseSummary>({
           style={({ pressed }) => ({
             minHeight: minTouch,
             justifyContent: "center",
-            opacity: added ? 0.5 : 1,
+            opacity: added ? opacity.disabled : 1,
             paddingHorizontal: spacing.xl,
             paddingVertical: spacing.md,
             borderBottomWidth: 1,

@@ -1,4 +1,4 @@
-import { and, asc, count, eq } from "drizzle-orm";
+import { asc, count, eq } from "drizzle-orm";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 
@@ -51,11 +51,16 @@ export function useRoutines(): RoutineListItem[] | undefined {
   return items;
 }
 
-/** Inserts a routine at the end of the list and returns its id. */
-export async function createRoutine(name: string, days: number): Promise<number> {
-  const [{ n }] = await db.select({ n: count() }).from(routines);
-  const [row] = await db.insert(routines).values({ name, days, position: n }).returning({ id: routines.id });
-  return row.id;
+/**
+ * Inserts a routine at the end of the list and returns its id. Count and insert run in one
+ * transaction. The expo-sqlite driver runs a transaction synchronously, so the callback is not async.
+ */
+export function createRoutine(name: string, days: number): number {
+  return db.transaction((tx) => {
+    const [{ n }] = tx.select({ n: count() }).from(routines).all();
+    const row = tx.insert(routines).values({ name, days, position: n }).returning({ id: routines.id }).get();
+    return row.id;
+  });
 }
 
 /** One routine by id, or null when it no longer exists. */
@@ -81,11 +86,22 @@ export async function countRoutineWorkouts(id: number): Promise<number> {
 }
 
 /**
- * Deletes a routine. The database cascades to its routine exercises and its workouts, with their
- * workout exercises and sets. Workouts with no routine are never touched.
+ * Deletes a routine and renumbers the remaining routines to 0..n-1, in one transaction. The
+ * database cascades to its routine exercises and its workouts, with their workout exercises and
+ * sets. Workouts with no routine are never touched.
  */
-export async function deleteRoutine(id: number): Promise<void> {
-  await db.delete(routines).where(eq(routines.id, id));
+export function deleteRoutine(id: number): void {
+  db.transaction((tx) => {
+    tx.delete(routines).where(eq(routines.id, id)).run();
+    const rest = tx
+      .select({ id: routines.id })
+      .from(routines)
+      .orderBy(asc(routines.position), asc(routines.id))
+      .all();
+    rest.forEach((r, position) => {
+      tx.update(routines).set({ position }).where(eq(routines.id, r.id)).run();
+    });
+  });
 }
 
 export interface RoutineExerciseItem extends ExerciseSetup {
@@ -136,27 +152,29 @@ export function useRoutineExercises(routineId: number, version = 0): RoutineExer
 
 /**
  * Adds an exercise at the end of a routine with the default rule for its load type. One row per
- * exercise per routine: returns false and changes nothing when it is already there.
+ * exercise per routine (a unique index enforces it): returns false and changes nothing when it is
+ * already there. Position and insert run in one synchronous transaction.
  */
-export async function addRoutineExercise(
+export function addRoutineExercise(
   routineId: number,
   exerciseId: number,
   loadType: typeof exercises.$inferSelect.loadType,
   setup: ExerciseSetup,
-): Promise<boolean> {
-  const [{ present }] = await db
-    .select({ present: count() })
-    .from(routineExercises)
-    .where(and(eq(routineExercises.routineId, routineId), eq(routineExercises.exerciseId, exerciseId)));
-  if (present > 0) return false;
-  const [{ n }] = await db
-    .select({ n: count() })
-    .from(routineExercises)
-    .where(eq(routineExercises.routineId, routineId));
-  await db
-    .insert(routineExercises)
-    .values({ routineId, exerciseId, position: n, ...setup, rule: defaultRule(loadType) });
-  return true;
+): boolean {
+  return db.transaction((tx) => {
+    const [{ n }] = tx
+      .select({ n: count() })
+      .from(routineExercises)
+      .where(eq(routineExercises.routineId, routineId))
+      .all();
+    const inserted = tx
+      .insert(routineExercises)
+      .values({ routineId, exerciseId, position: n, ...setup, rule: defaultRule(loadType) })
+      .onConflictDoNothing()
+      .returning({ id: routineExercises.id })
+      .all();
+    return inserted.length > 0;
+  });
 }
 
 /** Saves new sets, rep range and rest on this routine exercise row only. */
@@ -165,24 +183,26 @@ export async function updateRoutineExercise(routineExerciseId: number, setup: Ex
 }
 
 /**
- * Removes one routine exercise and renumbers the rest to 0..n-1, in one transaction. Logged
- * workouts and their sets are not touched.
+ * Removes one routine exercise and renumbers the rest to 0..n-1, in one transaction (synchronous,
+ * like the driver). Logged workouts and their sets are not touched.
  */
-export async function removeRoutineExercise(routineExerciseId: number): Promise<void> {
-  await db.transaction(async (tx) => {
-    const [row] = await tx
+export function removeRoutineExercise(routineExerciseId: number): void {
+  db.transaction((tx) => {
+    const row = tx
       .select({ routineId: routineExercises.routineId })
       .from(routineExercises)
-      .where(eq(routineExercises.id, routineExerciseId));
+      .where(eq(routineExercises.id, routineExerciseId))
+      .get();
     if (!row) return;
-    await tx.delete(routineExercises).where(eq(routineExercises.id, routineExerciseId));
-    const rest = await tx
+    tx.delete(routineExercises).where(eq(routineExercises.id, routineExerciseId)).run();
+    const rest = tx
       .select({ id: routineExercises.id })
       .from(routineExercises)
       .where(eq(routineExercises.routineId, row.routineId))
-      .orderBy(asc(routineExercises.position), asc(routineExercises.id));
-    for (const [position, r] of rest.entries()) {
-      await tx.update(routineExercises).set({ position }).where(eq(routineExercises.id, r.id));
-    }
+      .orderBy(asc(routineExercises.position), asc(routineExercises.id))
+      .all();
+    rest.forEach((r, position) => {
+      tx.update(routineExercises).set({ position }).where(eq(routineExercises.id, r.id)).run();
+    });
   });
 }

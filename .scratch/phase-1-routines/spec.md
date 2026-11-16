@@ -23,7 +23,7 @@ The Routines tab lists the lifter's routines with a free counter ("1 of 2 routin
 7. As a lifter, I want a clear message when a name is empty or already used (ignoring capitals and spaces), so that I can fix it.
 8. As a lifter, I want to rename a routine and have the name checked only when I finish typing, so that half-typed names are not rejected.
 9. As a lifter, I want to toggle days and have them saved at once.
-10. As a lifter on the free plan, I want a pop-up when I try a fourth routine, so that I understand the limit. It has no purchase button yet.
+10. As a lifter on the free plan, I want a pop-up when I try a third routine (the limit is 2), so that I understand the limit. It has no purchase button yet.
 11. As a lifter, I want to add exercises from the library picker, so that I reuse the list I know.
 12. As a lifter, I want exercises already in the routine shown as "Added" and not tappable, so that I cannot add one twice.
 13. As a lifter, I want tapping an exercise to open a setup sheet with sets, reps and rest prefilled (3 sets, 8–12 reps, 90 s), so that adding is quick.

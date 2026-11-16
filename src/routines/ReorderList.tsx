@@ -1,7 +1,7 @@
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { minTouch, radius, spacing, useColors } from "@/theme";
+import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
 
 import { canMoveExercise } from "./canMoveExercise";
 import type { RoutineExerciseItem } from "./routineQueries";
@@ -84,7 +84,7 @@ function MoveButton({
         justifyContent: "center",
         borderRadius: radius.sm,
         backgroundColor: pressed ? colors.accentTint : "transparent",
-        opacity: disabled ? 0.3 : 1,
+        opacity: disabled ? opacity.disabled : 1,
       })}
     >
       <Text variant="label" tone="accent">

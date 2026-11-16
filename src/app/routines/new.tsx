@@ -36,7 +36,7 @@ export default function NewRoutineScreen() {
         setError(routineNameMessage(result.reason));
         return;
       }
-      const id = await createRoutine(result.name, days);
+      const id = createRoutine(result.name, days);
       router.replace({ pathname: "/routines/[id]", params: { id: String(id) } });
     } finally {
       setSaving(false);
