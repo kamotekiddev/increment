@@ -5,48 +5,42 @@ import { useCallback, useEffect, useState } from "react";
 import { db } from "@/db/client";
 import { routines, workouts } from "@/db/schema";
 
-export interface InProgressWorkout {
-  id: number;
-  /** Null when the routine was deleted. */
-  routineId: number | null;
-  routineName: string;
-  startedAt: number;
-}
+import type { InProgressWorkout } from "./types";
+
+export type { InProgressWorkout } from "./types";
 
 /** The workout in progress with its routine's name, or null when there is none. */
-export function loadInProgress(): InProgressWorkout | null {
+export function findInProgressWorkout(): InProgressWorkout | null {
   const row = db
     .select({ id: workouts.id, routineId: workouts.routineId, startedAt: workouts.startedAt, routineName: routines.name })
     .from(workouts)
     .leftJoin(routines, eq(routines.id, workouts.routineId))
     .where(eq(workouts.inProgress, true))
     .get();
-  if (!row) return null;
-  return { id: row.id, routineId: row.routineId, routineName: row.routineName ?? "Workout", startedAt: row.startedAt };
+  return row ?? null;
 }
 
 /**
- * The workout in progress, re-read every second so the bar's clock runs and the bar appears or
- * disappears soon after Start, Finish or Discard. Also returns the current time for the clock.
+ * The workout in progress, re-read each time the screen gains focus. Start, Finish and Discard all
+ * end by navigating, so the screen that shows the bar gains focus again and picks the change up.
  */
-export function useInProgressTicker(): { workout: InProgressWorkout | null; now: number } {
-  const [state, setState] = useState(() => ({ workout: loadInProgress(), now: Date.now() }));
-  useEffect(() => {
-    const tick = () => setState({ workout: loadInProgress(), now: Date.now() });
-    tick();
-    const timer = setInterval(tick, 1000);
-    return () => clearInterval(timer);
-  }, []);
-  return state;
-}
-
-/** The workout in progress, re-read each time the screen gains focus (e.g. back from the live screen). */
 export function useInProgressOnFocus(): InProgressWorkout | null {
-  const [workout, setWorkout] = useState<InProgressWorkout | null>(() => loadInProgress());
+  const [workout, setWorkout] = useState<InProgressWorkout | null>(() => findInProgressWorkout());
   useFocusEffect(
     useCallback(() => {
-      setWorkout(loadInProgress());
+      setWorkout(findInProgressWorkout());
     }, []),
   );
   return workout;
+}
+
+/** The current time in ms, ticking each second from the clock alone (no database read) while `active`. */
+export function useNow(active: boolean): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!active) return;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [active]);
+  return now;
 }

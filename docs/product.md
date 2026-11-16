@@ -25,11 +25,13 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - Free users can have up to **2 routines**. Adding a 3rd shows a limit pop-up. In Phase 1 the pop-up has no upgrade button; the link to the paywall arrives in Phase 3.
 
 ### Live workout
-- Set table with the previous set, weight and reps inputs, done checks, add set, and notes.
-- Rest timer with −15 s, +15 s and skip; the screen stays awake.
-- A target banner shows what to hit today to earn the next increase.
-- An in-progress workout is saved continuously and resumes after a crash or a closed app.
-- Workout summary: duration, sets, volume, new records, what goes up next time, and how it felt.
+- Start a workout from a routine. Each exercise shows its Target in a banner and its set rows prefilled to the Target; a first workout with no Target has a blank weight and reps at the bottom of the rep range.
+- Set table with a read-only Last column (the same set from the last finished workout of this routine exercise), weight and reps inputs with −/+ weight nudges by the Jump, done checks and Add set. A set cannot be done while its weight is blank. Rows below an edited row follow it until touched or done.
+- Add a set beyond the plan: it is logged but not judged; the engine judges only the planned sets, by plan position.
+- An in-progress workout is saved at every edit and resumes after a crash or a closed app. Only one workout is in progress at a time; starting another asks Resume or Discard. An in-progress bar above the tab bar reopens it.
+- The ⋯ menu has Discard workout behind a confirmation. Finish confirms when sets are unchecked or an exercise is skipped, then drops unchecked sets and leaves out exercises with no done set (not a Miss). With no set done, Finish offers Discard.
+- Routine lock: the routine of the workout in progress cannot be edited or deleted until it is finished or discarded ("Finish or discard your workout first"); other routines stay editable.
+- Not yet (later phases): notes, rest timer, screen stay-awake, workout summary.
 
 ### Progressive overload
 - **Free**: one simple rule, chosen from the exercise's load type. Weighted exercises add the Jump, and bodyweight exercises add reps. Progression is Earned after 3 clean workouts in a row, then the app asks the lifter whether to progress.

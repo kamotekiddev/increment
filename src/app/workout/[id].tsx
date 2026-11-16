@@ -11,20 +11,20 @@ import { bannerText } from "@/workout/bannerText";
 import { FinishWorkoutSheet } from "@/workout/FinishWorkoutSheet";
 import { finishPrompt, type FinishPrompt } from "@/workout/workoutPromptText";
 import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWorkoutSheet";
+import { findInProgressWorkout } from "@/workout/inProgressQueries";
 import { canMarkDone } from "@/workout/markDone";
 import {
   addSet,
   discardWorkout,
   editSet,
-  findInProgressWorkoutInfo,
   finishWorkout,
   markSetDone,
   useLastExercises,
   useWorkout,
 } from "@/workout/workoutQueries";
 
-const LAST_WIDTH = 52;
-const stepStyle = { width: 32, height: minTouch, alignItems: "center", justifyContent: "center" } as const;
+/** The − and + weight buttons: a full touch target wide and tall. They sit on their own line so a 375 pt phone still fits. */
+const stepStyle = { width: minTouch, height: minTouch, alignItems: "center", justifyContent: "center" } as const;
 
 /** A number field that saves as the lifter types. Shows the saved value again whenever it changes elsewhere (−/+, follow). */
 function NumberField({
@@ -69,7 +69,7 @@ export default function LiveWorkoutScreen() {
   const [routineName, setRoutineName] = useState<string | null>(null);
 
   function openMenu() {
-    setRoutineName(findInProgressWorkoutInfo()?.routineName ?? null);
+    setRoutineName(findInProgressWorkout()?.routineName ?? null);
     setDiscardStep("menu");
   }
 
@@ -209,11 +209,8 @@ export default function LiveWorkoutScreen() {
               <Text variant="caption" tone="muted" style={{ width: spacing.xl }}>
                 Set
               </Text>
-              <Text variant="caption" tone="muted" style={{ width: LAST_WIDTH, textAlign: "center" }}>
+              <Text variant="caption" tone="muted" style={{ flex: 1, textAlign: "center" }}>
                 Last
-              </Text>
-              <Text variant="caption" tone="muted" style={{ flex: 2, textAlign: "center" }}>
-                kg
               </Text>
               <Text variant="caption" tone="muted" style={{ flex: 1, textAlign: "center" }}>
                 Reps
@@ -226,9 +223,7 @@ export default function LiveWorkoutScreen() {
                 <View
                   key={row.setId}
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: spacing.sm,
+                    gap: spacing.xs,
                     paddingVertical: spacing.sm,
                     paddingLeft: spacing.lg,
                     paddingRight: spacing.sm,
@@ -236,13 +231,53 @@ export default function LiveWorkoutScreen() {
                     backgroundColor: colors.card,
                   }}
                 >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
                   <Text variant="label" tone="muted" style={{ width: spacing.xl }}>
                     {index + 1}
                   </Text>
-                  <Text variant="caption" tone="muted" style={{ width: LAST_WIDTH, textAlign: "center" }}>
+                  <Text variant="caption" tone="muted" style={{ flex: 1, textAlign: "center" }}>
                     {last[index] ? `${formatWeight(last[index].weightKg, "kg")}×${last[index].reps}` : "–"}
                   </Text>
-                  <View style={{ flex: 2, flexDirection: "row", alignItems: "center" }}>
+                  <View style={{ flex: 1, flexDirection: "row" }}>
+                    <NumberField
+                      label={`Set ${index + 1} reps`}
+                      keyboardType="number-pad"
+                      parse={parseReps}
+                      value={String(row.reps)}
+                      onText={(t) => {
+                        const r = parseReps(t);
+                        if (r !== undefined) edit(index, { reps: r });
+                      }}
+                    />
+                  </View>
+                  <Pressable
+                    accessibilityRole="checkbox"
+                    accessibilityLabel={`Set ${index + 1} done`}
+                    accessibilityState={{ checked: row.done, disabled: blocked }}
+                    disabled={blocked}
+                    onPress={() => toggle(index)}
+                    style={{
+                      width: minTouch,
+                      height: minTouch,
+                      borderRadius: radius.pill,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: row.done ? colors.accent : "transparent",
+                      borderWidth: row.done ? 0 : 1,
+                      borderColor: colors.line,
+                      opacity: blocked ? opacity.disabled : 1,
+                    }}
+                  >
+                    <Text tone={row.done ? "onAccent" : "muted"} style={{ fontSize: fontSize.title }}>
+                      ✓
+                    </Text>
+                  </Pressable>
+                  </View>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
+                  <Text variant="caption" tone="muted" style={{ width: spacing.xl }}>
+                    kg
+                  </Text>
+                  <View style={{ flex: 1, flexDirection: "row", alignItems: "center" }}>
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Set ${index + 1} weight down`}
@@ -274,43 +309,7 @@ export default function LiveWorkoutScreen() {
                       </Text>
                     </Pressable>
                   </View>
-                  <View style={{ flex: 1, flexDirection: "row" }}>
-                    <NumberField
-                      label={`Set ${index + 1} reps`}
-                      keyboardType="number-pad"
-                      parse={parseReps}
-                      value={String(row.reps)}
-                      onText={(t) => {
-                        const r = parseReps(t);
-                        if (r !== undefined) edit(index, { reps: r });
-                      }}
-                    />
                   </View>
-                  <Pressable
-                    accessibilityRole="checkbox"
-                    accessibilityLabel={`Set ${index + 1} done`}
-                    accessibilityState={{ checked: row.done, disabled: blocked }}
-                    disabled={blocked}
-                    onPress={() => toggle(index)}
-                    style={{
-                      width: minTouch,
-                      height: minTouch,
-                      borderRadius: radius.pill,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: row.done ? colors.accent : "transparent",
-                      borderWidth: row.done ? 0 : 1,
-                      borderColor: colors.line,
-                      opacity: blocked ? opacity.disabled : 1,
-                    }}
-                  >
-                    <Text
-                      tone={row.done ? "onAccent" : "muted"}
-                      style={{ fontSize: fontSize.title }}
-                    >
-                      ✓
-                    </Text>
-                  </Pressable>
                 </View>
               );
             })}

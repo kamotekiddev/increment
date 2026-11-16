@@ -5,16 +5,20 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { TabButton } from "@/components/TabButton";
-import { radius, spacing, useColors } from "@/theme";
+import { minTouch, radius, spacing, useColors } from "@/theme";
 import { InProgressBar } from "@/workout/InProgressBar";
-import { useInProgressTicker } from "@/workout/inProgressQueries";
+import { useInProgressOnFocus, useNow } from "@/workout/inProgressQueries";
+
+/** Tab list height before it is measured: a tab button plus its padding and 1 pt border either side. */
+const TAB_LIST_HEIGHT = minTouch + spacing.sm * 2 + 2;
 
 export default function TabsLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { workout, now } = useInProgressTicker();
+  const workout = useInProgressOnFocus();
+  const now = useNow(workout !== null);
   const tabBottom = Math.max(insets.bottom, spacing.lg);
-  const [tabHeight, setTabHeight] = useState(64);
+  const [tabHeight, setTabHeight] = useState(TAB_LIST_HEIGHT);
   return (
     <Tabs>
       <TabSlot />
