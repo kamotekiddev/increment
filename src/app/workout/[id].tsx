@@ -24,6 +24,7 @@ import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWor
 import { elapsedText } from "@/workout/elapsedText";
 import { findInProgressWorkout, useNow } from "@/workout/inProgressQueries";
 import { canMarkDone } from "@/workout/markDone";
+import { firstOpenExercise } from "@/workout/resume";
 import { loadOffers } from "@/workout/summaryQueries";
 import {
   discardWorkout,
@@ -154,6 +155,17 @@ export default function LiveWorkoutScreen() {
   useEffect(() => {
     latest.current = { restExercises, current };
   });
+
+  // The workout opens on the first exercise that still has an open set, once it has loaded.
+  const placed = useRef(false);
+  useEffect(() => {
+    if (!workout || placed.current) return;
+    placed.current = true;
+    const start = firstOpenExercise(workout.exercises);
+    // The rest-expiry effect below runs in this same commit and must see the exercise being shown.
+    latest.current.current = start;
+    setCurrent(start);
+  }, [workout]);
 
   // A timer left over from another workout is dropped.
   useEffect(() => {

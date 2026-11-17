@@ -15,9 +15,11 @@ import { Text } from "@/components";
 import { useDatabase } from "@/db/useDatabase";
 import { spacing, useColors } from "@/theme";
 import { setupRestNotifications } from "@/workout/restNotification";
+import { setupRestPersistence } from "@/workout/resumeQueries";
 
 SplashScreen.preventAutoHideAsync();
 setupRestNotifications();
+setupRestPersistence();
 
 export default function RootLayout() {
   const colors = useColors();

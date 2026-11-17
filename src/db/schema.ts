@@ -59,6 +59,13 @@ export const workouts = sqliteTable(
     feeling: integer("feeling"),
     notes: text("notes"),
     inProgress: integer("in_progress", { mode: "boolean" }).notNull().default(true),
+    /** When the lifter last changed a set (ms). Null until the first change; crash resume falls back to started_at. */
+    lastEditedAt: integer("last_edited_at"),
+    /** The running rest timer, so a killed app can bring it back. All four are null when no rest is running. */
+    restEndsAt: integer("rest_ends_at"),
+    restTotalMs: integer("rest_total_ms"),
+    restExerciseIndex: integer("rest_exercise_index"),
+    restSetIndex: integer("rest_set_index"),
   },
   (t) => [index("workouts_date_idx").on(t.date)],
 );
@@ -96,6 +103,8 @@ export const sets = sqliteTable(
     reps: integer("reps").notNull(),
     done: integer("done", { mode: "boolean" }).notNull().default(false),
     isWarmup: integer("is_warmup", { mode: "boolean" }).notNull().default(false),
+    /** The lifter typed or nudged this row, so it stops following earlier rows. Only meaningful while the workout is in progress. */
+    edited: integer("edited", { mode: "boolean" }).notNull().default(false),
   },
   (t) => [index("sets_exercise_idx").on(t.exerciseId), index("sets_workout_exercise_idx").on(t.workoutExerciseId)],
 );
