@@ -4,9 +4,9 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] Returns Routines (id, name, days, position) and finished Workouts with Routine id and start time for the current week
-- [ ] Reuses the existing in-progress query
-- [ ] Updates when a Workout is finished, discarded or a Routine's days change
-- [ ] Type check, lint and tests pass
+- [x] Returns Routines (id, name, days, position) and finished Workouts with Routine id and start time for the current week
+- [x] Reuses the existing in-progress query
+- [x] Updates when a Workout is finished, discarded or a Routine's days change
+- [x] Type check, lint and tests pass
