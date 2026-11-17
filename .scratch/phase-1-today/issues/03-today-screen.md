@@ -1,6 +1,6 @@
 # 03: Today screen
 
-**What to build:** Replace the placeholder with the week strip and compact Routine cards (name and Start only), plus the Done, In progress, rest-day, no-days and no-Routines states. Start uses the existing start rule; Create routine opens New routine. Midnight rollover while open. No settings gear; the dev gallery link stays.
+**What to build:** Replace the placeholder with the week strip and compact Routine cards (name and Start only), plus the Done, In progress, rest-day, no-days and no-Routines states. Start uses the existing start rule; Create routine opens New routine. Midnight rollover while open. No settings gear and no dev gallery link.
 
 **Blocked by:** 01, 02
 

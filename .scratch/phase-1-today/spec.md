@@ -56,7 +56,7 @@ Decision 2026-11-17: the first design, a compact card with only the name and Sta
 - All of it is derived from Routines and Workouts. Nothing new is stored and there is no schema change.
 - "Next: Push on Thu" is the first planned Routine after today in week order, wrapping to next week. If several share that day, the first in Routines-tab order is named.
 - Start uses the existing start decision (start, or Resume-or-discard).
-- The dev-only gallery link stays under `__DEV__`.
+-
 - No ADR: the choices are easy to change later.
 
 ## Testing Decisions

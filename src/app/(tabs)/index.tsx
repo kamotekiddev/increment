@@ -1,4 +1,4 @@
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -48,13 +48,6 @@ export default function TodayScreen() {
               <NoRoutineCard onCreate={() => router.push("/routines/new")} />
             )}
           </>
-        ) : null}
-        {__DEV__ ? (
-          <Link href="/gallery">
-            <Text tone="accent" variant="label">
-              Open component gallery
-            </Text>
-          </Link>
         ) : null}
       </ScrollView>
       {sheet}

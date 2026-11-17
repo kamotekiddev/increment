@@ -29,7 +29,7 @@ Start a routine and log sets. Each exercise shows the free-rule Target from the 
 After Finish, when progression is Earned, each Earned exercise gets its own Offer screen, one at a time, asking the lifter to go up or stay: Go up makes the stepped-up Target the next Target, Stay leaves it unchanged and the Offer returns after the next clean workout. Then a summary shows volume and the next Target for each exercise. Spec: `.scratch/phase-1-summary-and-offer/spec.md`.
 
 ### 5 · Today
-Week strip and today's routine with a Start button into the live workout. Includes the empty state (no routines) and the rest-day state. Spec: `.scratch/phase-1-today/spec.md`.
+Date line, week strip and a swipeable deck of hero cards, one per Routine planned today, each with a Start button into the live workout. Includes the empty state (no routines) and the rest-day state with a recovery banner and the next Routine's first exercises. Spec: `.scratch/phase-1-today/spec.md`.
 
 ### 6 · Rest timer
 Starts when a set is marked done, using the exercise's rest length. Skip and add-time controls, and a nudge at zero.
