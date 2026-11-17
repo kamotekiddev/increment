@@ -16,4 +16,6 @@ export interface InProgressWorkout {
   /** Null when the routine was deleted. */
   routineName: string | null;
   startedAt: number;
+  /** When the lifter last changed a set; null until the first change. */
+  lastEditedAt: number | null;
 }
