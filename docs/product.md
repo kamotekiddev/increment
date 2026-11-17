@@ -31,7 +31,9 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - An in-progress workout is saved at every edit and resumes after a crash or a closed app. Only one workout is in progress at a time; starting another asks Resume or Discard. An in-progress bar above the tab bar reopens it.
 - The ⋯ menu has Discard workout behind a confirmation. Finish confirms when sets are unchecked or an exercise is skipped, then drops unchecked sets and leaves out exercises with no done set (not a Miss). With no set done, Finish offers Discard.
 - Routine lock: the routine of the workout in progress cannot be edited or deleted until it is finished or discarded ("Finish or discard your workout first"); other routines stay editable.
-- Not yet (later phases): notes, rest timer, screen stay-awake, workout summary.
+- After Finish, each exercise whose progression is Earned gets its own Offer screen, one at a time in workout order: a progress bar and count, the current Target → stepped-up Target, and only two buttons, Go up and Stay. A tap saves the answer and opens the next screen. Answers are final, and back and swipe are disabled so no Offer is skipped. If the app is killed mid-way, unanswered Offers count as Stay, and a Stay returns the Offer after the next Clean workout. There is no Offer on a Deload workout.
+- Then the summary shows duration, sets and volume (total reps when volume is 0), and one card per exercise with how it went and the next Target. It only reports. These screens cannot be reopened; a killed app reopens on the normal tab.
+- Not yet (later phases): notes, rest timer, screen stay-awake, records on the summary (Phase 2).
 
 ### Progressive overload
 - **Free**: one simple rule, chosen from the exercise's load type. Weighted exercises add the Jump, and bodyweight exercises add reps. Progression is Earned after 3 clean workouts in a row, then the app asks the lifter whether to progress.

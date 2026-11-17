@@ -45,7 +45,7 @@ How a Target rises once progression is Earned: add weight (by the Jump), add rep
 _Avoid_: Progression type, mode
 
 **Offer**:
-The question the app asks after a workout once progression is Earned: move up to the stepped-up Target next time? The lifter answers Accept or Decline. Leaving without answering counts as Decline.
+The question the app asks after a workout once progression is Earned: move up to the stepped-up Target next time? The lifter answers Go up (accepted) or Stay (declined), one exercise at a time. An Offer left unanswered counts as Stay.
 _Avoid_: Proposal, suggestion, level up
 
 **Rep step**:

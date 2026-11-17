@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** built; checked by tsc, lint and Jest only
+**Status:** built; checked by tsc, lint and Jest only. Superseded by ticket 05, which moves the Offer to one screen per exercise.
 
 - [x] The Offer shows the proposed Target, only when the engine returns a proposal
 - [x] Accept writes `progress_accepted = true` immediately and the card shows the stepped-up Target
