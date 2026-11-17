@@ -3,7 +3,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components";
-import { buildToday, dateLine, NoRoutineCard, RestDay, RoutineDeck, screenTitle, useDayRollover, useNextPreview, useTodayData, WeekStrip } from "@/today";
+import { buildToday, dateLine, NoDaysCard, NoRoutineCard, RestDay, RoutineDeck, screenTitle, useDayRollover, useNextPreview, useTodayData, WeekStrip } from "@/today";
 import { spacing, textStyle, useColors } from "@/theme";
 import { useStartWorkout } from "@/workout/useStartWorkout";
 
@@ -43,7 +43,7 @@ export default function TodayScreen() {
             ) : today.state.kind === "rest" ? (
               <RestDay state={today.state} preview={preview} />
             ) : today.state.kind === "noDays" ? (
-              <Text tone="muted">No training days set. Pick days on a routine to plan your week.</Text>
+              <NoDaysCard onPlan={() => router.push("/routines")} />
             ) : (
               <NoRoutineCard onCreate={() => router.push("/routines/new")} />
             )}

@@ -2,6 +2,7 @@ export { buildToday } from "./todayState";
 export type { FinishedWorkout, StripDay, TodayCard, TodayInput, TodayRoutine, TodayState, TodayView } from "./todayState";
 export { useNextPreview, useTodayData } from "./todayQueries";
 export { NoRoutineCard } from "./NoRoutineCard";
+export { NoDaysCard } from "./NoDaysCard";
 export { RestDay } from "./RestDay";
 export { dateLine, screenTitle } from "./todayText";
 export { RoutineDeck } from "./RoutineDeck";
