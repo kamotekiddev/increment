@@ -18,3 +18,5 @@ export { buildSummary } from "./summary";
 export type { OfferItem, Summary, SummaryCard, SummaryExercise, SummaryHeader, SummaryInput, SummaryOffer } from "./summary";
 export { cardLine, targetText } from "./cardLine";
 export type { CardLineInput } from "./cardLine";
+export { adjustRest, nextUp, onSetToggled, resolveExpiry, restRemaining } from "./restTimer";
+export type { Expiry, RestAction, RestExercise, RestTimer, SetRef } from "./restTimer";
