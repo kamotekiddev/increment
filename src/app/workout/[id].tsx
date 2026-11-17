@@ -13,6 +13,7 @@ import { finishCheck, lastColumn, parseReps, parseWeight } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
 import { RestPanel } from "@/workout/RestPanel";
+import { useRestNow } from "@/workout/useRestNow";
 import { scheduleRestNotification } from "@/workout/restNotification";
 import { useRestStore } from "@/workout/restStore";
 import { endedWhileAway, trackAway, type AwayTrace } from "@/workout/restAway";
@@ -137,6 +138,9 @@ export default function LiveWorkoutScreen() {
   const [discardStep, setDiscardStep] = useState<DiscardSheetStep>("closed");
   const [routineName, setRoutineName] = useState<string | null>(null);
   const timer = useRestStore((s) => s.timer);
+  const restClock = useRestNow(timer?.endsAt ?? null);
+  // The clock is idle between rests, so on the first frame of a new rest it is stale. Never read it before the rest began.
+  const restNow = timer ? Math.max(restClock, timer.endsAt - timer.totalMs) : restClock;
   const restStore = useRestStore;
   const [panelHeight, setPanelHeight] = useState(0);
   // False until this screen has seen the rest running: a rest already over on return ended while away.
@@ -184,10 +188,10 @@ export default function LiveWorkoutScreen() {
 
   useEffect(() => {
     if (!timer || !workout) return;
-    if (restRemaining(timer, now).ended) endRest(!sawRunning.current);
+    if (restRemaining(timer, restNow).ended) endRest(!sawRunning.current);
     else sawRunning.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [now, timer, workout]);
+  }, [restNow, timer, workout]);
 
   // Schedules or reschedules the rest-over notification when a rest starts, is replaced or is adjusted.
   // Cancelling is done by the store subscriber in restNotification.ts.
@@ -286,7 +290,7 @@ export default function LiveWorkoutScreen() {
     if (restStore.getState().adjust(deltaSeconds, Date.now()).ended) endRest(false);
   }
 
-  const rest = timer ? restRemaining(timer, now) : null;
+  const rest = timer ? restRemaining(timer, restNow) : null;
 
   return (
     <>
@@ -512,6 +516,8 @@ export default function LiveWorkoutScreen() {
           <RestPanel
             text={rest.text}
             fraction={rest.fraction}
+            endsAt={timer.endsAt}
+            totalMs={timer.totalMs}
             nextUp={nextUp(restExercises, timer.set.exerciseIndex)}
             onAdjust={adjust}
             onSkip={() => restStore.getState().clear()}

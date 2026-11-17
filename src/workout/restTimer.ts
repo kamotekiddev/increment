@@ -135,3 +135,13 @@ export function restRemaining(
   const text = `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
   return { remainingMs, fraction, text, ended: remainingMs === 0 };
 }
+
+/**
+ * Milliseconds to wait before the countdown text changes again, so a clock can wake exactly then
+ * instead of ticking at a random phase. A few ms are added to land just past the boundary. Null when the rest is over.
+ */
+export function msUntilTextChanges(remainingMs: number): number | null {
+  if (remainingMs <= 0) return null;
+  const shown = Math.ceil(remainingMs / 1000);
+  return remainingMs - (shown - 1) * 1000 + 5;
+}

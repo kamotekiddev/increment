@@ -1,5 +1,6 @@
 import {
   adjustRest,
+  msUntilTextChanges,
   nextUp,
   onSetToggled,
   resolveExpiry,
@@ -201,5 +202,26 @@ describe("restRemaining", () => {
   });
   it("clamps the fraction to 1 if the clock moved back", () => {
     expect(restRemaining(timer(), NOW - 100_000).fraction).toBe(1);
+  });
+});
+
+describe("msUntilTextChanges", () => {
+  it("waits a full second just after the text changed", () => {
+    // remaining 90 s shows 1:30 and next shows 1:29 after a full second
+    expect(msUntilTextChanges(90_000)).toBe(1000 + 5);
+  });
+
+  it("waits only until the next whole second mid-second", () => {
+    // 89.4 s shows 1:30 (rounded up); it shows 1:29 once 89 s are left
+    expect(msUntilTextChanges(89_400)).toBe(400 + 5);
+  });
+
+  it("waits out the last second at 0:01 so the rest ends on time", () => {
+    expect(msUntilTextChanges(700)).toBe(700 + 5);
+  });
+
+  it("returns null once the rest is over", () => {
+    expect(msUntilTextChanges(0)).toBeNull();
+    expect(msUntilTextChanges(-30)).toBeNull();
   });
 });

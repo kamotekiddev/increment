@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Pressable, View, type LayoutChangeEvent } from "react-native";
+import Animated, { Easing, useAnimatedProps, useSharedValue, withSequence, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Circle } from "react-native-svg";
 
@@ -14,6 +16,9 @@ function spokenTime(text: string): string {
 
 const R = (restPanel.ring - restPanel.stroke) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * R;
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+/** How long the ring takes to settle when the rest is adjusted by 15 s. */
+const SETTLE_MS = 200;
 
 function AdjustButton({ label, text, onPress }: { label: string; text: string; onPress: () => void }) {
   const colors = useColors();
@@ -43,6 +48,8 @@ function AdjustButton({ label, text, onPress }: { label: string; text: string; o
 export function RestPanel({
   text,
   fraction,
+  endsAt,
+  totalMs,
   nextUp,
   onAdjust,
   onSkip,
@@ -50,8 +57,12 @@ export function RestPanel({
 }: {
   /** The countdown as m:ss. */
   text: string;
-  /** Ring fill, 1 full to 0 empty. */
+  /** Ring fill when the panel first shows, 1 full to 0 empty. After that the ring runs on its own from `endsAt`. */
   fraction: number;
+  /** When the rest ends, on the Date.now() clock. */
+  endsAt: number;
+  /** The rest's length in ms, for the ring's scale. */
+  totalMs: number;
   nextUp: string | null;
   onAdjust: (deltaSeconds: number) => void;
   onSkip: () => void;
@@ -61,6 +72,18 @@ export function RestPanel({
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const center = restPanel.ring / 2;
+  // The ring drains continuously instead of stepping once a second. A change of the end time (+15s, -15s, a new rest)
+  // eases to the new fill first, then runs linearly to empty exactly when the rest ends.
+  const progress = useSharedValue(fraction);
+  useEffect(() => {
+    const remaining = Math.max(0, endsAt - Date.now());
+    const target = totalMs > 0 ? Math.min(1, remaining / totalMs) : 0;
+    progress.value = withSequence(
+      withTiming(target, { duration: SETTLE_MS, easing: Easing.out(Easing.quad) }),
+      withTiming(0, { duration: Math.max(0, remaining - SETTLE_MS), easing: Easing.linear }),
+    );
+  }, [endsAt, totalMs, progress]);
+  const ringProps = useAnimatedProps(() => ({ strokeDashoffset: CIRCUMFERENCE * (1 - progress.value) }));
   return (
     <View
       onLayout={onLayout}
@@ -89,14 +112,15 @@ export function RestPanel({
         <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: "absolute" }}>
           <Svg width={restPanel.ring} height={restPanel.ring}>
             <Circle cx={center} cy={center} r={R} stroke={colors.sunk} strokeWidth={restPanel.stroke} fill="none" />
-            <Circle
+            <AnimatedCircle
               cx={center}
               cy={center}
               r={R}
               stroke={colors.accent}
               strokeWidth={restPanel.stroke}
               strokeLinecap="round"
-              strokeDasharray={`${CIRCUMFERENCE * fraction} ${CIRCUMFERENCE}`}
+              strokeDasharray={CIRCUMFERENCE}
+              animatedProps={ringProps}
               fill="none"
               transform={`rotate(-90 ${center} ${center})`}
             />
