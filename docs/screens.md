@@ -19,7 +19,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 ## 2 · Train
 | Screen | Notes |
 |---|---|
-| Today | Week strip (Sun to Sat: today highlighted, dot = planned, check = finished workout, not tappable) and one compact card per Routine planned today, with only the name and Start. A finished Routine shows Done, the Routine in progress shows In progress, and a workout belongs to the day it was started. Settings gear arrives with Settings (Phase 2) |
+| Today | Week strip (Sun to Sat: today highlighted, dot = planned, check = finished workout, not tappable) and a swipeable deck of accent "hero" cards, one per Routine planned today: caption (TODAY), the Routine name in large type, "N exercises" and a white Start workout pill. Swipe the top card sideways to send it to the back and see the next; dots and "1 of 2 · swipe" show under the deck, and a single card is a plain card with no deck or swipe. Routines still to do come first, in Routines-tab order, then Done ones. A finished Routine is a white card with a Done check (FINISHED), the Routine in progress is a white card reading In progress (RUNNING), neither has a button. A workout belongs to the day it was started. Settings gear arrives with Settings (Phase 2) |
 | Live workout | Set rows prefilled with the Target; read-only Last column; weight and reps typed into plain inputs (no −/+ buttons); fixed set count; ⋯ → Discard workout; Finish → Finish prompt. Interactive kg/lb arrives in Phase 2 |
 | Finish workout | Prompt naming unchecked sets (dropped) and skipped exercises (not a Miss); with no sets done it offers Discard instead |
 | Discard workout | Confirmation; deletes the workout and its sets |

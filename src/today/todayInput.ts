@@ -9,7 +9,7 @@ export function toTodayInput(
 ): TodayInput {
   return {
     now,
-    routines: routines.map(({ id, name, days }) => ({ id, name, days })),
+    routines: routines.map(({ id, name, days, exerciseCount }) => ({ id, name, days, exerciseCount })),
     finished: finished.map(({ routineId, startedAt }) => ({ routineId, startedAt })),
     inProgress: inProgress ? { routineId: inProgress.routineId } : null,
   };

@@ -7,6 +7,7 @@ export interface TodayRoutine {
   id: number;
   name: string;
   days: number;
+  exerciseCount: number;
 }
 
 /** A finished Workout row as Today reads it. `routineId` is null when the Routine was deleted. */
@@ -40,6 +41,7 @@ export interface StripDay {
 export interface TodayCard {
   routineId: number;
   name: string;
+  exerciseCount: number;
   status: "start" | "done" | "inProgress";
 }
 
@@ -101,14 +103,14 @@ function stateFor(
     const doneIds = new Set(
       finished.filter((w) => w.routineId !== null && dayKey(new Date(w.startedAt)) === todayKey).map((w) => w.routineId),
     );
-    return {
-      kind: "cards",
-      cards: planned.map((r) => ({
-        routineId: r.id,
-        name: r.name,
-        status: inProgress && inProgress.routineId === r.id ? "inProgress" : doneIds.has(r.id) ? "done" : "start",
-      })),
-    };
+    const cards: TodayCard[] = planned.map((r) => ({
+      routineId: r.id,
+      name: r.name,
+      exerciseCount: r.exerciseCount,
+      status: inProgress && inProgress.routineId === r.id ? "inProgress" : doneIds.has(r.id) ? "done" : "start",
+    }));
+    // Deck order: what still needs doing first (Routines-tab order), then the Done ones behind.
+    return { kind: "cards", cards: [...cards.filter((c) => c.status !== "done"), ...cards.filter((c) => c.status === "done")] };
   }
 
   for (let offset = 1; offset <= 7; offset++) {

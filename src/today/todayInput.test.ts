@@ -25,13 +25,13 @@ describe("toTodayInput", () => {
   it("keeps only what the builder reads", () => {
     const input = toTodayInput(
       5,
-      [{ id: 1, name: "Push", days: 3, position: 0 }],
+      [{ id: 1, name: "Push", days: 3, exerciseCount: 4, position: 0 }],
       [{ routineId: 1, startedAt: 4 }],
       { routineId: null },
     );
     expect(input).toEqual({
       now: 5,
-      routines: [{ id: 1, name: "Push", days: 3 }],
+      routines: [{ id: 1, name: "Push", days: 3, exerciseCount: 4 }],
       finished: [{ routineId: 1, startedAt: 4 }],
       inProgress: { routineId: null },
     });
@@ -41,9 +41,9 @@ describe("toTodayInput", () => {
     const input = toTodayInput(
       5,
       [
-        { id: 7, name: "Legs", days: 1, position: 0 },
-        { id: 2, name: "Arms", days: 1, position: 1 },
-        { id: 5, name: "Push", days: 1, position: 2 },
+        { id: 7, name: "Legs", days: 1, exerciseCount: 0, position: 0 },
+        { id: 2, name: "Arms", days: 1, exerciseCount: 0, position: 1 },
+        { id: 5, name: "Push", days: 1, exerciseCount: 0, position: 2 },
       ],
       [],
       null,

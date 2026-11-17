@@ -14,6 +14,9 @@ export const lightColors = {
   accent: "#5B3DF5",
   /** Progress pills and highlights (alias: pr). */
   accentTint: "#EFEAFF",
+  /** Second and third card of the Today deck: lighter than the accent, one step each. */
+  accentLayer1: "#9D8BF9",
+  accentLayer2: "#CEC5FC",
   onAccent: "#FFFFFF",
   danger: "#C62828",
   /** Soft red behind a destructive icon (delete and remove sheets). */
@@ -55,11 +58,35 @@ export const fontSize = {
 /** Fixed heights and widths of the routine screens' controls and rows, in points. */
 export const size = { round: 48, control: 56, row: 66, pickerRow: 62, day: 46, tile: 40, icon: 20, check: 16, dot: 6 } as const;
 
+/** The Today routine deck: sizes in points, drag distances and scales. */
+export const deck = {
+  cardHeight: 200,
+  /** Each card underneath sits this far lower than the one above. */
+  offset: 14,
+  /** Scale of the second and third card (the top card is 1). */
+  scales: [1, 0.95, 0.9],
+  /** A drag past this, or a quick flick, sends the top card away. */
+  swipeDistance: 70,
+  flickVelocity: 0.6,
+  /** A drag must be this far sideways before the deck takes the gesture, so Start still taps. */
+  panStart: 8,
+  /** Drag distance at which the next card is fully revealed. */
+  revealDistance: 150,
+  /** Where a flung card flies to, and how long it takes (ms). */
+  flyDistance: 420,
+  flyDuration: 160,
+  /** Tilt in degrees at `tiltDistance` of drag. */
+  tilt: 6,
+  tiltDistance: 200,
+  /** Page dots: the current one is a wider pill. */
+  dotActiveWidth: 18,
+} as const;
+
 /** Minimum touch target, in points. */
 export const minTouch = 44;
 
 /** Opacity for interactive states. One disabled value everywhere. */
-export const opacity = { pressed: 0.85, disabled: 0.4 } as const;
+export const opacity = { pressed: 0.85, disabled: 0.4, onAccentSoft: 0.85 } as const;
 
 /** Line heights for text that sets its own size. */
 export const lineHeight = { title: 24, screen: 38 } as const;

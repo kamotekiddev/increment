@@ -11,10 +11,10 @@ const SUN = 1 << 6;
 const at = (day: number, h = 9, m = 0) => new Date(2026, 10, day, h, m).getTime();
 const WED_NOON = at(18, 12);
 
-const push = { id: 1, name: "Push", days: MON | THU };
-const pull = { id: 2, name: "Pull", days: MON | TUE };
-const legs = { id: 3, name: "Legs", days: 1 << 2 }; // Wed
-const arms = { id: 4, name: "Arms", days: 1 << 2 }; // Wed
+const push = { id: 1, name: "Push", days: MON | THU, exerciseCount: 5 };
+const pull = { id: 2, name: "Pull", days: MON | TUE, exerciseCount: 4 };
+const legs = { id: 3, name: "Legs", days: 1 << 2, exerciseCount: 3 }; // Wed
+const arms = { id: 4, name: "Arms", days: 1 << 2, exerciseCount: 2 }; // Wed
 
 function input(over: Partial<TodayInput>): TodayInput {
   return { now: WED_NOON, routines: [], finished: [], inProgress: null, ...over };
@@ -26,8 +26,8 @@ describe("buildToday cards", () => {
     expect(state).toEqual({
       kind: "cards",
       cards: [
-        { routineId: 2, name: "Pull", status: "start" },
-        { routineId: 1, name: "Push", status: "start" },
+        { routineId: 2, name: "Pull", exerciseCount: 4, status: "start" },
+        { routineId: 1, name: "Push", exerciseCount: 5, status: "start" },
       ],
     });
   });
@@ -37,10 +37,30 @@ describe("buildToday cards", () => {
     expect(state).toEqual({
       kind: "cards",
       cards: [
-        { routineId: 3, name: "Legs", status: "done" },
-        { routineId: 4, name: "Arms", status: "start" },
+        { routineId: 4, name: "Arms", exerciseCount: 2, status: "start" },
+        { routineId: 3, name: "Legs", exerciseCount: 3, status: "done" },
       ],
     });
+  });
+
+  it("puts Done cards behind the ones still to do, keeping Routines-tab order within each group", () => {
+    const abs = { id: 6, name: "Abs", days: 1 << 2, exerciseCount: 1 };
+    const { state } = buildToday(
+      input({ routines: [legs, arms, abs], finished: [{ routineId: 3, startedAt: at(18, 7) }], inProgress: { routineId: 6 } }),
+    );
+    expect(state).toMatchObject({
+      kind: "cards",
+      cards: [
+        { routineId: 4, status: "start" },
+        { routineId: 6, status: "inProgress" },
+        { routineId: 3, status: "done" },
+      ],
+    });
+  });
+
+  it("carries each Routine's exercise count onto its card", () => {
+    const { state } = buildToday(input({ routines: [legs, { ...arms, exerciseCount: 1 }] }));
+    expect(state).toMatchObject({ cards: [{ exerciseCount: 3 }, { exerciseCount: 1 }] });
   });
 
   it("does not count a finished Workout from another day (discarded Workouts are deleted, so they never reach the builder)", () => {
@@ -53,8 +73,8 @@ describe("buildToday cards", () => {
     expect(state).toEqual({
       kind: "cards",
       cards: [
-        { routineId: 3, name: "Legs", status: "inProgress" },
-        { routineId: 4, name: "Arms", status: "start" },
+        { routineId: 3, name: "Legs", exerciseCount: 3, status: "inProgress" },
+        { routineId: 4, name: "Arms", exerciseCount: 2, status: "start" },
       ],
     });
   });
@@ -68,12 +88,12 @@ describe("buildToday cards", () => {
 
   it("ignores an in-progress Workout whose Routine is not planned today", () => {
     const { state } = buildToday(input({ routines: [legs, push], inProgress: { routineId: 1 } }));
-    expect(state).toEqual({ kind: "cards", cards: [{ routineId: 3, name: "Legs", status: "start" }] });
+    expect(state).toEqual({ kind: "cards", cards: [{ routineId: 3, name: "Legs", exerciseCount: 3, status: "start" }] });
   });
 
   it("counts a Workout started at 11:50 pm for its start day", () => {
     const lateTuesday = at(17, 23, 50);
-    const tue = { id: 5, name: "Tue", days: TUE };
+    const tue = { id: 5, name: "Tue", days: TUE, exerciseCount: 1 };
     const sameDay = buildToday(
       input({ now: at(17, 23, 55), routines: [tue], finished: [{ routineId: 5, startedAt: lateTuesday }] }),
     );
@@ -97,7 +117,7 @@ describe("buildToday strip", () => {
   });
 
   it("highlights today and marks planned days", () => {
-    const { strip } = buildToday(input({ routines: [push, { id: 9, name: "Sun", days: SUN }] }));
+    const { strip } = buildToday(input({ routines: [push, { id: 9, name: "Sun", days: SUN, exerciseCount: 1 }] }));
     expect(strip.map((d) => d.isToday)).toEqual([false, false, false, true, false, false, false]);
     expect(strip.map((d) => d.planned)).toEqual([true, true, false, false, true, false, false]);
   });
@@ -130,7 +150,7 @@ describe("buildToday other states", () => {
   });
 
   it("says no days set when Routines exist but none has a day", () => {
-    expect(buildToday(input({ routines: [{ id: 1, name: "Push", days: 0 }] })).state).toEqual({ kind: "noDays" });
+    expect(buildToday(input({ routines: [{ id: 1, name: "Push", days: 0, exerciseCount: 0 }] })).state).toEqual({ kind: "noDays" });
   });
 
   it("names the next planned Routine and day on a rest day", () => {
@@ -145,7 +165,7 @@ describe("buildToday other states", () => {
       kind: "rest",
       next: { routineName: "Pull", dayLabel: "Mon" },
     });
-    expect(buildToday(input({ routines: [{ id: 8, name: "Long", days: SUN }] })).state).toEqual({
+    expect(buildToday(input({ routines: [{ id: 8, name: "Long", days: SUN, exerciseCount: 1 }] })).state).toEqual({
       kind: "rest",
       next: { routineName: "Long", dayLabel: "Sun" },
     });

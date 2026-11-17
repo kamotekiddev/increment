@@ -10,19 +10,21 @@ The Today tab is a placeholder. The lifter opens the app and cannot see what is 
 
 ## Solution
 
-Today shows a week strip (Sun to Sat) and one compact card per Routine planned for today, each with only the Routine name and a Start button. It also has states for no Routines, no Routine planned today (a rest day), a Routine already done, and a Workout in progress.
+Today shows a week strip (Sun to Sat) and a swipeable deck of accent hero cards, one per Routine planned for today, each with the Routine name, its exercise count and a Start button. It also has states for no Routines, no Routine planned today (a rest day), a Routine already done (a white card), and a Workout in progress (a white card).
+
+Decision 2026-11-17: the first design, a compact card with only the name and Start, was too compact. The owner approved the accent hero deck from a prototype instead.
 
 ## User Stories
 
 **Cards**
-1. As a lifter, I want one card per Routine planned for today, stacked in Routines-tab order, so that nothing planned is hidden.
-2. As a lifter, I want each card to show only the Routine name and a Start button, so that Today stays compact (no exercise list).
+1. As a lifter, I want the Routines planned for today as a deck of cards, one visible at a time, and to swipe the top card away to see the next, so that nothing planned is hidden. With one Routine it is a plain card, with no swipe.
+2. As a lifter, I want each card to show the Routine name, its exercise count ("5 exercises", "1 exercise") and a Start workout button, so that I know what I am about to start (no exercise list, no time estimate).
 3. As a lifter, I want Start to open the live workout through the existing start rule, so that starting works the same everywhere.
-4. As a lifter, I want a Routine I finished today to show a "Done" check instead of Start, so that I do not start it twice by accident.
+4. As a lifter, I want a Routine I finished today to be a white card with a "Done" check instead of Start, so that I do not start it twice by accident.
 5. As a lifter, I want a discarded workout not to count as done, so that Start comes back.
-6. As a lifter, I want the card of the Routine with a Workout in progress to read "In progress" with no button, so that I use the floating in-progress bar to return.
+6. As a lifter, I want the card of the Routine with a Workout in progress to be a white card reading "In progress" with no button, so that I use the floating in-progress bar to return.
 7. As a lifter, I want Start on another card, while one is in progress, to open the existing Resume-or-discard sheet, so that only one workout exists at a time.
-8. As a lifter, I want no extra message when everything planned is Done, so that the cards speak for themselves.
+8. As a lifter, I want Routines still to do shown first and Done ones behind them in the deck (Routines-tab order within each group), with no extra message when everything is Done, so that the top card is what I do next.
 
 **Week strip**
 9. As a lifter, I want the current week shown Sun to Sat with three-letter names, so that it matches my calendar.
@@ -45,6 +47,8 @@ Today shows a week strip (Sun to Sat) and one compact card per Routine planned f
 
 ## Implementation Decisions
 
+- Deck order: Routines still to do (Start or In progress) in Routines-tab order, then Done ones in Routines-tab order. The builder returns the cards in this order and each card carries the Routine's exercise count.
+- The deck is a top card plus up to two layers underneath (offset 14 pt, scaled 0.95 and 0.90, each lighter). A horizontal drag tilts the top card; the next card rises, grows to full size and turns to full accent, its content fading in by 150 pt of drag. Past 70 pt or a quick flick the top card goes to the back; otherwise it springs back. Dots and "1 of 2 · swipe" show with two or more cards. A vertical drag and a tap on Start are not taken by the deck. Screen readers get a "next routine" action; reduced motion skips the fly-off animation.
 - A Routine appears on Today when its days include today's weekday. Days stay a bitmask, Monday = bit 0; the strip only displays Sunday first.
 - "Done" for a card: a finished Workout of that Routine whose start falls on today (local time). The strip check: a finished Workout of any Routine started that day. "In progress" comes from the existing in-progress query.
 - All of it is derived from Routines and Workouts. Nothing new is stored and there is no schema change.
@@ -55,9 +59,9 @@ Today shows a week strip (Sun to Sat) and one compact card per Routine planned f
 
 ## Testing Decisions
 
-- One pure seam: a Today-state builder over plain inputs (Routines with days and order, finished and in-progress Workouts with start times, today's date). It returns the strip marks and the screen state (cards, rest day with next day, no days set, no routines).
-- Example tests: two Routines share Mon; Routine Done; discarded workout does not count; in progress; rest day with next planned day and wrap into next week; no days set; no Routines; session started 11:50 pm counts for its start day; check on an unplanned day; Sunday-first strip.
-- Not unit-tested: the queries and the screen. A short device checklist goes in the last ticket.
+- One pure seam: a Today-state builder over plain inputs (Routines with days, order and exercise count, finished and in-progress Workouts with start times, today's date). It returns the strip marks and the screen state (cards, rest day with next day, no days set, no routines).
+- Example tests: Done cards go behind the ones still to do; exercise count on each card; two Routines share Mon; Routine Done; discarded workout does not count; in progress; rest day with next planned day and wrap into next week; no days set; no Routines; session started 11:50 pm counts for its start day; check on an unplanned day; Sunday-first strip.
+- Not unit-tested: the queries, the screen and the swipe (device check). A short device checklist goes in the last ticket.
 - Prior art: `bannerText`, `startDecision` and `routineLock` tests in the workout module.
 
 ## Out of Scope

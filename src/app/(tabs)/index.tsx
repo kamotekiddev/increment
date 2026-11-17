@@ -3,7 +3,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Text } from "@/components";
-import { buildToday, TodayRoutineCard, useDayRollover, useTodayData, WeekStrip } from "@/today";
+import { buildToday, RoutineDeck, useDayRollover, useTodayData, WeekStrip } from "@/today";
 import { spacing, textStyle, useColors } from "@/theme";
 import { useStartWorkout } from "@/workout/useStartWorkout";
 
@@ -31,9 +31,7 @@ export default function TodayScreen() {
           <>
             <WeekStrip days={today.strip} />
             {today.state.kind === "cards" ? (
-              today.state.cards.map((card) => (
-                <TodayRoutineCard key={card.routineId} card={card} onStart={() => start(card.routineId, card.name)} />
-              ))
+              <RoutineDeck cards={today.state.cards} onStart={(card) => start(card.routineId, card.name)} />
             ) : today.state.kind === "rest" ? (
               <Text variant="title">{`Rest day. Next: ${today.state.next.routineName} on ${today.state.next.dayLabel}`}</Text>
             ) : today.state.kind === "noDays" ? (
