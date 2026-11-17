@@ -88,6 +88,10 @@ _Avoid_: Slot, entry
 The seconds the lifter plans to rest between sets of a Routine exercise.
 _Avoid_: Rest timer (that counts down during a workout)
 
+**Rest timer**:
+The countdown that starts when the lifter marks a set done, from that Routine exercise's Rest length. There is only one at a time, and a new one replaces a running one. It does not start after the last open set of the Workout.
+_Avoid_: Rest clock, break timer
+
 **Workout**:
 One session of training started from a Routine. It holds a Workout exercise for each exercise in the Routine as it was when the Workout started.
 _Avoid_: Session, log
