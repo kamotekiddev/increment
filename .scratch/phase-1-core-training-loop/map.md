@@ -35,7 +35,7 @@ Date line, week strip and a swipeable deck of hero cards, one per Routine planne
 Starts when a set is marked done, using the exercise's rest length. Skip and add-time controls, and a nudge at zero: a buzz, and a local notification when the app is in the background. Spec: `.scratch/phase-1-rest-timer/spec.md`.
 
 ### 7 · Crash resume (built; owner check on phones pending, see its ticket 02)
-Reopening the app after it was killed mid-workout returns to the same workout, with logged sets and the rest timer intact. Spec: `.scratch/phase-1-crash-resume/spec.md`.
+Reopening the app after it was killed mid-workout returns to the same workout, with logged sets intact. The rest timer is not restored (decided 2026-11-17). Spec: `.scratch/phase-1-crash-resume/spec.md`.
 
 ## Decisions so far
 - Split by what the lifter can use on the device, not by screen.

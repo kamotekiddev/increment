@@ -1,4 +1,4 @@
-import { firstOpenExercise, lastActivity, restoreTimer, RESUME_WINDOW_MS, shouldAutoOpen, storedRest } from "./resume";
+import { firstOpenExercise, lastActivity, RESUME_WINDOW_MS, shouldAutoOpen } from "./resume";
 
 const H = 60 * 60 * 1000;
 
@@ -19,16 +19,4 @@ describe("firstOpenExercise", () => {
   it("starts at the first when nothing is done", () => expect(firstOpenExercise([ex(false), ex(false)])).toBe(0));
   it("falls back to the first when everything is done", () => expect(firstOpenExercise([ex(true), ex(true)])).toBe(0));
   it("handles no exercises", () => expect(firstOpenExercise([])).toBe(0));
-});
-
-describe("restoreTimer", () => {
-  const stored = { endsAt: 10_000, totalMs: 120_000, exerciseIndex: 1, setIndex: 2 };
-  it("restores a rest that is still running", () =>
-    expect(restoreTimer(stored, 4000)).toEqual({ endsAt: 10_000, totalMs: 120_000, set: { exerciseIndex: 1, setIndex: 2 } }));
-  it("drops a rest that ended while the app was dead", () => expect(restoreTimer(stored, 10_000)).toBeNull());
-  it("returns null when nothing was stored", () => expect(restoreTimer(storedRest(null), 0)).toBeNull());
-  it("round-trips a timer through the stored columns", () => {
-    const timer = { endsAt: 9000, totalMs: 90_000, set: { exerciseIndex: 0, setIndex: 3 } };
-    expect(restoreTimer(storedRest(timer), 1000)).toEqual(timer);
-  });
 });

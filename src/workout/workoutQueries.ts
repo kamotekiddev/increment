@@ -271,7 +271,7 @@ export function finishWorkout(id: number, now: Date = new Date()): void {
       }
       tx.delete(sets).where(and(eq(sets.workoutExerciseId, ex.id), eq(sets.done, false))).run();
     }
-    tx.update(workouts).set({ finishedAt: now.getTime(), inProgress: false, restEndsAt: null, restTotalMs: null, restExerciseIndex: null, restSetIndex: null }).where(eq(workouts.id, id)).run();
+    tx.update(workouts).set({ finishedAt: now.getTime(), inProgress: false }).where(eq(workouts.id, id)).run();
   });
 }
 

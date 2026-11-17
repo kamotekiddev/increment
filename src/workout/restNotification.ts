@@ -47,6 +47,8 @@ export function setupRestNotifications() {
         importance: AndroidImportance.HIGH,
       }).catch(() => {});
     }
+    // The rest timer does not survive a kill, so an alert queued by the killed process is stale.
+    void Notifications.cancelScheduledNotificationAsync(REST_NOTIFICATION_ID).catch(() => {});
   } catch {
     // Notifications are optional; the timer works without them.
   }

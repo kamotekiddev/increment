@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4af9b1a5-859e-4c47-8fd8-cb7ce636d959",
+  "id": "41a0b55a-73f0-4142-9ac5-b01619ab72ed",
   "prevId": "5b6c9607-784f-49fa-9e85-358631dcf4de",
   "tables": {
     "entitlements": {
@@ -600,34 +600,6 @@
         },
         "last_edited_at": {
           "name": "last_edited_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "rest_ends_at": {
-          "name": "rest_ends_at",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "rest_total_ms": {
-          "name": "rest_total_ms",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "rest_exercise_index": {
-          "name": "rest_exercise_index",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "rest_set_index": {
-          "name": "rest_set_index",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,

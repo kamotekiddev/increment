@@ -61,11 +61,6 @@ export const workouts = sqliteTable(
     inProgress: integer("in_progress", { mode: "boolean" }).notNull().default(true),
     /** When the lifter last changed a set (ms). Null until the first change; crash resume falls back to started_at. */
     lastEditedAt: integer("last_edited_at"),
-    /** The running rest timer, so a killed app can bring it back. All four are null when no rest is running. */
-    restEndsAt: integer("rest_ends_at"),
-    restTotalMs: integer("rest_total_ms"),
-    restExerciseIndex: integer("rest_exercise_index"),
-    restSetIndex: integer("rest_set_index"),
   },
   (t) => [index("workouts_date_idx").on(t.date)],
 );
