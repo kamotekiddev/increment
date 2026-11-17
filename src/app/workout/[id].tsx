@@ -1,7 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import * as Haptics from "expo-haptics";
+import { AppState, Pressable, ScrollView, View } from "react-native";
 
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
@@ -13,6 +14,7 @@ import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
 import { RestPanel } from "@/workout/RestPanel";
 import { useRestStore } from "@/workout/restStore";
+import { endedWhileAway, trackAway, type AwayTrace } from "@/workout/restAway";
 import { nextUp, onSetToggled, resolveExpiry, restRemaining } from "@/workout/restTimer";
 import { FinishWorkoutSheet } from "@/workout/FinishWorkoutSheet";
 import { finishPrompt, type FinishPrompt } from "@/workout/workoutPromptText";
@@ -138,6 +140,8 @@ export default function LiveWorkoutScreen() {
   const [panelHeight, setPanelHeight] = useState(0);
   // False until this screen has seen the rest running: a rest already over on return ended while away.
   const sawRunning = useRef(false);
+  // When the app last left the foreground, so a rest that ended while it was away gets no buzz.
+  const away = useRef<AwayTrace | null>(null);
   const restExercises = useMemo(() => (workout ? toRestExercises(workout.exercises) : []), [workout]);
 
   // A timer left over from another workout is dropped.
@@ -146,17 +150,29 @@ export default function LiveWorkoutScreen() {
     if (workoutId !== null && workoutId !== Number(idParam)) clear();
   }, [idParam, restStore]);
 
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      away.current = trackAway(away.current, state, Date.now());
+    });
+    return () => sub.remove();
+  }, []);
+
   /**
-   * A rest reached zero (countdown, -15s to zero, or found over on return): clears the timer and
-   * returns what the rules say should follow. Nothing acts on it yet: the buzz and the move to the
-   * next exercise plug in here (`expiry.buzz`, `expiry.advanceTo`).
+   * A rest reached zero (countdown, -15s to zero, or found over on return): clears the timer, buzzes
+   * unless it ended while the app was away, and moves to the next exercise when the rules say so.
    */
-  function endRest(endedWhileAway: boolean) {
+  function endRest(unseen: boolean) {
     const running = restStore.getState().timer;
-    if (!running) return null;
-    const expiry = resolveExpiry({ exercises: restExercises, timer: running, viewingIndex: current, endedWhileAway });
+    if (!running) return;
+    const expiry = resolveExpiry({
+      exercises: restExercises,
+      timer: running,
+      viewingIndex: current,
+      endedWhileAway: unseen || endedWhileAway(running.endsAt, away.current),
+    });
     restStore.getState().clear();
-    return expiry;
+    if (expiry.buzz) void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    if (expiry.advanceTo !== null) setCurrent(expiry.advanceTo);
   }
 
   useEffect(() => {
