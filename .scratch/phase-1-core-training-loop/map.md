@@ -31,8 +31,8 @@ After Finish, when progression is Earned, each Earned exercise gets its own Offe
 ### 5 · Today
 Date line, week strip and a swipeable deck of hero cards, one per Routine planned today, each with a Start button into the live workout. Includes the empty state (no routines) and the rest-day state with a recovery banner and the next Routine's first exercises. Spec: `.scratch/phase-1-today/spec.md`.
 
-### 6 · Rest timer
-Starts when a set is marked done, using the exercise's rest length. Skip and add-time controls, and a nudge at zero.
+### 6 · Rest timer (built; owner check on phones pending, see its ticket 05)
+Starts when a set is marked done, using the exercise's rest length. Skip and add-time controls, and a nudge at zero: a buzz, and a local notification when the app is in the background. Spec: `.scratch/phase-1-rest-timer/spec.md`.
 
 ### 7 · Crash resume
 Reopening the app after it was killed mid-workout returns to the same workout, with logged sets and the rest timer intact.

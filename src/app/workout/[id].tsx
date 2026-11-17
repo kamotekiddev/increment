@@ -1,7 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { useEffect, useMemo, useRef, useState } from "react";
+import * as Haptics from "expo-haptics";
+import { AppState, Pressable, ScrollView, View } from "react-native";
 
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
@@ -10,6 +11,13 @@ import { formatWeight } from "@/units";
 import type { SetEdit } from "@/workout";
 import { finishCheck, lastColumn, parseReps, parseWeight } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
+import { toRestExercises } from "@/workout/restExercises";
+import { RestPanel } from "@/workout/RestPanel";
+import { useRestNow } from "@/workout/useRestNow";
+import { scheduleRestNotification } from "@/workout/restNotification";
+import { useRestStore } from "@/workout/restStore";
+import { endedWhileAway, trackAway, type AwayTrace } from "@/workout/restAway";
+import { nextUp, onSetToggled, resolveExpiry, restRemaining } from "@/workout/restTimer";
 import { FinishWorkoutSheet } from "@/workout/FinishWorkoutSheet";
 import { finishPrompt, type FinishPrompt } from "@/workout/workoutPromptText";
 import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWorkoutSheet";
@@ -129,6 +137,73 @@ export default function LiveWorkoutScreen() {
   const now = useNow(true);
   const [discardStep, setDiscardStep] = useState<DiscardSheetStep>("closed");
   const [routineName, setRoutineName] = useState<string | null>(null);
+  const timer = useRestStore((s) => s.timer);
+  const restClock = useRestNow(timer?.endsAt ?? null);
+  // The clock is idle between rests, so on the first frame of a new rest it is stale. Never read it before the rest began.
+  const restNow = timer ? Math.max(restClock, timer.endsAt - timer.totalMs) : restClock;
+  const restStore = useRestStore;
+  const [panelHeight, setPanelHeight] = useState(0);
+  // False until this screen has seen the rest running: a rest already over on return ended while away.
+  const sawRunning = useRef(false);
+  // When the app last left the foreground, so a rest that ended while it was away gets no buzz.
+  // Starts from the state at mount, so a screen opened while the app is in the background begins away.
+  const away = useRef<AwayTrace | null>(trackAway(null, AppState.currentState ?? "active", Date.now()));
+  const restExercises = useMemo(() => (workout ? toRestExercises(workout.exercises) : []), [workout]);
+  // The latest exercises and viewed index, so a rest ending reads them at call time, not from a stale render.
+  const latest = useRef({ restExercises, current });
+  useEffect(() => {
+    latest.current = { restExercises, current };
+  });
+
+  // A timer left over from another workout is dropped.
+  useEffect(() => {
+    const { workoutId, clear } = restStore.getState();
+    if (workoutId !== null && workoutId !== Number(idParam)) clear();
+  }, [idParam, restStore]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener("change", (state) => {
+      away.current = trackAway(away.current, state, Date.now());
+    });
+    return () => sub.remove();
+  }, []);
+
+  /**
+   * A rest reached zero (countdown, -15s to zero, or found over on return): clears the timer, buzzes
+   * unless it ended while the app was away, and moves to the next exercise when the rules say so.
+   */
+  function endRest(unseen: boolean) {
+    const running = restStore.getState().timer;
+    if (!running) return;
+    const expiry = resolveExpiry({
+      exercises: latest.current.restExercises,
+      timer: running,
+      viewingIndex: latest.current.current,
+      endedWhileAway: unseen || endedWhileAway(running.endsAt, away.current),
+    });
+    restStore.getState().clear();
+    if (expiry.buzz) void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    if (expiry.advanceTo !== null) setCurrent(expiry.advanceTo);
+  }
+
+  useEffect(() => {
+    if (!timer || !workout) return;
+    if (restRemaining(timer, restNow).ended) endRest(!sawRunning.current);
+    else sawRunning.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restNow, timer, workout]);
+
+  // Schedules or reschedules the rest-over notification when a rest starts, is replaced or is adjusted.
+  // Cancelling is done by the store subscriber in restNotification.ts.
+  const endsAt = timer?.endsAt;
+  // Waits for the workout to load: before that the Next up line cannot be built.
+  const loaded = !!workout;
+  useEffect(() => {
+    const running = restStore.getState().timer;
+    if (!running || !loaded) return;
+    void scheduleRestNotification(running.endsAt, nextUp(restExercises, running.set.exerciseIndex));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endsAt, loaded]);
 
   function openMenu() {
     setRoutineName(findInProgressWorkout()?.routineName ?? null);
@@ -137,6 +212,7 @@ export default function LiveWorkoutScreen() {
 
   /** Deletes the workout and returns to where it started (the root when there is nowhere to go back to). */
   function confirmDiscard() {
+    restStore.getState().clear();
     discardWorkout(Number(idParam));
     setDiscardStep("closed");
     if (router.canGoBack()) router.back();
@@ -163,6 +239,7 @@ export default function LiveWorkoutScreen() {
 
   function confirmFinish(prompt: FinishPrompt | null) {
     setFinishing(null);
+    restStore.getState().clear();
     if (prompt?.kind === "discard") {
       discardWorkout(Number(idParam));
       leave();
@@ -196,11 +273,24 @@ export default function LiveWorkoutScreen() {
     const row = exercise.rows[index];
     const rows = markSetDone(exercise.rows, index, !row.done);
     if (rows === exercise.rows) return;
-    setWorkout({
-      ...workout,
-      exercises: workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e)),
+    const exercises = workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e));
+    setWorkout({ ...workout, exercises });
+    const action = onSetToggled({
+      exercises: toRestExercises(exercises),
+      set: { exerciseIndex: current, setIndex: index },
+      done: !row.done,
+      timer: restStore.getState().timer,
+      now: Date.now(),
     });
+    if (action.kind === "start" || action.kind === "replace") sawRunning.current = true;
+    restStore.getState().apply(action, Number(idParam));
   }
+
+  function adjust(deltaSeconds: number) {
+    if (restStore.getState().adjust(deltaSeconds, Date.now()).ended) endRest(false);
+  }
+
+  const rest = timer ? restRemaining(timer, restNow) : null;
 
   return (
     <>
@@ -248,7 +338,7 @@ export default function LiveWorkoutScreen() {
             contentContainerStyle={{
               paddingHorizontal: spacing.xl,
               paddingTop: spacing.md,
-              paddingBottom: spacing.xxl,
+              paddingBottom: spacing.xxl + (rest ? panelHeight : 0),
               gap: spacing.lg,
             }}
           >
@@ -421,6 +511,18 @@ export default function LiveWorkoutScreen() {
           <View style={{ padding: spacing.xl }}>
             <Text tone="muted">Workout not found.</Text>
           </View>
+        ) : null}
+        {timer && rest ? (
+          <RestPanel
+            text={rest.text}
+            fraction={rest.fraction}
+            endsAt={timer.endsAt}
+            totalMs={timer.totalMs}
+            nextUp={nextUp(restExercises, timer.set.exerciseIndex)}
+            onAdjust={adjust}
+            onSkip={() => restStore.getState().clear()}
+            onLayout={(e) => setPanelHeight(e.nativeEvent.layout.height)}
+          />
         ) : null}
       </View>
     </>

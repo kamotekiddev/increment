@@ -33,7 +33,8 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - Routine lock: the routine of the workout in progress cannot be edited or deleted until it is finished or discarded ("Finish or discard your workout first"); other routines stay editable.
 - After Finish, each exercise whose progression is Earned gets its own Offer screen, one at a time in workout order: a progress bar and count, the current Target → stepped-up Target, and only two buttons, Go up and Stay. A tap saves the answer and opens the next screen. Answers are final, and back and swipe are disabled so no Offer is skipped. If the app is killed mid-way, unanswered Offers count as Stay, and a Stay returns the Offer after the next Clean workout. There is no Offer on a Deload workout.
 - Then the summary shows duration, sets and volume (total reps when volume is 0), and one card per exercise with how it went and the next Target. It only reports. These screens cannot be reopened; a killed app reopens on the normal tab.
-- Not yet (later phases): notes, rest timer, screen stay-awake, records on the summary (Phase 2).
+- Rest timer: marking a set done starts a countdown from that exercise's Rest length, shown as a panel pinned to the bottom of the screen with a progress ring, the time as m:ss, a "Next up" line (the next open set, e.g. "Set 3 · 62.5 kg × 8", or the next exercise with an open set once this one is finished) and -15s, +15s and Skip. There is only one timer: marking another set restarts it, unmarking the set that started it cancels it, and no rest starts after the last open set of the workout. -15s and +15s change this rest only, never the stored Rest length. At zero the phone buzzes and the panel hides; if the exercise is finished and the lifter is still on it, the screen moves to the next exercise with an open set (wrapping past the end). The timer is an end time, so it stays right while the app is minimized or the phone is locked, and a rest that ended while away resolves without a buzz. While the app is in the background a local "Rest over" notification arrives at zero. Finish and Discard clear the timer. It is not saved across a killed app (crash resume, feature 7).
+- Not yet (later phases): notes, screen stay-awake, records on the summary (Phase 2).
 
 ### Progressive overload
 - **Free**: one simple rule, chosen from the exercise's load type. Weighted exercises add the Jump, and bodyweight exercises add reps. Progression is Earned after 3 clean workouts in a row, then the app asks the lifter whether to progress.
@@ -61,7 +62,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 Welcome → Goal → Experience → Schedule → Equipment → Units → Your plan → Reminders, with a Quick start path for people who skip.
 - Every question can be skipped.
 - The answers pick a starter split (full body, push/pull/legs, upper/lower) that fits within the 2-routine free limit. **Open:** push/pull/legs is 3 routines, so the plan generator in Phase 4 must change the split or the limit.
-- Permission for reminders is asked after the plan is shown, not before.
+- Permission for reminders is asked after the plan is shown, not before. Until Phase 4 builds onboarding, the rest timer asks for notification permission once, at the first rest, and only if the OS has not been asked yet. A denial is never asked again and the timer still works without the notification.
 - **"I already have Increment"** goes straight to Welcome back to restore a Pro purchase and a backup, skipping the questions.
 
 ## Pro (one-time purchase)
