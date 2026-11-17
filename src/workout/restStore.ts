@@ -20,6 +20,8 @@ export const useRestStore = create<RestState>((set, get) => ({
   apply: (action, workoutId) => {
     if (action.kind === "start" || action.kind === "replace") set({ timer: action.timer, workoutId });
     else if (action.kind === "cancel") set({ timer: null, workoutId: null });
+    // keep or none from a different workout than the timer's: that timer is not this workout's.
+    else if (get().workoutId !== null && get().workoutId !== workoutId) set({ timer: null, workoutId: null });
   },
   adjust: (deltaSeconds, now) => {
     const { timer } = get();

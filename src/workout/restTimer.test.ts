@@ -51,6 +51,16 @@ describe("onSetToggled", () => {
     const a = onSetToggled({ exercises: exs, set: { exerciseIndex: 0, setIndex: 1 }, done: true, timer: timer(), now: NOW });
     expect(a).toEqual({ kind: "cancel" });
   });
+  it("starts nothing for a Rest length of 0", () => {
+    const exs = [ex("Bench", 0, [set(60, true), set(60)])];
+    const a = onSetToggled({ exercises: exs, set: { exerciseIndex: 0, setIndex: 0 }, done: true, timer: null, now: NOW });
+    expect(a).toEqual({ kind: "none" });
+  });
+  it("cancels a running rest when the exercise just done has a Rest length of 0", () => {
+    const exs = [ex("Bench", 90, [set(60, true), set(60)]), ex("Curl", 0, [set(20, true), set(20)])];
+    const a = onSetToggled({ exercises: exs, set: { exerciseIndex: 1, setIndex: 0 }, done: true, timer: timer(), now: NOW });
+    expect(a).toEqual({ kind: "cancel" });
+  });
   it("still starts a rest when the last exercise is finished first and other sets remain", () => {
     const exs = [ex("Bench", 90, [set(60), set(60)]), ex("Row", 60, [set(50, true)])];
     const a = onSetToggled({ exercises: exs, set: { exerciseIndex: 1, setIndex: 0 }, done: true, timer: null, now: NOW });
@@ -100,6 +110,14 @@ describe("nextUp", () => {
   });
   it("is null when nothing is open", () => {
     expect(nextUp([ex("A", 60, [set(1, true)])], 0)).toBeNull();
+  });
+});
+
+describe("nextUp defensive", () => {
+  it("is null instead of crashing when an exercise has no open row", () => {
+    const broken = { name: "X", restSeconds: 60, bodyweight: false, rows: [] } as RestExercise;
+    const exs = [ex("Bench", 90, [set(60, true)]), broken];
+    expect(nextUp(exs, 0)).toBeNull();
   });
 });
 

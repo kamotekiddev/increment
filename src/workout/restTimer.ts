@@ -52,6 +52,8 @@ export function onSetToggled(input: {
   // Nothing left to rest for: no timer, and a running one is pointless.
   if (!exercises.some(hasOpen)) return timer ? { kind: "cancel" } : { kind: "none" };
   const totalMs = (exercises[set.exerciseIndex]?.restSeconds ?? 0) * 1000;
+  // A Rest length of 0 means no rest: nothing starts, and a running rest from another exercise is dropped.
+  if (totalMs <= 0) return timer ? { kind: "cancel" } : { kind: "none" };
   return { kind: timer ? "replace" : "start", timer: { endsAt: now + totalMs, totalMs, set } };
 }
 
@@ -83,7 +85,9 @@ export function nextUp(exercises: RestExercise[], exerciseIndex: number): string
   const n = nextOpenExercise(exercises, exerciseIndex);
   if (n === null) return null;
   const next = exercises[n];
-  const load = loadText(next, next.rows.find((r) => !r.done)!);
+  const row = next.rows.find((r) => !r.done);
+  if (!row) return null;
+  const load = loadText(next, row);
   return load ? `${next.name} · ${load}` : next.name;
 }
 

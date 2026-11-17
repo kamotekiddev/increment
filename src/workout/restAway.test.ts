@@ -5,9 +5,22 @@ describe("trackAway", () => {
     expect(trackAway(null, "background", 100)).toEqual({ from: 100, to: null });
   });
 
-  it("keeps the first moment of an away span through inactive then background", () => {
+  it("does not count inactive (a sheet or the app switcher) as away", () => {
+    expect(trackAway(null, "inactive", 100)).toBeNull();
+  });
+
+  it("starts the span at background, after inactive", () => {
     const t = trackAway(null, "inactive", 100);
-    expect(trackAway(t, "background", 150)).toEqual({ from: 100, to: null });
+    expect(trackAway(t, "background", 150)).toEqual({ from: 150, to: null });
+  });
+
+  it("keeps an open span through inactive on the way back", () => {
+    const t: AwayTrace = { from: 100, to: null };
+    expect(trackAway(t, "inactive", 300)).toBe(t);
+  });
+
+  it("starts as away when the screen mounts while the app is not active", () => {
+    expect(trackAway(null, "background", 5)).toEqual({ from: 5, to: null });
   });
 
   it("closes the span when the app becomes active", () => {

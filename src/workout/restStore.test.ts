@@ -30,4 +30,12 @@ describe("restStore", () => {
   it("adjust with no timer does nothing", () => {
     expect(useRestStore.getState().adjust(15, 0)).toEqual({ ended: false });
   });
+  it("drops another workout's timer when a keep or none arrives from a different workout", () => {
+    useRestStore.getState().apply({ kind: "start", timer: timer(100) }, 1);
+    useRestStore.getState().apply({ kind: "keep" }, 2);
+    expect(useRestStore.getState()).toMatchObject({ timer: null, workoutId: null });
+    useRestStore.getState().apply({ kind: "start", timer: timer(100) }, 1);
+    useRestStore.getState().apply({ kind: "none" }, 2);
+    expect(useRestStore.getState().timer).toBeNull();
+  });
 });

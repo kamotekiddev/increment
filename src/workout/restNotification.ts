@@ -13,6 +13,21 @@ let scheduledId: string | null = null;
 /** Bumped on every schedule or cancel, so a schedule that was waiting on the permission prompt can tell it was overtaken. */
 let generation = 0;
 
+/** The permission check and request, made once per app session so rescheduling never repeats or doubles the prompt. */
+let permission: Promise<boolean> | null = null;
+
+function ensurePermission(): Promise<boolean> {
+  permission ??= (async () => {
+    let result = await Notifications.getPermissionsAsync();
+    if (shouldAskPermission(result.status)) result = await Notifications.requestPermissionsAsync();
+    return result.granted;
+  })().catch(() => {
+    permission = null;
+    return false;
+  });
+  return permission;
+}
+
 /** Call once at app start: no banner or sound while the app is open, the Android channel, and cancel when the rest clears. */
 export function setupRestNotifications() {
   try {
@@ -61,9 +76,7 @@ export async function scheduleRestNotification(endsAt: number, nextUp: string | 
   scheduledId = null;
   try {
     if (previous) await Notifications.cancelScheduledNotificationAsync(previous);
-    let permission = await Notifications.getPermissionsAsync();
-    if (shouldAskPermission(permission.status)) permission = await Notifications.requestPermissionsAsync();
-    if (!permission.granted || mine !== generation) return;
+    if (!(await ensurePermission()) || mine !== generation) return;
     const seconds = secondsUntil(endsAt, Date.now());
     if (seconds === null) return;
     const id = await Notifications.scheduleNotificationAsync({

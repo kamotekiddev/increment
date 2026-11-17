@@ -142,8 +142,14 @@ export default function LiveWorkoutScreen() {
   // False until this screen has seen the rest running: a rest already over on return ended while away.
   const sawRunning = useRef(false);
   // When the app last left the foreground, so a rest that ended while it was away gets no buzz.
-  const away = useRef<AwayTrace | null>(null);
+  // Starts from the state at mount, so a screen opened while the app is in the background begins away.
+  const away = useRef<AwayTrace | null>(trackAway(null, AppState.currentState ?? "active", Date.now()));
   const restExercises = useMemo(() => (workout ? toRestExercises(workout.exercises) : []), [workout]);
+  // The latest exercises and viewed index, so a rest ending reads them at call time, not from a stale render.
+  const latest = useRef({ restExercises, current });
+  useEffect(() => {
+    latest.current = { restExercises, current };
+  });
 
   // A timer left over from another workout is dropped.
   useEffect(() => {
@@ -166,9 +172,9 @@ export default function LiveWorkoutScreen() {
     const running = restStore.getState().timer;
     if (!running) return;
     const expiry = resolveExpiry({
-      exercises: restExercises,
+      exercises: latest.current.restExercises,
       timer: running,
-      viewingIndex: current,
+      viewingIndex: latest.current.current,
       endedWhileAway: unseen || endedWhileAway(running.endsAt, away.current),
     });
     restStore.getState().clear();
@@ -186,12 +192,14 @@ export default function LiveWorkoutScreen() {
   // Schedules or reschedules the rest-over notification when a rest starts, is replaced or is adjusted.
   // Cancelling is done by the store subscriber in restNotification.ts.
   const endsAt = timer?.endsAt;
+  // Waits for the workout to load: before that the Next up line cannot be built.
+  const loaded = !!workout;
   useEffect(() => {
     const running = restStore.getState().timer;
-    if (!running) return;
+    if (!running || !loaded) return;
     void scheduleRestNotification(running.endsAt, nextUp(restExercises, running.set.exerciseIndex));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endsAt]);
+  }, [endsAt, loaded]);
 
   function openMenu() {
     setRoutineName(findInProgressWorkout()?.routineName ?? null);

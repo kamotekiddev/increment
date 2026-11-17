@@ -4,9 +4,11 @@ export interface AwayTrace {
   to: number | null;
 }
 
-/** Updates the away trace for an app state change (`AppState` values), at clock time `now`. */
+/** Updates the away trace for an app state change (`AppState` values), at clock time `now`. Start it with the state at mount. */
 export function trackAway(trace: AwayTrace | null, state: string, now: number): AwayTrace | null {
-  if (state !== "active") return trace && trace.to === null ? trace : { from: now, to: null };
+  // Only the background counts as away. Inactive (a sheet, the app switcher) still shows the screen.
+  if (state === "background") return trace && trace.to === null ? trace : { from: now, to: null };
+  if (state !== "active") return trace;
   return trace && trace.to === null ? { from: trace.from, to: now } : trace;
 }
 
