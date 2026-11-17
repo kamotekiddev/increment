@@ -12,6 +12,7 @@ import { finishCheck, lastColumn, parseReps, parseWeight } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
 import { RestPanel } from "@/workout/RestPanel";
+import { scheduleRestNotification } from "@/workout/restNotification";
 import { useRestStore } from "@/workout/restStore";
 import { nextUp, onSetToggled, resolveExpiry, restRemaining } from "@/workout/restTimer";
 import { FinishWorkoutSheet } from "@/workout/FinishWorkoutSheet";
@@ -165,6 +166,16 @@ export default function LiveWorkoutScreen() {
     else sawRunning.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [now, timer, workout]);
+
+  // Schedules or reschedules the rest-over notification when a rest starts, is replaced or is adjusted.
+  // Cancelling is done by the store subscriber in restNotification.ts.
+  const endsAt = timer?.endsAt;
+  useEffect(() => {
+    const running = restStore.getState().timer;
+    if (!running) return;
+    void scheduleRestNotification(running.endsAt, nextUp(restExercises, running.set.exerciseIndex));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endsAt]);
 
   function openMenu() {
     setRoutineName(findInProgressWorkout()?.routineName ?? null);

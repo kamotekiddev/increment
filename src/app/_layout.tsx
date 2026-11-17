@@ -14,8 +14,10 @@ import { View } from "react-native";
 import { Text } from "@/components";
 import { useDatabase } from "@/db/useDatabase";
 import { spacing, useColors } from "@/theme";
+import { setupRestNotifications } from "@/workout/restNotification";
 
 SplashScreen.preventAutoHideAsync();
+setupRestNotifications();
 
 export default function RootLayout() {
   const colors = useColors();
