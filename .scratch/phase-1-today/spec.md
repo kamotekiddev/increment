@@ -28,8 +28,8 @@ Decision 2026-11-17: the first design, a compact card with only the name and Sta
 
 **Week strip**
 9. As a lifter, I want the current week shown Sun to Sat with three-letter names, so that it matches my calendar.
-10. As a lifter, I want today highlighted, planned days marked with a dot, and days with a finished workout marked with a check, so that I can read my week at a glance.
-11. As a lifter, I want a check on any day I finished a workout, planned or not, so that extra sessions show.
+10. As a lifter, I want each strip day to show its name over its date number, today filled with the accent (outlined on a rest day), days with a finished workout tinted, and planned days still to do marked with a dot, so that I can read my week at a glance.
+11. As a lifter, I want a tint on any day I finished a workout, planned or not, so that extra sessions show.
 12. As a lifter, I want planned days that passed without a workout to have no "missed" styling, so that the strip never makes me feel guilty.
 13. As a lifter, I want the strip not to be tappable, so that it stays a glance.
 
@@ -38,12 +38,14 @@ Decision 2026-11-17: the first design, a compact card with only the name and Sta
 15. As a lifter, I want Today to roll over at local midnight if the app stays open, so that it never shows yesterday.
 
 **Empty and rest states**
-16. As a lifter with no Routines, I want "No routines yet" and a Create routine button that opens New routine, so that I can begin at once. The strip still shows.
-17. As a lifter on a rest day, I want "Rest day. Next: Push on Thu" and no Start button, so that I know when I train next. Starting an unplanned Routine happens from the Routines tab.
+16. As a lifter with no Routines, I want a card reading "No routine yet", "Build your own in a minute." and a "Create a routine" button that opens New routine, so that I can begin at once. The date line and strip still show.
+17. As a lifter on a rest day, I want the title to read "Rest day", a "Recover today" banner and a "Next: Push" row with the weekday on the right, and no Start button, so that I know when I train next. Starting an unplanned Routine happens from the Routines tab.
 18. As a lifter whose Routines have no days set, I want "No training days set. Pick days on a routine to plan your week.", so that I know why Today is blank.
+19. As a lifter on a rest day, I want the banner to say how my week is going: "N of M workouts done this week. Muscles grow while you rest." (M = Routine-days planned this week, a Routine on 3 days counting 3, two Routines on one day counting 2; N = finished workouts started this week, any Routine). When N is more than M, or M is 0 and N is at least 1, it says "N workouts done this week." ("1 workout" for one). With N = 0 it says "Muscles grow while you rest."
+20. As a lifter on a rest day, I want a card listing the first 3 exercises of the next planned Routine with each Target (weight and unit, or reps for a bodyweight exercise) and "+ N more", or "No exercises yet" for an empty Routine, so that I can see what is coming. No step badges.
 
 **Header**
-19. As a lifter, I want a "Today" title, with no settings gear until Settings exist (Phase 2).
+21. As a lifter, I want a date line ("Thursday, 12 Nov") above the title in local time, and the title "Today" (or "Rest day" on a rest day), with no settings gear until Settings exist (Phase 2).
 
 ## Implementation Decisions
 
@@ -61,17 +63,20 @@ Decision 2026-11-17: the first design, a compact card with only the name and Sta
 
 - One pure seam: a Today-state builder over plain inputs (Routines with days, order and exercise count, finished and in-progress Workouts with start times, today's date). It returns the strip marks and the screen state (cards, rest day with next day, no days set, no routines).
 - Example tests: Done cards go behind the ones still to do; exercise count on each card; two Routines share Mon; Routine Done; discarded workout does not count; in progress; rest day with next planned day and wrap into next week; no days set; no Routines; session started 11:50 pm counts for its start day; check on an unplanned day; Sunday-first strip.
+- Date line, screen title, banner text, strip labels and the Next card rows are pure and tested; the rest state carries `routineId`, the weekday and the week totals. The Next card's Targets come from the engine through the same history path Start uses, without writing anything.
 - Not unit-tested: the queries, the screen and the swipe (device check). A short device checklist goes in the last ticket.
 - Prior art: `bannerText`, `startDecision` and `routineLock` tests in the workout module.
 
 ## Out of Scope
 
 - Workout history and records (Phase 2); tapping a strip day.
-- Settings and the gear (Phase 2); reminders.
+- Settings and the gear (planned for Phase 2); reminders.
+- Ready-made plans (relates to the Phase 4 plan generator), "Start an empty workout", "Train anyway" and a week number. Train anyway reverses nothing: it was not built, so a rest day still has no Start button.
 - Starting an unplanned Routine from Today.
 - Rest timer (feature 6) and crash resume (feature 7).
 
 ## Further Notes
 
+- Decision 2026-11-17 (design alignment): the empty and rest states, header and strip follow the owner's design; see ticket 06.
 - Glossary: **Rest day** added.
 - `docs/screens.md` is updated with this spec.

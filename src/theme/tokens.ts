@@ -56,7 +56,10 @@ export const fontSize = {
 } as const;
 
 /** Fixed heights and widths of the routine screens' controls and rows, in points. */
-export const size = { round: 48, control: 56, row: 66, pickerRow: 62, day: 46, tile: 40, icon: 20, check: 16, dot: 6 } as const;
+export const size = { round: 48, control: 56, row: 66, pickerRow: 62, day: 46, tile: 40, icon: 20, check: 16, dot: 6, heroTile: 64, heroIcon: 32, bannerCircle: 44, smallTile: 32 } as const;
+
+/** Border widths. */
+export const borderWidth = { outline: 2 } as const;
 
 /** The Today routine deck: sizes in points, drag distances and scales. */
 export const deck = {

@@ -2,8 +2,8 @@ import { Link, router } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Button, Text } from "@/components";
-import { buildToday, RoutineDeck, useDayRollover, useTodayData, WeekStrip } from "@/today";
+import { Text } from "@/components";
+import { buildToday, dateLine, NoRoutineCard, RestDay, RoutineDeck, screenTitle, useDayRollover, useNextPreview, useTodayData, WeekStrip } from "@/today";
 import { spacing, textStyle, useColors } from "@/theme";
 import { useStartWorkout } from "@/workout/useStartWorkout";
 
@@ -13,6 +13,7 @@ export default function TodayScreen() {
   const data = useTodayData(useDayRollover());
   const { start, sheet } = useStartWorkout();
   const today = data ? buildToday(data) : undefined;
+  const preview = useNextPreview(today?.state.kind === "rest" ? today.state.next.routineId : undefined);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -24,23 +25,27 @@ export default function TodayScreen() {
           gap: spacing.lg,
         }}
       >
-        <Text variant="heading" accessibilityRole="header" style={textStyle.screenTitle}>
-          Today
-        </Text>
+        <View>
+          {data ? (
+            <Text tone="muted" variant="label">
+              {dateLine(data.now)}
+            </Text>
+          ) : null}
+          <Text variant="heading" accessibilityRole="header" style={textStyle.screenTitle}>
+            {screenTitle(today?.state.kind ?? "")}
+          </Text>
+        </View>
         {today ? (
           <>
-            <WeekStrip days={today.strip} />
+            <WeekStrip days={today.strip} restDay={today.state.kind === "rest"} />
             {today.state.kind === "cards" ? (
               <RoutineDeck cards={today.state.cards} onStart={(card) => start(card.routineId, card.name)} />
             ) : today.state.kind === "rest" ? (
-              <Text variant="title">{`Rest day. Next: ${today.state.next.routineName} on ${today.state.next.dayLabel}`}</Text>
+              <RestDay state={today.state} preview={preview} />
             ) : today.state.kind === "noDays" ? (
               <Text tone="muted">No training days set. Pick days on a routine to plan your week.</Text>
             ) : (
-              <View style={{ paddingVertical: spacing.md, gap: spacing.lg }}>
-                <Text variant="title">No routines yet</Text>
-                <Button label="Create routine" onPress={() => router.push("/routines/new")} />
-              </View>
+              <NoRoutineCard onCreate={() => router.push("/routines/new")} />
             )}
           </>
         ) : null}

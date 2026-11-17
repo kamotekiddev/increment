@@ -1,6 +1,7 @@
 import { DAY_LABELS, DISPLAY_ORDER, isDaySet } from "@/routines/routineDays";
 
-import { weekStart } from "./week";
+import { weekdayName } from "./todayText";
+import { weekEnd, weekStart } from "./week";
 
 /** A Routine as Today reads it. Pass Routines in Routines-tab order. `days` is the bitmask (Monday = bit 0). */
 export interface TodayRoutine {
@@ -31,6 +32,8 @@ export interface StripDay {
   label: string;
   /** Local midnight of the day, epoch ms. */
   date: number;
+  /** Day of the month, 1 to 31. */
+  dayNumber: number;
   isToday: boolean;
   /** Some Routine is planned this weekday. */
   planned: boolean;
@@ -47,7 +50,13 @@ export interface TodayCard {
 
 export type TodayState =
   | { kind: "cards"; cards: TodayCard[] }
-  | { kind: "rest"; next: { routineName: string; dayLabel: string } }
+  | {
+      kind: "rest";
+      /** The next planned Routine, with the full weekday it falls on ("Thursday"). */
+      next: { routineId: number; routineName: string; weekday: string };
+      /** Routine-days planned this week (a Routine on 3 days counts 3), and finished workouts started this week. */
+      week: { planned: number; done: number };
+    }
   | { kind: "noDays" }
   | { kind: "noRoutines" };
 
@@ -66,6 +75,19 @@ function dayKey(date: Date): string {
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
 }
 
+function date(from: Date, offset: number): Date {
+  return new Date(from.getFullYear(), from.getMonth(), from.getDate() + offset);
+}
+
+function weekTotals(now: number, routines: TodayRoutine[], finished: FinishedWorkout[]): { planned: number; done: number } {
+  const start = weekStart(now);
+  const end = weekEnd(now);
+  return {
+    planned: routines.reduce((sum, r) => sum + DISPLAY_ORDER.filter((bit) => isDaySet(r.days, bit)).length, 0),
+    done: finished.filter((w) => w.startedAt >= start && w.startedAt < end).length,
+  };
+}
+
 /** Pure: the week strip and the screen state for Today, from plain inputs. */
 export function buildToday({ now, routines, finished, inProgress }: TodayInput): TodayView {
   const today = new Date(now);
@@ -78,21 +100,23 @@ export function buildToday({ now, routines, finished, inProgress }: TodayInput):
     return {
       label: DAY_LABELS[bit],
       date: day.getTime(),
+      dayNumber: day.getDate(),
       isToday: dayKey(day) === todayKey,
       planned: routines.some((r) => isDaySet(r.days, bit)),
       done: finishedKeys.has(dayKey(day)),
     };
   });
 
-  return { strip, state: stateFor(today, routines, finished, inProgress) };
+  return { strip, state: stateFor(now, routines, finished, inProgress) };
 }
 
 function stateFor(
-  today: Date,
+  now: number,
   routines: TodayRoutine[],
   finished: TodayInput["finished"],
   inProgress: TodayInput["inProgress"],
 ): TodayState {
+  const today = new Date(now);
   if (routines.length === 0) return { kind: "noRoutines" };
   if (routines.every((r) => r.days === 0)) return { kind: "noDays" };
 
@@ -116,7 +140,10 @@ function stateFor(
   for (let offset = 1; offset <= 7; offset++) {
     const bit = (todayBit + offset) % 7;
     const next = routines.find((r) => isDaySet(r.days, bit));
-    if (next) return { kind: "rest", next: { routineName: next.name, dayLabel: DAY_LABELS[bit] } };
+    if (next) {
+      const weekday = weekdayName(date(today, offset).getDay());
+      return { kind: "rest", next: { routineId: next.id, routineName: next.name, weekday }, week: weekTotals(now, routines, finished) };
+    }
   }
   return { kind: "noDays" };
 }

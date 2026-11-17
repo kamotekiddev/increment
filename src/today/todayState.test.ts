@@ -133,7 +133,7 @@ describe("buildToday strip", () => {
       }),
     );
     expect(strip.map((d) => d.done)).toEqual([false, true, false, false, false, true, false]);
-    expect(Object.keys(strip[2]).sort()).toEqual(["date", "done", "isToday", "label", "planned"]);
+    expect(Object.keys(strip[2]).sort()).toEqual(["date", "dayNumber", "done", "isToday", "label", "planned"]);
   });
 
   it("ignores Workouts outside the displayed week", () => {
@@ -154,27 +154,47 @@ describe("buildToday other states", () => {
   });
 
   it("names the next planned Routine and day on a rest day", () => {
-    expect(buildToday(input({ routines: [push] })).state).toEqual({
+    expect(buildToday(input({ routines: [push] })).state).toMatchObject({
       kind: "rest",
-      next: { routineName: "Push", dayLabel: "Thu" },
+      next: { routineId: 1, routineName: "Push", weekday: "Thursday" },
     });
   });
 
   it("wraps to next week, Sunday included, when nothing is left this week", () => {
-    expect(buildToday(input({ now: at(20, 9), routines: [pull] })).state).toEqual({
+    expect(buildToday(input({ now: at(20, 9), routines: [pull] })).state).toMatchObject({
       kind: "rest",
-      next: { routineName: "Pull", dayLabel: "Mon" },
+      next: { routineName: "Pull", weekday: "Monday" },
     });
-    expect(buildToday(input({ routines: [{ id: 8, name: "Long", days: SUN, exerciseCount: 1 }] })).state).toEqual({
+    expect(buildToday(input({ routines: [{ id: 8, name: "Long", days: SUN, exerciseCount: 1 }] })).state).toMatchObject({
       kind: "rest",
-      next: { routineName: "Long", dayLabel: "Sun" },
+      next: { routineName: "Long", weekday: "Sunday" },
     });
   });
 
   it("names the first Routine in tab order when several share the next day", () => {
-    expect(buildToday(input({ now: at(20, 9), routines: [pull, push] })).state).toEqual({
+    expect(buildToday(input({ now: at(20, 9), routines: [pull, push] })).state).toMatchObject({
       kind: "rest",
-      next: { routineName: "Pull", dayLabel: "Mon" },
+      next: { routineId: 2, routineName: "Pull", weekday: "Monday" },
     });
+  });
+
+  it("counts Routine-days planned this week and workouts started this week on a rest day", () => {
+    // Push Mon+Thu (2) and Pull Mon+Tue (2): 4 planned. Wed is a rest day.
+    const { state } = buildToday(
+      input({
+        routines: [push, pull],
+        finished: [
+          { routineId: 1, startedAt: at(16, 8) },
+          { routineId: 2, startedAt: at(16, 18) }, // two on the same day count 2
+          { routineId: null, startedAt: at(14, 9) }, // last week
+          { routineId: 1, startedAt: at(22, 9) }, // next week
+        ],
+      }),
+    );
+    expect(state).toMatchObject({ kind: "rest", week: { planned: 4, done: 2 } });
+  });
+
+  it("numbers the strip days from the Sunday", () => {
+    expect(buildToday(input({})).strip.map((d) => d.dayNumber)).toEqual([15, 16, 17, 18, 19, 20, 21]);
   });
 });
