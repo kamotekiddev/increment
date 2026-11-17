@@ -8,7 +8,7 @@ describe("finishPrompt", () => {
   it("counts unchecked sets", () => {
     expect(finishPrompt({ uncheckedSets: 3, skippedExercises: [], noSetsDone: false }, names)).toEqual({
       kind: "finish",
-      title: "Finish workout?",
+      title: "Finish this workout?",
       body: "3 sets aren't done. They will be dropped.",
       confirm: "Finish workout",
       cancel: "Keep training",
