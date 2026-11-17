@@ -2,12 +2,9 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { View } from "react-native";
 
 import { Text } from "@/components";
-import { fontFamily, radius, spacing, useColors } from "@/theme";
+import { fontFamily, radius, size, spacing, useColors } from "@/theme";
 
 import type { StripDay } from "./todayState";
-
-const DOT = 6;
-const CHECK = 16;
 
 /** Seven days, Sunday first. Today is filled; a dot marks a planned day, a check a finished workout. Not tappable. */
 export function WeekStrip({ days }: { days: StripDay[] }) {
@@ -39,14 +36,14 @@ export function WeekStrip({ days }: { days: StripDay[] }) {
           >
             {day.label}
           </Text>
-          <View style={{ height: CHECK, alignItems: "center", justifyContent: "center" }}>
+          <View style={{ height: size.check, alignItems: "center", justifyContent: "center" }}>
             {day.done ? (
-              <Ionicons name="checkmark-circle" size={CHECK} color={day.isToday ? colors.onAccent : colors.accent} />
+              <Ionicons name="checkmark-circle" size={size.check} color={day.isToday ? colors.onAccent : colors.accent} />
             ) : day.planned ? (
               <View
                 style={{
-                  width: DOT,
-                  height: DOT,
+                  width: size.dot,
+                  height: size.dot,
                   borderRadius: radius.pill,
                   backgroundColor: day.isToday ? colors.onAccent : colors.iconFaint,
                 }}

@@ -3,11 +3,8 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Text } from "@/components";
-import { buildToday, useTodayData } from "@/today";
-import { TodayRoutineCard } from "@/today/TodayRoutineCard";
-import { useDayRollover } from "@/today/useDayRollover";
-import { WeekStrip } from "@/today/WeekStrip";
-import { fontSize, spacing, useColors } from "@/theme";
+import { buildToday, TodayRoutineCard, useDayRollover, useTodayData, WeekStrip } from "@/today";
+import { spacing, textStyle, useColors } from "@/theme";
 import { useStartWorkout } from "@/workout/useStartWorkout";
 
 export default function TodayScreen() {
@@ -27,7 +24,7 @@ export default function TodayScreen() {
           gap: spacing.lg,
         }}
       >
-        <Text variant="heading" accessibilityRole="header" style={{ fontSize: fontSize.display, lineHeight: 38, letterSpacing: -1 }}>
+        <Text variant="heading" accessibilityRole="header" style={textStyle.screenTitle}>
           Today
         </Text>
         {today ? (

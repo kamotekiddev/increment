@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { View } from "react-native";
 
 import { Button, Text } from "@/components";
-import { fontSize, minTouch, radius, spacing, useColors } from "@/theme";
+import { minTouch, radius, size, spacing, textStyle, useColors } from "@/theme";
 
 import type { TodayCard } from "./todayState";
 
@@ -23,14 +23,14 @@ export function TodayRoutineCard({ card, onStart }: { card: TodayCard; onStart: 
         backgroundColor: colors.card,
       }}
     >
-      <Text variant="title" style={{ flex: 1, fontSize: fontSize.input, lineHeight: 24, letterSpacing: -0.4 }} numberOfLines={1}>
+      <Text variant="title" style={[{ flex: 1 }, textStyle.rowTitle]} numberOfLines={1}>
         {card.name}
       </Text>
       {card.status === "start" ? (
         <Button label="Start" accessibilityLabel={`Start ${card.name}`} onPress={onStart} />
       ) : card.status === "done" ? (
         <View accessible accessibilityLabel="Done" style={{ flexDirection: "row", alignItems: "center", gap: spacing.xs }}>
-          <Ionicons name="checkmark-circle" size={20} color={colors.accent} />
+          <Ionicons name="checkmark-circle" size={size.icon} color={colors.accent} />
           <Text variant="label" tone="accent">
             Done
           </Text>

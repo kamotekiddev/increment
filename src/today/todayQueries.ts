@@ -7,11 +7,12 @@ import { workouts } from "@/db/schema";
 import { useRoutines } from "@/routines/routineQueries";
 import { useInProgressOnFocus } from "@/workout/inProgressQueries";
 
-import { toTodayInput, weekEnd, weekStart } from "./todayInput";
-import type { TodayInput } from "./todayState";
+import { toTodayInput } from "./todayInput";
+import type { FinishedWorkout, TodayInput } from "./todayState";
+import { weekEnd, weekStart } from "./week";
 
 /** Finished Workouts (not discarded, not in progress) that started in the local week containing `now`. */
-export function findFinishedThisWeek(now: number): { routineId: number | null; startedAt: number }[] {
+export function findFinishedThisWeek(now: number): FinishedWorkout[] {
   return db
     .select({ routineId: workouts.routineId, startedAt: workouts.startedAt })
     .from(workouts)
@@ -29,15 +30,17 @@ function readWeek() {
  * Discard and a Routine's days change all happen on other screens). Undefined until the Routines
  * first load. Pass the result to `buildToday`.
  */
-export function useTodayData(rollover = 0): TodayInput | undefined {
+export function useTodayData(refreshKey = 0): TodayInput | undefined {
   const routines = useRoutines();
   const inProgress = useInProgressOnFocus();
   const [week, setWeek] = useState(readWeek);
   useFocusEffect(
     useCallback(() => {
-      // `rollover` changes at a new local day while open: re-read the (new) week.
-      if (rollover >= 0) setWeek(readWeek());
-    }, [rollover]),
+      setWeek(readWeek());
+      // `refreshKey` is a real trigger, not read in the body: a new value (a new local day while
+      // the screen is open) re-runs this effect to re-read the week.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [refreshKey]),
   );
   return useMemo(
     () => (routines ? toTodayInput(week.now, routines, week.finished, inProgress) : undefined),

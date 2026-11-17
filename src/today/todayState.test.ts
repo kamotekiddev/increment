@@ -43,7 +43,7 @@ describe("buildToday cards", () => {
     });
   });
 
-  it("does not count a Workout from another day, or a discarded one (never in finished)", () => {
+  it("does not count a finished Workout from another day (discarded Workouts are deleted, so they never reach the builder)", () => {
     const { state } = buildToday(input({ routines: [legs], finished: [{ routineId: 3, startedAt: at(17, 9) }] }));
     expect(state).toMatchObject({ cards: [{ status: "start" }] });
   });

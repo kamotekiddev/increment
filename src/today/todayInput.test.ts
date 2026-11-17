@@ -1,4 +1,6 @@
-import { toTodayInput, weekEnd, weekStart } from "./todayInput";
+import { buildToday } from "./todayState";
+import { toTodayInput } from "./todayInput";
+import { weekEnd, weekStart } from "./week";
 
 const at = (month: number, day: number, h = 0) => new Date(2026, month, day, h).getTime();
 
@@ -33,6 +35,22 @@ describe("toTodayInput", () => {
       finished: [{ routineId: 1, startedAt: 4 }],
       inProgress: { routineId: null },
     });
+  });
+
+  it("preserves the Routines-tab order (input order is card order)", () => {
+    const input = toTodayInput(
+      5,
+      [
+        { id: 7, name: "Legs", days: 1, position: 0 },
+        { id: 2, name: "Arms", days: 1, position: 1 },
+        { id: 5, name: "Push", days: 1, position: 2 },
+      ],
+      [],
+      null,
+    );
+    expect(input.routines.map((r) => r.id)).toEqual([7, 2, 5]);
+    const { state } = buildToday({ ...input, now: new Date(2026, 10, 16, 9).getTime() }); // Monday
+    expect(state).toMatchObject({ kind: "cards", cards: [{ routineId: 7 }, { routineId: 2 }, { routineId: 5 }] });
   });
 
   it("passes no in-progress workout through as null", () => {

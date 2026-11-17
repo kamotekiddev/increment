@@ -1,4 +1,6 @@
-import { DAY_LABELS, DISPLAY_ORDER, isDaySet } from "../routines/routineDays";
+import { DAY_LABELS, DISPLAY_ORDER, isDaySet } from "@/routines/routineDays";
+
+import { weekStart } from "./week";
 
 /** A Routine as Today reads it. Pass Routines in Routines-tab order. `days` is the bitmask (Monday = bit 0). */
 export interface TodayRoutine {
@@ -7,12 +9,18 @@ export interface TodayRoutine {
   days: number;
 }
 
+/** A finished Workout row as Today reads it. `routineId` is null when the Routine was deleted. */
+export interface FinishedWorkout {
+  routineId: number | null;
+  startedAt: number;
+}
+
 export interface TodayInput {
   /** Epoch ms of the current moment. Days are read in local time. */
   now: number;
   routines: TodayRoutine[];
   /** Finished Workouts only (discarded ones are not passed). `routineId` is null when the Routine was deleted. */
-  finished: { routineId: number | null; startedAt: number }[];
+  finished: FinishedWorkout[];
   /** The Workout in progress, if any. */
   inProgress: { routineId: number | null } | null;
 }
@@ -59,7 +67,7 @@ function dayKey(date: Date): string {
 /** Pure: the week strip and the screen state for Today, from plain inputs. */
 export function buildToday({ now, routines, finished, inProgress }: TodayInput): TodayView {
   const today = new Date(now);
-  const sunday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - today.getDay());
+  const sunday = new Date(weekStart(now));
   const todayKey = dayKey(today);
   const finishedKeys = new Set(finished.map((w) => dayKey(new Date(w.startedAt))));
 
