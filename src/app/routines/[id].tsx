@@ -35,11 +35,9 @@ import type { ExerciseSetup } from "@/routines/routineSetup";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontFamily, fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
-import { findInProgressWorkout, useInProgressOnFocus } from "@/workout/inProgressQueries";
-import { ResumeOrDiscardSheet } from "@/workout/ResumeOrDiscardSheet";
+import { useInProgressOnFocus } from "@/workout/inProgressQueries";
 import { isRoutineLocked, LOCK_MESSAGE } from "@/workout/routineLock";
-import { startDecision } from "@/workout/startDecision";
-import { discardAndStartWorkout, startWorkout } from "@/workout/workoutQueries";
+import { openWorkout, useStartWorkout } from "@/workout/useStartWorkout";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
 
@@ -60,7 +58,7 @@ export default function EditRoutineScreen() {
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const inProgress = useInProgressOnFocus();
   const locked = isRoutineLocked(inProgress, id);
-  const [prompt, setPrompt] = useState<{ workoutId: number; routineName: string | null } | null>(null);
+  const { start, sheet: startSheet } = useStartWorkout();
   const loadedRows = useRoutineExercises(id, exerciseVersion);
   // Reorder mode: `order` is the in-memory draft (null when not reordering). After Done the saved
   // order shows at once until a fresh load from the hook replaces it.
@@ -153,27 +151,9 @@ export default function EditRoutineScreen() {
     setExerciseVersion((v) => v + 1);
   }
 
-  function openWorkout(workoutId: number | null) {
-    if (workoutId !== null) router.push({ pathname: "/workout/[id]", params: { id: String(workoutId) } });
-  }
-
   /** Starts the routine, or asks Resume or Discard when a workout is already in progress. */
   function onStartWorkout() {
-    const decision = startDecision(findInProgressWorkout());
-    if (decision.kind === "start") openWorkout(startWorkout(id));
-    else setPrompt({ workoutId: decision.workoutId, routineName: decision.routineName });
-  }
-
-  function onResume() {
-    if (!prompt) return;
-    setPrompt(null);
-    openWorkout(prompt.workoutId);
-  }
-
-  function onDiscardAndStart() {
-    if (!prompt) return;
-    setPrompt(null);
-    openWorkout(discardAndStartWorkout(prompt.workoutId, id));
+    start(id, savedLabel);
   }
 
   async function openDelete() {
@@ -398,14 +378,7 @@ export default function EditRoutineScreen() {
           />
         </>
       ) : null}
-      <ResumeOrDiscardSheet
-        visible={prompt !== null}
-        runningName={prompt?.routineName ?? null}
-        startingName={savedLabel}
-        onResume={onResume}
-        onDiscardAndStart={onDiscardAndStart}
-        onDismiss={() => setPrompt(null)}
-      />
+      {startSheet}
       <DeleteRoutineSheet
         visible={deleting}
         routineName={savedLabel}

@@ -29,14 +29,15 @@ function readWeek() {
  * Discard and a Routine's days change all happen on other screens). Undefined until the Routines
  * first load. Pass the result to `buildToday`.
  */
-export function useTodayData(): TodayInput | undefined {
+export function useTodayData(rollover = 0): TodayInput | undefined {
   const routines = useRoutines();
   const inProgress = useInProgressOnFocus();
   const [week, setWeek] = useState(readWeek);
   useFocusEffect(
     useCallback(() => {
-      setWeek(readWeek());
-    }, []),
+      // `rollover` changes at a new local day while open: re-read the (new) week.
+      if (rollover >= 0) setWeek(readWeek());
+    }, [rollover]),
   );
   return useMemo(
     () => (routines ? toTodayInput(week.now, routines, week.finished, inProgress) : undefined),

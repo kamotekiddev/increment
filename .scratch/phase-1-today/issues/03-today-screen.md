@@ -4,10 +4,10 @@
 
 **Blocked by:** 01, 02
 
-**Status:** ready-for-agent
+**Status:** built
 
 - [ ] Cards, strip and all states match the spec
 - [ ] Start opens the live workout, or the Resume-or-discard sheet when one is in progress
 - [ ] Today updates after Finish and Discard without a reload
 - [ ] Works in light and dark and on small phones; design tokens only
-- [ ] Type check, lint and tests pass
+- [x] Type check, lint and tests pass
