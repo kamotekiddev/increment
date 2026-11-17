@@ -3,6 +3,7 @@ export type { FinishedWorkout, StripDay, TodayCard, TodayInput, TodayRoutine, To
 export { useNextPreview, useTodayData } from "./todayQueries";
 export { NoRoutineCard } from "./NoRoutineCard";
 export { NoDaysCard } from "./NoDaysCard";
+export { DeckPreview } from "./DeckPreview";
 export { RestDay } from "./RestDay";
 export { dateLine, screenTitle } from "./todayText";
 export { RoutineDeck } from "./RoutineDeck";
