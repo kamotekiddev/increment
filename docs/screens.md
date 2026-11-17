@@ -20,7 +20,10 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Screen | Notes |
 |---|---|
 | Today | Week strip, today's session, settings gear |
-| Live workout | Interactive kg/lb; Finish → Workout summary |
+| Live workout | Set rows prefilled with the Target; read-only Last column; weight and reps typed into plain inputs (no −/+ buttons); fixed set count; ⋯ → Discard workout; Finish → Finish prompt. Interactive kg/lb arrives in Phase 2 |
+| Finish workout | Prompt naming unchecked sets (dropped) and skipped exercises (not a Miss); with no sets done it offers Discard instead |
+| Discard workout | Confirmation; deletes the workout and its sets |
+| Start while one is in progress | Resume, or discard it and start the new one |
 | Workout summary | Volume, records, what goes up next time |
 | Today, no routine | Empty state |
 | Today, rest day | Rest-day state |
@@ -31,7 +34,9 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Routines | List with the free-limit counter |
 | New routine | Name and days |
 | Add exercises | Pick from the library |
-| Edit routine | Name, days, exercise rows; Reorder; ⋯ → Delete confirmation (no menu step) |
+| Edit routine | Start workout, name, days, exercise rows; Reorder; ⋯ → Delete confirmation (no menu step) |
+| Edit routine (locked) | While its workout is in progress: edit and delete disabled, Resume workout shown |
+| Routines tab, workout in progress | An "in progress" bar above the tab bar (on every tab) reopens the workout |
 | Exercise setup | Sheet: sets, reps, rest, rule (read-only until Pro); used to add and to edit; Remove from routine |
 | Reorder routine | ▲ ▼ per row; Done saves, Cancel discards |
 | Remove exercise | Confirmation |

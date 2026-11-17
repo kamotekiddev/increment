@@ -84,3 +84,14 @@ _Avoid_: Slot, entry
 The seconds the lifter plans to rest between sets of a Routine exercise.
 _Avoid_: Rest timer (that counts down during a workout)
 
+**Workout**:
+One session of training started from a Routine. It holds a Workout exercise for each exercise in the Routine as it was when the Workout started.
+_Avoid_: Session, log
+
+**Workout in progress**:
+A Workout that has been started and not yet finished or discarded. Only one can exist at a time, and while it exists its Routine cannot be edited or deleted.
+_Avoid_: Active workout, open workout, draft
+
+**Skipped exercise**:
+An exercise in a Workout with no sets done. It is left out of the saved Workout and is neither a Miss nor a Clean, so its Streak and Target stay as they were.
+_Avoid_: Missed exercise, dropped exercise

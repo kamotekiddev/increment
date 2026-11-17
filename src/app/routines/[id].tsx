@@ -35,6 +35,11 @@ import type { ExerciseSetup } from "@/routines/routineSetup";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontFamily, fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
+import { findInProgressWorkout, useInProgressOnFocus } from "@/workout/inProgressQueries";
+import { ResumeOrDiscardSheet } from "@/workout/ResumeOrDiscardSheet";
+import { isRoutineLocked, LOCK_MESSAGE } from "@/workout/routineLock";
+import { startDecision } from "@/workout/startDecision";
+import { discardAndStartWorkout, startWorkout } from "@/workout/workoutQueries";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
 
@@ -53,6 +58,9 @@ export default function EditRoutineScreen() {
   const [exerciseVersion, setExerciseVersion] = useState(0);
   const [editing, setEditing] = useState<RoutineExerciseItem | null>(null);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const inProgress = useInProgressOnFocus();
+  const locked = isRoutineLocked(inProgress, id);
+  const [prompt, setPrompt] = useState<{ workoutId: number; routineName: string | null } | null>(null);
   const loadedRows = useRoutineExercises(id, exerciseVersion);
   // Reorder mode: `order` is the in-memory draft (null when not reordering). After Done the saved
   // order shows at once until a fresh load from the hook replaces it.
@@ -99,7 +107,7 @@ export default function EditRoutineScreen() {
 
   /** Checks the name and saves it. An invalid name is not saved, so the saved one stays. */
   const commitName = useCallback(async (): Promise<void> => {
-    if (gone.current || !savedName.current) return;
+    if (gone.current || locked || !savedName.current) return;
     const existing = await loadRoutines();
     const result = validateRoutineName(draft.current, existing, id);
     if (!result.ok) {
@@ -114,7 +122,7 @@ export default function EditRoutineScreen() {
       setSavedLabel(result.name);
       await renameRoutine(id, result.name);
     }
-  }, [id]);
+  }, [id, locked]);
 
   // Leaving the screen: a valid name still being typed is saved; an invalid one is dropped,
   // which leaves the saved name in place.
@@ -145,7 +153,31 @@ export default function EditRoutineScreen() {
     setExerciseVersion((v) => v + 1);
   }
 
+  function openWorkout(workoutId: number | null) {
+    if (workoutId !== null) router.push({ pathname: "/workout/[id]", params: { id: String(workoutId) } });
+  }
+
+  /** Starts the routine, or asks Resume or Discard when a workout is already in progress. */
+  function onStartWorkout() {
+    const decision = startDecision(findInProgressWorkout());
+    if (decision.kind === "start") openWorkout(startWorkout(id));
+    else setPrompt({ workoutId: decision.workoutId, routineName: decision.routineName });
+  }
+
+  function onResume() {
+    if (!prompt) return;
+    setPrompt(null);
+    openWorkout(prompt.workoutId);
+  }
+
+  function onDiscardAndStart() {
+    if (!prompt) return;
+    setPrompt(null);
+    openWorkout(discardAndStartWorkout(prompt.workoutId, id));
+  }
+
   async function openDelete() {
+    if (locked) return;
     setWorkoutCount(await countRoutineWorkouts(id));
     setDeleting(true);
   }
@@ -193,7 +225,7 @@ export default function EditRoutineScreen() {
             left={<RoundButton icon="chevron-back" label="Back" onPress={() => router.back()} />}
             right={
               routine ? (
-                <RoundButton icon="ellipsis-horizontal" label="More options" onPress={openDelete} />
+                <RoundButton icon="ellipsis-horizontal" label="More options" onPress={openDelete} disabled={locked} />
               ) : (
                 <View style={{ width: 48 }} />
               )
@@ -218,6 +250,32 @@ export default function EditRoutineScreen() {
               </>
             ) : (
               <>
+                {locked && inProgress ? (
+                  <View style={{ gap: spacing.md }}>
+                    <View
+                      style={{
+                        padding: spacing.lg,
+                        borderRadius: radius.lg,
+                        backgroundColor: colors.accentTint,
+                        gap: spacing.xs,
+                      }}
+                    >
+                      <Text variant="label">Workout in progress</Text>
+                      <Text variant="caption" tone="soft">
+                        {LOCK_MESSAGE}. Then you can edit or delete this routine.
+                      </Text>
+                    </View>
+                    <Button label="Resume workout" large onPress={() => openWorkout(inProgress.id)} />
+                  </View>
+                ) : (
+                  <Button
+                    label="Start workout"
+                    large
+                    disabled={!exerciseRows || exerciseRows.length === 0}
+                    onPress={onStartWorkout}
+                  />
+                )}
+                <View pointerEvents={locked ? "none" : "auto"} style={{ opacity: locked ? opacity.disabled : 1 }}>
                 <NameField
                   value={name}
                   onChangeText={(text) => {
@@ -231,11 +289,12 @@ export default function EditRoutineScreen() {
                   error={error}
                   inputSize={fontSize.titleLg}
                 />
+                </View>
                 <View style={{ gap: 6 }}>
                   <Text variant="caption" tone="muted" style={{ fontSize: fontSize.small, fontFamily: fontFamily.medium }}>
                     Repeat on (optional)
                   </Text>
-                  <DayPicker value={days} onToggle={onToggleDay} />
+                  <DayPicker value={days} onToggle={onToggleDay} disabled={locked} />
                 </View>
                 {exerciseRows && exerciseRows.length > 0 ? (
                   <>
@@ -245,6 +304,8 @@ export default function EditRoutineScreen() {
                           key={row.id}
                           accessibilityRole="button"
                           accessibilityLabel={`Edit ${row.name}`}
+                          accessibilityState={{ disabled: locked }}
+                          disabled={locked}
                           onPress={() => setEditing(row)}
                           style={({ pressed }) => ({
                             height: size.row,
@@ -255,7 +316,7 @@ export default function EditRoutineScreen() {
                             paddingRight: spacing.lg,
                             borderRadius: radius.row,
                             backgroundColor: colors.card,
-                            opacity: pressed ? opacity.pressed : 1,
+                            opacity: locked ? opacity.disabled : pressed ? opacity.pressed : 1,
                           })}
                         >
                           <ExerciseTile equipment={row.equipment} />
@@ -275,8 +336,11 @@ export default function EditRoutineScreen() {
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel="Reorder exercises"
+                        accessibilityState={{ disabled: locked }}
+                        disabled={locked}
                         onPress={() => setOrder(exerciseRows)}
                         style={{
+                          opacity: locked ? opacity.disabled : 1,
                           alignSelf: "flex-end",
                           height: minTouch,
                           flexDirection: "row",
@@ -291,10 +355,12 @@ export default function EditRoutineScreen() {
                         <Text variant="label">Reorder</Text>
                       </Pressable>
                     ) : null}
-                    <Button label="Add exercise" variant="dashed" large onPress={addExercises} />
+                    <Button label="Add exercise" variant="dashed" large disabled={locked} onPress={addExercises} />
                   </>
                 ) : exerciseRows ? (
-                  <EmptyExercises onAdd={addExercises} />
+                  <View pointerEvents={locked ? "none" : "auto"} style={{ opacity: locked ? opacity.disabled : 1 }}>
+                    <EmptyExercises onAdd={addExercises} />
+                  </View>
                 ) : null}
               </>
             )}
@@ -332,6 +398,14 @@ export default function EditRoutineScreen() {
           />
         </>
       ) : null}
+      <ResumeOrDiscardSheet
+        visible={prompt !== null}
+        runningName={prompt?.routineName ?? null}
+        startingName={savedLabel}
+        onResume={onResume}
+        onDiscardAndStart={onDiscardAndStart}
+        onDismiss={() => setPrompt(null)}
+      />
       <DeleteRoutineSheet
         visible={deleting}
         routineName={savedLabel}
