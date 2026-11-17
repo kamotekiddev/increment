@@ -24,7 +24,8 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Finish workout | Prompt naming unchecked sets (dropped) and skipped exercises (not a Miss); with no sets done it offers Discard instead |
 | Discard workout | Confirmation; deletes the workout and its sets |
 | Start while one is in progress | Resume, or discard it and start the new one |
-| Workout summary | Volume, records, what goes up next time |
+| Offer (one per screen) | Opens after Finish, one screen per Earned exercise in workout order. Progress bar and "2 of 5", the exercise and its streak, current Target → stepped-up Target, and only two buttons: Go up and Stay. A tap saves the answer and opens the next screen; answers are final. Back and swipe are disabled. Skipped when nothing is Earned |
+| Workout summary | Opens after the last Offer (or straight after Finish). Duration, sets, volume (total reps when 0 kg); one card per exercise with outcome, a one-line reason and the next Target. Reports only: no Go up or Stay, no records. Done returns to where the workout started |
 | Today, no routine | Empty state |
 | Today, rest day | Rest-day state |
 

@@ -44,6 +44,10 @@ _Avoid_: Premium, subscription, paid plan
 How a Target rises once progression is Earned: add weight (by the Jump), add reps (by the Rep step), or both. It is set per exercise.
 _Avoid_: Progression type, mode
 
+**Offer**:
+The question the app asks after a workout once progression is Earned: move up to the stepped-up Target next time? The lifter answers Go up (accepted) or Stay (declined), one exercise at a time. An Offer left unanswered counts as Stay.
+_Avoid_: Proposal, suggestion, level up
+
 **Rep step**:
 The number of reps added to the Target in one Step (1 to 3).
 _Avoid_: Rep increment

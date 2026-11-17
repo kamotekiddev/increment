@@ -16,6 +16,7 @@ import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWor
 import { elapsedText } from "@/workout/elapsedText";
 import { findInProgressWorkout, useNow } from "@/workout/inProgressQueries";
 import { canMarkDone } from "@/workout/markDone";
+import { loadOffers } from "@/workout/summaryQueries";
 import {
   discardWorkout,
   editSet,
@@ -161,10 +162,20 @@ export default function LiveWorkoutScreen() {
   }
 
   function confirmFinish(prompt: FinishPrompt | null) {
-    if (prompt?.kind === "discard") discardWorkout(Number(idParam));
-    else finishWorkout(Number(idParam));
     setFinishing(null);
-    leave();
+    if (prompt?.kind === "discard") {
+      discardWorkout(Number(idParam));
+      leave();
+      return;
+    }
+    finishWorkout(Number(idParam));
+    // Replaces the live screen, so the last screen's back lands where the workout started.
+    // The first Offer opens when anything was Earned, otherwise the summary.
+    if (loadOffers(Number(idParam)).length > 0) {
+      router.replace({ pathname: "/workout/offer/[id]", params: { id: String(idParam), step: "0" } });
+    } else {
+      router.replace({ pathname: "/workout/summary/[id]", params: { id: String(idParam) } });
+    }
   }
 
   const exercise = workout?.exercises[current];

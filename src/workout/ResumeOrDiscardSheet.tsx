@@ -1,7 +1,4 @@
-import { Pressable } from "react-native";
-
-import { BottomSheet, Button, Text } from "@/components";
-import { minTouch, opacity, radius, useColors } from "@/theme";
+import { Button, PromptSheet } from "@/components";
 
 import { resumePromptText } from "./workoutPromptText";
 
@@ -24,30 +21,12 @@ export function ResumeOrDiscardSheet({
   onDiscardAndStart,
   onDismiss,
 }: ResumeOrDiscardSheetProps) {
-  const colors = useColors();
   const text = resumePromptText(runningName, startingName);
   return (
-    <BottomSheet visible={visible} onDismiss={onDismiss}>
-      <Text variant="title">{text.title}</Text>
-      <Text tone="muted">{text.body}</Text>
-      <Button label={text.resume} onPress={onResume} />
-      <Pressable
-        accessibilityRole="button"
-        onPress={onDiscardAndStart}
-        style={({ pressed }) => ({
-          minHeight: minTouch,
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: radius.pill,
-          backgroundColor: colors.danger,
-          opacity: pressed ? opacity.pressed : 1,
-        })}
-      >
-        <Text variant="label" tone="onAccent">
-          {text.discard}
-        </Text>
-      </Pressable>
-      <Button label="Cancel" variant="secondary" onPress={onDismiss} />
-    </BottomSheet>
+    <PromptSheet visible={visible} onDismiss={onDismiss} icon="time-outline" title={text.title} body={text.body}>
+      <Button label={text.resume} large onPress={onResume} />
+      <Button label={text.discard} variant="dangerText" stretch onPress={onDiscardAndStart} />
+      <Button label="Cancel" variant="secondary" stretch onPress={onDismiss} />
+    </PromptSheet>
   );
 }

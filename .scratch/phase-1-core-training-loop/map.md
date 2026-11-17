@@ -26,7 +26,7 @@ Create, edit and delete a routine. Add exercises from the library, and set sets,
 Start a routine and log sets. Each exercise shows the free-rule Target from the engine. Finish saves the workout and the Target that was shown. No summary, timer or Today yet; Finish returns to where the workout started. Spec: `.scratch/phase-1-live-workout/spec.md`.
 
 ### 4 · Summary and step offer
-After Finish, show the workout summary (volume and what goes up next time). When progression is Earned, offer the step: Accept makes it the next Target, Decline leaves the Target unchanged and the offer returns after the next clean workout.
+After Finish, when progression is Earned, each Earned exercise gets its own Offer screen, one at a time, asking the lifter to go up or stay: Go up makes the stepped-up Target the next Target, Stay leaves it unchanged and the Offer returns after the next clean workout. Then a summary shows volume and the next Target for each exercise. Spec: `.scratch/phase-1-summary-and-offer/spec.md`.
 
 ### 5 · Today
 Week strip and today's routine with a Start button into the live workout. Includes the empty state (no routines) and the rest-day state.

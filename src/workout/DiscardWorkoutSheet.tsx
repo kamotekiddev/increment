@@ -1,7 +1,7 @@
 import { Pressable } from "react-native";
 
-import { BottomSheet, Button, Text } from "@/components";
-import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { BottomSheet, Button, PromptHeader, Text } from "@/components";
+import { minTouch, spacing } from "@/theme";
 
 import { discardWorkoutText } from "./workoutPromptText";
 
@@ -17,31 +17,14 @@ export interface DiscardWorkoutSheetProps {
 
 /** The ⋯ menu of the live workout (one action, Discard workout) and its confirmation, in one sheet so two never stack. */
 export function DiscardWorkoutSheet({ step, routineName, onChooseDiscard, onConfirm, onDismiss }: DiscardWorkoutSheetProps) {
-  const colors = useColors();
   const text = discardWorkoutText(routineName);
   return (
     <BottomSheet visible={step !== "closed"} onDismiss={onDismiss}>
       {step === "confirm" ? (
         <>
-          <Text variant="title">{text.title}</Text>
-          <Text tone="muted">{text.body}</Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onConfirm}
-            style={({ pressed }) => ({
-              minHeight: minTouch,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: radius.pill,
-              backgroundColor: colors.danger,
-              opacity: pressed ? opacity.pressed : 1,
-            })}
-          >
-            <Text variant="label" tone="onAccent">
-              Discard workout
-            </Text>
-          </Pressable>
-          <Button label="Keep training" variant="secondary" onPress={onDismiss} />
+          <PromptHeader icon="trash-outline" tone="danger" title={text.title} body={text.body} />
+          <Button label="Discard workout" variant="danger" large onPress={onConfirm} />
+          <Button label="Keep training" variant="secondary" stretch onPress={onDismiss} />
         </>
       ) : (
         <>
@@ -54,7 +37,7 @@ export function DiscardWorkoutSheet({ step, routineName, onChooseDiscard, onConf
               Discard workout
             </Text>
           </Pressable>
-          <Button label="Cancel" variant="secondary" onPress={onDismiss} />
+          <Button label="Cancel" variant="secondary" stretch onPress={onDismiss} />
         </>
       )}
     </BottomSheet>

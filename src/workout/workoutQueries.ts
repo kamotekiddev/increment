@@ -26,7 +26,7 @@ type Queryable = Pick<Db, "select" | "delete">;
  * Every finished workout's record of one routine exercise (this routine, this exercise), newest
  * first, each with its sets. Feeds the engine's history and the Last column.
  */
-function pastExercises(q: Queryable, routineId: number, exerciseId: number): PastExercise[] {
+export function pastExercises(q: Queryable, routineId: number, exerciseId: number): PastExercise[] {
   const past = q
     .select({
       id: workoutExercises.id,

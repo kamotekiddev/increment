@@ -3,7 +3,7 @@ import { Pressable, View } from "react-native";
 import { Text } from "@/components";
 import { fontFamily, opacity, radius, size, useColors } from "@/theme";
 
-import { DAY_LABELS, isDaySet } from "./routineDays";
+import { DAY_LABELS, DISPLAY_ORDER, isDaySet } from "./routineDays";
 
 export interface DayPickerProps {
   /** Days bitmask, Monday = bit 0. */
@@ -13,12 +13,13 @@ export interface DayPickerProps {
   disabled?: boolean;
 }
 
-/** Seven round day buttons, M to S, 46 pt tall. Selected days use the accent fill. */
+/** Seven round day buttons, Sunday first (Sun Mon Tue …), 46 pt tall. Selected days use the accent fill. */
 export function DayPicker({ value, onToggle, disabled }: DayPickerProps) {
   const colors = useColors();
   return (
     <View style={{ flexDirection: "row", gap: 6, opacity: disabled ? opacity.disabled : 1 }}>
-      {DAY_LABELS.map((label, index) => {
+      {DISPLAY_ORDER.map((index) => {
+        const label = DAY_LABELS[index];
         const on = isDaySet(value, index);
         return (
           <Pressable
@@ -38,7 +39,7 @@ export function DayPicker({ value, onToggle, disabled }: DayPickerProps) {
             }}
           >
             <Text variant="label" tone={on ? "onAccent" : "muted"} style={{ fontFamily: fontFamily.semibold }}>
-              {label[0]}
+              {label}
             </Text>
           </Pressable>
         );

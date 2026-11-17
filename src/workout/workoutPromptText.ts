@@ -50,7 +50,7 @@ export function finishPrompt(
     );
   }
   if (lines.length === 0) return null;
-  return { kind: "finish", title: "Finish workout?", body: lines.join("\n"), confirm: "Finish workout", cancel: "Keep training" };
+  return { kind: "finish", title: "Finish this workout?", body: lines.join("\n"), confirm: "Finish workout", cancel: "Keep training" };
 }
 
 /** Pure: copy for the Discard workout confirmation. */
