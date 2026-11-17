@@ -8,6 +8,7 @@ import { TabButton } from "@/components/TabButton";
 import { minTouch, radius, spacing, useColors } from "@/theme";
 import { InProgressBar } from "@/workout/InProgressBar";
 import { useInProgressOnFocus, useNow } from "@/workout/inProgressQueries";
+import { useResumeOnLaunch } from "@/workout/resumeQueries";
 
 /** Tab list height before it is measured: a tab button plus its padding and 1 pt border either side. */
 const TAB_LIST_HEIGHT = minTouch + spacing.sm * 2 + 2;
@@ -15,6 +16,7 @@ const TAB_LIST_HEIGHT = minTouch + spacing.sm * 2 + 2;
 export default function TabsLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  useResumeOnLaunch();
   const workout = useInProgressOnFocus();
   const now = useNow(workout !== null);
   const tabBottom = Math.max(insets.bottom, spacing.lg);

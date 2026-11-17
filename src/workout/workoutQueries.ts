@@ -87,7 +87,7 @@ export function startWorkout(routineId: number, now: Date = new Date()): number 
 
     const workout = tx
       .insert(workouts)
-      .values({ routineId, startedAt: now.getTime(), date: localDate(now), inProgress: true })
+      .values({ routineId, startedAt: now.getTime(), date: localDate(now), inProgress: true, lastEditedAt: now.getTime() })
       .returning({ id: workouts.id })
       .get();
 
@@ -226,8 +226,22 @@ export function useWorkout(id: number): [LiveWorkout | null | undefined, (w: Liv
 export function markSetDone(rows: LiveSet[], index: number, done: boolean): LiveSet[] {
   const next = setDone(rows, index, done) as LiveSet[];
   if (next === rows) return rows;
-  db.update(sets).set({ done }).where(eq(sets.id, rows[index].setId)).run();
+  db.transaction((tx) => {
+    tx.update(sets).set({ done }).where(eq(sets.id, rows[index].setId)).run();
+    touchWorkout(tx, rows[index].setId);
+  });
   return next;
+}
+
+/** Stamps the workout that owns this set as just edited, which is what crash resume's 12-hour window reads. */
+function touchWorkout(q: Pick<Db, "select" | "update">, setId: number, now: number = Date.now()): void {
+  const owner = q
+    .select({ workoutId: workoutExercises.workoutId })
+    .from(sets)
+    .innerJoin(workoutExercises, eq(workoutExercises.id, sets.workoutExerciseId))
+    .where(eq(sets.id, setId))
+    .get();
+  if (owner) q.update(workouts).set({ lastEditedAt: now }).where(eq(workouts.id, owner.workoutId)).run();
 }
 
 /** Deletes a workout with its Workout exercises and sets, in one transaction. */
@@ -271,11 +285,17 @@ export function discardAndStartWorkout(inProgressId: number, routineId: number):
 export function editSet(rows: LiveSet[], index: number, edit: SetEdit): LiveSet[] {
   const next = applyEdit(rows, index, edit).map((r, i) => ({ ...r, setId: rows[i].setId })) as LiveSet[];
   db.transaction((tx) => {
+    let wrote = false;
     next.forEach((r, i) => {
-      if (r.weightKg !== rows[i].weightKg || r.reps !== rows[i].reps) {
-        tx.update(sets).set({ weightKg: weightToStore(r.weightKg), reps: r.reps }).where(eq(sets.id, r.setId)).run();
+      if (r.weightKg !== rows[i].weightKg || r.reps !== rows[i].reps || r.edited !== rows[i].edited) {
+        tx.update(sets)
+          .set({ weightKg: weightToStore(r.weightKg), reps: r.reps, edited: r.edited })
+          .where(eq(sets.id, r.setId))
+          .run();
+        wrote = true;
       }
     });
+    if (wrote) touchWorkout(tx, next[0].setId);
   });
   return next;
 }

@@ -12,7 +12,7 @@ export type { InProgressWorkout } from "./types";
 /** The workout in progress with its routine's name, or null when there is none. */
 export function findInProgressWorkout(): InProgressWorkout | null {
   const row = db
-    .select({ id: workouts.id, routineId: workouts.routineId, startedAt: workouts.startedAt, routineName: routines.name })
+    .select({ id: workouts.id, routineId: workouts.routineId, startedAt: workouts.startedAt, lastEditedAt: workouts.lastEditedAt, routineName: routines.name })
     .from(workouts)
     .leftJoin(routines, eq(routines.id, workouts.routineId))
     .where(eq(workouts.inProgress, true))

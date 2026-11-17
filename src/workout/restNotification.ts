@@ -8,6 +8,8 @@ import { restNotificationContent, secondsUntil, shouldAskPermission } from "./re
 /** Thin wrapper over expo-notifications for the rest-over alert. Every call is guarded: a failure never breaks the timer. */
 
 const CHANNEL_ID = "rest";
+/** One fixed id, so scheduling replaces the alert queued before a kill instead of adding a second. */
+const REST_NOTIFICATION_ID = "rest-over";
 
 let scheduledId: string | null = null;
 /** Bumped on every schedule or cancel, so a schedule that was waiting on the permission prompt can tell it was overtaken. */
@@ -45,6 +47,8 @@ export function setupRestNotifications() {
         importance: AndroidImportance.HIGH,
       }).catch(() => {});
     }
+    // The rest timer does not survive a kill, so an alert queued by the killed process is stale.
+    void Notifications.cancelScheduledNotificationAsync(REST_NOTIFICATION_ID).catch(() => {});
   } catch {
     // Notifications are optional; the timer works without them.
   }
@@ -56,11 +60,10 @@ export function setupRestNotifications() {
 
 export async function cancelRestNotification() {
   generation++;
-  const id = scheduledId;
   scheduledId = null;
-  if (!id) return;
   try {
-    await Notifications.cancelScheduledNotificationAsync(id);
+    // By the fixed id, so it also cancels an alert queued by a process that was killed.
+    await Notifications.cancelScheduledNotificationAsync(REST_NOTIFICATION_ID);
   } catch {
     // ignore
   }
@@ -80,11 +83,13 @@ export async function scheduleRestNotification(endsAt: number, nextUp: string | 
     const seconds = secondsUntil(endsAt, Date.now());
     if (seconds === null) return;
     const id = await Notifications.scheduleNotificationAsync({
+      identifier: REST_NOTIFICATION_ID,
       content: restNotificationContent(nextUp),
       trigger: { type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL, seconds, channelId: CHANNEL_ID },
     });
     if (mine === generation) scheduledId = id;
-    else await Notifications.cancelScheduledNotificationAsync(id);
+    // Overtaken by a cancel: remove it. Overtaken by a newer schedule: the id is shared, so leave it.
+    else if (scheduledId === null && generation !== mine && !useRestStore.getState().timer) await Notifications.cancelScheduledNotificationAsync(id);
   } catch {
     // ignore
   }

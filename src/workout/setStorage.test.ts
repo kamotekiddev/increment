@@ -6,10 +6,13 @@ describe("set storage", () => {
     expect(weightToStore(62.5)).toBe(62.5);
   });
   it("reads a not-done 0 kg set back as blank", () => {
-    expect(rowFromStored({ weightKg: 0, reps: 8, done: false })).toEqual({ weightKg: null, reps: 8, done: false, edited: false });
+    expect(rowFromStored({ weightKg: 0, reps: 8, done: false, edited: false })).toEqual({ weightKg: null, reps: 8, done: false, edited: false });
   });
   it("reads a done set or a real weight back as is", () => {
-    expect(rowFromStored({ weightKg: 0, reps: 8, done: true }).weightKg).toBe(0);
-    expect(rowFromStored({ weightKg: 60, reps: 8, done: false }).weightKg).toBe(60);
+    expect(rowFromStored({ weightKg: 0, reps: 8, done: true, edited: false }).weightKg).toBe(0);
+    expect(rowFromStored({ weightKg: 60, reps: 8, done: false, edited: false }).weightKg).toBe(60);
+  });
+  it("reads the saved edited mark back", () => {
+    expect(rowFromStored({ weightKg: 60, reps: 8, done: false, edited: true }).edited).toBe(true);
   });
 });

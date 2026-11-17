@@ -21,7 +21,7 @@
 - **Week start**: the week starts on Sunday in every day row, with three-letter names (Sun, Mon, Tue) (the "Repeat on" picker, the onboarding schedule and the Today week strip), like a calendar. Days are still stored as a bitmask with Monday = bit 0; only the display order changes.
 - **Today**: one Routine shows at a time as a swipeable deck (the lifter does one routine per session); a rest day has no Start ("Train anyway", "Start an empty workout", ready-made plans and a week number from the design were left out, the settings gear arrives in Phase 2); a workout belongs to the day it was started, in local time. See `.scratch/phase-1-today/spec.md`.
 - **Rest timer**: one timer, started by marking a set done and held as an end time; a buzz at zero and a local notification in the background; -15s and +15s change that rest only; the permission is asked once at the first rest until Phase 4 onboarding asks. See `.scratch/phase-1-rest-timer/spec.md`.
-- **Edited rows**: the "edited" mark that stops a row following an earlier edit is kept in memory only and is lost on an app restart. Revisit in feature 7 (crash resume).
+- **Crash resume**: a cold launch reopens the workout in progress (last edit within 12 hours) on its first exercise with an open set; the "edited" row marks are saved so a restart behaves like none. The rest timer is deliberately not saved (decided 2026-11-17: simpler, and a rest after a kill is rarely worth restoring). Offers and the summary are not resumed. See `.scratch/phase-1-crash-resume/spec.md`.
 
 ## Open
 - [ ] Android: do rest-over notifications arrive on time without the exact-alarm permission? Unverified; owner checks on a phone, and if late, decides whether to request the permission (a Play policy question)

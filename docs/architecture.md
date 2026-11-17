@@ -24,9 +24,9 @@
 - **exercises**: id, slug, name, muscles, equipment, instructions, load_type (weighted, bodyweight, bodyweight_or_weighted), is_custom
 - **routines**: id, name, days (bitmask), position
 - **routine_exercises**: routine_id, exercise_id, position, sets, rep_min, rep_max, rest_s, rule (JSON)
-- **workouts**: id, routine_id (cascade: deleting a routine deletes its workouts, their exercises and sets, [ADR 0002](adr/0002-deleting-a-routine-deletes-its-workouts.md); workouts with no routine are never touched), started_at, finished_at, date, feeling, notes, in_progress
+- **workouts**: id, routine_id (cascade: deleting a routine deletes its workouts, their exercises and sets, [ADR 0002](adr/0002-deleting-a-routine-deletes-its-workouts.md); workouts with no routine are never touched), started_at, finished_at, date, feeling, notes, in_progress, last_edited_at (last saved set change, for crash resume)
 - **workout_exercises**: id, workout_id, exercise_id, position, target_weight_kg, target_reps, progress_accepted, is_deload (the Target shown at the start, and whether the lifter accepted the offered step)
-- **sets**: id, workout_exercise_id, exercise_id, idx, weight_kg, entered_unit, reps, done, is_warmup
+- **sets**: id, workout_exercise_id, exercise_id, idx, weight_kg, entered_unit, reps, done, is_warmup, edited (the lifter typed this row, so it stops following earlier rows)
 - **settings**: key/value (unit, jump per equipment, rest default, theme, reminders, auto-backup)
 - **entitlements**: is_pro, product_id, proof, verified_at (a cache; `proof` is the store's signed transaction or purchase token, verified in Phase 3 so editing this table alone cannot unlock Pro)
 
