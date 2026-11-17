@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 
 import { Input, RoundButton, Text } from "@/components";
@@ -10,6 +10,10 @@ import { formatWeight } from "@/units";
 import type { SetEdit } from "@/workout";
 import { finishCheck, lastColumn, parseReps, parseWeight } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
+import { toRestExercises } from "@/workout/restExercises";
+import { RestPanel } from "@/workout/RestPanel";
+import { useRestStore } from "@/workout/restStore";
+import { nextUp, onSetToggled, resolveExpiry, restRemaining } from "@/workout/restTimer";
 import { FinishWorkoutSheet } from "@/workout/FinishWorkoutSheet";
 import { finishPrompt, type FinishPrompt } from "@/workout/workoutPromptText";
 import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWorkoutSheet";
@@ -129,6 +133,38 @@ export default function LiveWorkoutScreen() {
   const now = useNow(true);
   const [discardStep, setDiscardStep] = useState<DiscardSheetStep>("closed");
   const [routineName, setRoutineName] = useState<string | null>(null);
+  const timer = useRestStore((s) => s.timer);
+  const restStore = useRestStore;
+  const [panelHeight, setPanelHeight] = useState(0);
+  // False until this screen has seen the rest running: a rest already over on return ended while away.
+  const sawRunning = useRef(false);
+  const restExercises = useMemo(() => (workout ? toRestExercises(workout.exercises) : []), [workout]);
+
+  // A timer left over from another workout is dropped.
+  useEffect(() => {
+    const { workoutId, clear } = restStore.getState();
+    if (workoutId !== null && workoutId !== Number(idParam)) clear();
+  }, [idParam, restStore]);
+
+  /**
+   * A rest reached zero (countdown, -15s to zero, or found over on return): clears the timer and
+   * returns what the rules say should follow. Nothing acts on it yet: the buzz and the move to the
+   * next exercise plug in here (`expiry.buzz`, `expiry.advanceTo`).
+   */
+  function endRest(endedWhileAway: boolean) {
+    const running = restStore.getState().timer;
+    if (!running) return null;
+    const expiry = resolveExpiry({ exercises: restExercises, timer: running, viewingIndex: current, endedWhileAway });
+    restStore.getState().clear();
+    return expiry;
+  }
+
+  useEffect(() => {
+    if (!timer || !workout) return;
+    if (restRemaining(timer, now).ended) endRest(!sawRunning.current);
+    else sawRunning.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [now, timer, workout]);
 
   function openMenu() {
     setRoutineName(findInProgressWorkout()?.routineName ?? null);
@@ -137,6 +173,7 @@ export default function LiveWorkoutScreen() {
 
   /** Deletes the workout and returns to where it started (the root when there is nowhere to go back to). */
   function confirmDiscard() {
+    restStore.getState().clear();
     discardWorkout(Number(idParam));
     setDiscardStep("closed");
     if (router.canGoBack()) router.back();
@@ -163,6 +200,7 @@ export default function LiveWorkoutScreen() {
 
   function confirmFinish(prompt: FinishPrompt | null) {
     setFinishing(null);
+    restStore.getState().clear();
     if (prompt?.kind === "discard") {
       discardWorkout(Number(idParam));
       leave();
@@ -196,11 +234,24 @@ export default function LiveWorkoutScreen() {
     const row = exercise.rows[index];
     const rows = markSetDone(exercise.rows, index, !row.done);
     if (rows === exercise.rows) return;
-    setWorkout({
-      ...workout,
-      exercises: workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e)),
+    const exercises = workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e));
+    setWorkout({ ...workout, exercises });
+    const action = onSetToggled({
+      exercises: toRestExercises(exercises),
+      set: { exerciseIndex: current, setIndex: index },
+      done: !row.done,
+      timer: restStore.getState().timer,
+      now: Date.now(),
     });
+    if (action.kind === "start" || action.kind === "replace") sawRunning.current = true;
+    restStore.getState().apply(action, Number(idParam));
   }
+
+  function adjust(deltaSeconds: number) {
+    if (restStore.getState().adjust(deltaSeconds, Date.now()).ended) endRest(false);
+  }
+
+  const rest = timer ? restRemaining(timer, now) : null;
 
   return (
     <>
@@ -248,7 +299,7 @@ export default function LiveWorkoutScreen() {
             contentContainerStyle={{
               paddingHorizontal: spacing.xl,
               paddingTop: spacing.md,
-              paddingBottom: spacing.xxl,
+              paddingBottom: spacing.xxl + (rest ? panelHeight : 0),
               gap: spacing.lg,
             }}
           >
@@ -421,6 +472,16 @@ export default function LiveWorkoutScreen() {
           <View style={{ padding: spacing.xl }}>
             <Text tone="muted">Workout not found.</Text>
           </View>
+        ) : null}
+        {timer && rest ? (
+          <RestPanel
+            text={rest.text}
+            fraction={rest.fraction}
+            nextUp={nextUp(restExercises, timer.set.exerciseIndex)}
+            onAdjust={adjust}
+            onSkip={() => restStore.getState().clear()}
+            onLayout={(e) => setPanelHeight(e.nativeEvent.layout.height)}
+          />
         ) : null}
       </View>
     </>

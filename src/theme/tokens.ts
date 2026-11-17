@@ -101,3 +101,6 @@ export const textStyle = {
   /** Title of a row or card. */
   rowTitle: { fontSize: fontSize.input, lineHeight: lineHeight.title, letterSpacing: -0.4 },
 } as const;
+
+/** The rest panel pinned to the bottom of the live workout: ring size and stroke in points, top corner radius. */
+export const restPanel = { ring: 96, stroke: 6, corner: 32, time: 24, timeLine: 28, label: 11 } as const;

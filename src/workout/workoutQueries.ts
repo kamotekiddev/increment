@@ -130,6 +130,9 @@ export function startWorkout(routineId: number, now: Date = new Date()): number 
   });
 }
 
+/** Rest length used when a workout's routine exercise was deleted. */
+const DEFAULT_REST_SECONDS = 90;
+
 export interface LiveSet extends SetRow {
   setId: number;
 }
@@ -139,6 +142,9 @@ export interface LiveExercise {
   name: string;
   target: Target | null;
   range: { repMin: number; repMax: number } | null;
+  /** The Routine exercise's Rest length in seconds; the default when the routine exercise is gone. */
+  restSeconds: number;
+  loadType: "weighted" | "bodyweight" | "bodyweight_or_weighted";
   rows: LiveSet[];
 }
 
@@ -160,6 +166,8 @@ export async function loadWorkout(id: number): Promise<LiveWorkout | null> {
       targetReps: workoutExercises.targetReps,
       repMin: routineExercises.repMin,
       repMax: routineExercises.repMax,
+      restS: routineExercises.restS,
+      loadType: exercises.loadType,
     })
     .from(workoutExercises)
     .innerJoin(exercises, eq(exercises.id, workoutExercises.exerciseId))
@@ -189,6 +197,8 @@ export async function loadWorkout(id: number): Promise<LiveWorkout | null> {
       name: e.name,
       target: e.targetWeightKg !== null && e.targetReps !== null ? { weightKg: e.targetWeightKg, reps: e.targetReps } : null,
       range: e.repMin !== null && e.repMax !== null ? { repMin: e.repMin, repMax: e.repMax } : null,
+      restSeconds: e.restS ?? DEFAULT_REST_SECONDS,
+      loadType: e.loadType,
       rows: setRows.filter((s) => s.workoutExerciseId === e.id).map((s) => ({ ...rowFromStored(s), setId: s.id })),
     })),
   };
