@@ -1,4 +1,4 @@
-import { DAY_LABELS, daysLabel, isDaySet, toggleDay } from "./routineDays";
+import { DAY_LABELS, DISPLAY_ORDER, daysLabel, isDaySet, toggleDay } from "./routineDays";
 
 describe("routineDays", () => {
   it("has Monday as bit 0 through Sunday as bit 6", () => {
@@ -14,10 +14,16 @@ describe("routineDays", () => {
     expect(toggleDay(0b0001001, 6)).toBe(0b1001001);
   });
 
-  it("labels days in week order", () => {
+  it("shows the week starting on Sunday without changing the stored bits", () => {
+    expect(DISPLAY_ORDER.map((i) => DAY_LABELS[i])).toEqual(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
+    expect(DISPLAY_ORDER).toHaveLength(7);
+  });
+
+  it("labels days with Sunday first", () => {
     expect(daysLabel(0b0001001)).toBe("Mon · Thu");
     expect(daysLabel(0b1000000)).toBe("Sun");
-    expect(daysLabel(0b1111111)).toBe("Mon · Tue · Wed · Thu · Fri · Sat · Sun");
+    expect(daysLabel(0b1000001)).toBe("Sun · Mon");
+    expect(daysLabel(0b1111111)).toBe("Sun · Mon · Tue · Wed · Thu · Fri · Sat");
   });
 
   it("reads No days when none is set", () => {

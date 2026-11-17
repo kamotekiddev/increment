@@ -18,6 +18,7 @@
 - **Live workout**: saved from Start, one in progress at a time, and its routine is locked until it is finished or discarded; see `.scratch/phase-1-live-workout/spec.md`.
 - **Live workout inputs**: weight and reps are typed into plain number inputs. There are no −/+ weight buttons (built, then removed because the owner did not like the interface), no Add set and no remove-set control: the set count is fixed to the plan. A set cannot be marked done while its weight is blank.
 - **Offer and summary**: after Finish, each Earned exercise gets its own Offer screen with only Go up and Stay, one at a time, then a summary reports the result with no buttons. A tap saves at once and is final; back and swipe are disabled on Offer screens; unanswered Offers are Stay. A grouped list, "go up on all", a compact card and flipping an answer were sketched and set aside. See `.scratch/phase-1-summary-and-offer/spec.md`.
+- **Week start**: the week starts on Sunday in every day row, with three-letter names (Sun, Mon, Tue) (the "Repeat on" picker, the onboarding schedule and the Today week strip), like a calendar. Days are still stored as a bitmask with Monday = bit 0; only the display order changes.
 - **Edited rows**: the "edited" mark that stops a row following an earlier edit is kept in memory only and is lost on an app restart. Revisit in feature 7 (crash resume).
 
 ## Open
