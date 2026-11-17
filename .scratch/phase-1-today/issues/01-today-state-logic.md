@@ -4,11 +4,11 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] Cards: one per Routine planned today, in order; a finished Workout started today makes it Done; discarded does not
-- [ ] In-progress Routine is marked, other cards unchanged
-- [ ] Strip: today, planned dot, done check (any finished Workout that day, planned or not); no missed state
-- [ ] Rest day names the next planned Routine and day, wrapping to next week; no days set and no Routines are separate states
-- [ ] A Workout started 11:50 pm counts for its start day
-- [ ] Plain inputs only, no database or React; type check, lint and tests pass
+- [x] Cards: one per Routine planned today, in order; a finished Workout started today makes it Done; discarded does not
+- [x] In-progress Routine is marked, other cards unchanged
+- [x] Strip: today, planned dot, done check (any finished Workout that day, planned or not); no missed state
+- [x] Rest day names the next planned Routine and day, wrapping to next week; no days set and no Routines are separate states
+- [x] A Workout started 11:50 pm counts for its start day
+- [x] Plain inputs only, no database or React; type check, lint and tests pass
