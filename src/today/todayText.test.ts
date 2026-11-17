@@ -1,4 +1,4 @@
-import { dateLine, restBannerText, screenTitle, stripLabel } from "./todayText";
+import { dateLine, exerciseCountText, previewTitle, restBannerText, screenTitle, stripLabel } from "./todayText";
 import type { StripDay } from "./todayState";
 
 const day = (over: Partial<StripDay>): StripDay => ({
@@ -56,5 +56,14 @@ describe("stripLabel", () => {
     expect(stripLabel(day({ label: "Tue", dayNumber: 10, done: true }))).toBe("Tue 10, workout done");
     expect(stripLabel(day({ label: "Wed", dayNumber: 11 }))).toBe("Wed 11");
     expect(stripLabel(day({ isToday: true, planned: true }))).toBe("Mon 9, today, planned");
+  });
+});
+
+describe("deck preview header", () => {
+  it("names the routine", () => expect(previewTitle("Push")).toBe("Today: Push"));
+  it("counts exercises", () => {
+    expect(exerciseCountText(5)).toBe("5 exercises");
+    expect(exerciseCountText(1)).toBe("1 exercise");
+    expect(exerciseCountText(0)).toBe("0 exercises");
   });
 });

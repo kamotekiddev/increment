@@ -18,7 +18,7 @@ Decision 2026-11-17: the first design, a compact card with only the name and Sta
 
 **Cards**
 1. As a lifter, I want the Routines planned for today as a deck of cards, one visible at a time, and to swipe the top card away to see the next, so that nothing planned is hidden. With one Routine it is a plain card, with no swipe.
-2. As a lifter, I want each card to show the Routine name, its exercise count ("5 exercises", "1 exercise") and a Start workout button, so that I know what I am about to start (no exercise list, no time estimate).
+2. As a lifter, I want each card to show the Routine name, its exercise count ("5 exercises", "1 exercise") and a Start workout button, so that I know what I am about to start (no exercise list on the card itself, it sits under the deck: story 22; no time estimate).
 3. As a lifter, I want Start to open the live workout through the existing start rule, so that starting works the same everywhere.
 4. As a lifter, I want a Routine I finished today to be a white card with a "Done" check instead of Start, so that I do not start it twice by accident.
 5. As a lifter, I want a discarded workout not to count as done, so that Start comes back.
@@ -44,6 +44,9 @@ Decision 2026-11-17: the first design, a compact card with only the name and Sta
 19. As a lifter on a rest day, I want the banner to say how my week is going: "N of M workouts done this week. Muscles grow while you rest." (M = Routine-days planned this week, a Routine on 3 days counting 3, two Routines on one day counting 2; N = finished workouts started this week, any Routine). When N is more than M, or M is 0 and N is at least 1, it says "N workouts done this week." ("1 workout" for one). With N = 0 it says "Muscles grow while you rest."
 20. As a lifter on a rest day, I want a card listing the first 3 exercises of the next planned Routine with each Target (weight and unit, or reps for a bodyweight exercise) and "+ N more", or "No exercises yet" for an empty Routine, so that I can see what is coming. No step badges.
 
+**Deck preview**
+22. As a lifter with cards on Today, I want a "Today: Push" header (bold, "5 exercises" muted on the right) and, under the dots row, a card listing the first 3 exercises of the Routine on top of the deck with each Target and "+ N more" (or "No exercises yet"), so that I see what the top card holds before I start. It follows the deck: swiping changes it to the new top Routine. A Done Routine's preview still shows, read-only. No extra Start button. Decided 2026-11-17.
+
 **Header**
 21. As a lifter, I want a date line ("Thursday, 12 Nov") above the title in local time, and the title "Today" (or "Rest day" on a rest day), with no settings gear until Settings exist (Phase 2).
 
@@ -55,6 +58,7 @@ Decision 2026-11-17: the first design, a compact card with only the name and Sta
 - "Done" for a card: a finished Workout of that Routine whose start falls on today (local time). The strip check: a finished Workout of any Routine started that day. "In progress" comes from the existing in-progress query.
 - All of it is derived from Routines and Workouts. Nothing new is stored and there is no schema change.
 - "Next: Push on Thu" is the first planned Routine after today in week order, wrapping to next week. If several share that day, the first in Routines-tab order is named.
+- The deck preview reuses the rest-day exercise card (`ExercisePreviewCard`) and the same preview query, keyed by the Routine on top. The deck reports its top card through `onTopChange` at mount and after each swap, not per drag frame.
 - Start uses the existing start decision (start, or Resume-or-discard).
 -
 - No ADR: the choices are easy to change later.

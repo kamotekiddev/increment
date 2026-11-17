@@ -34,3 +34,13 @@ export function stripLabel(day: StripDay): string {
   else if (day.planned) parts.push("planned");
   return parts.join(", ");
 }
+
+/** "5 exercises", "1 exercise". */
+export function exerciseCountText(count: number): string {
+  return `${count} ${count === 1 ? "exercise" : "exercises"}`;
+}
+
+/** The header above the deck preview card: "Today: Push". */
+export function previewTitle(routineName: string): string {
+  return `Today: ${routineName}`;
+}

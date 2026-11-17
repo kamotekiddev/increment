@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AccessibilityInfo, Animated, PanResponder, View } from "react-native";
 
 import { Text } from "@/components";
@@ -13,18 +13,43 @@ import type { TodayCard } from "./todayState";
  * past a threshold (or a flick) the top card flies off to the back. Screen readers get a "next
  * routine" action instead of the swipe.
  */
-export function RoutineDeck({ cards, onStart }: { cards: TodayCard[]; onStart: (card: TodayCard) => void }) {
-  if (cards.length === 1) return <RoutineHeroCard card={cards[0]} onStart={() => onStart(cards[0])} />;
-  return <Deck cards={cards} onStart={onStart} />;
+interface DeckProps {
+  cards: TodayCard[];
+  onStart: (card: TodayCard) => void;
+  /** Called with the card now on top: at mount and after each swap, never per drag frame. */
+  onTopChange?: (card: TodayCard) => void;
 }
 
-function Deck({ cards, onStart }: { cards: TodayCard[]; onStart: (card: TodayCard) => void }) {
+/** Reports the top card when its Routine changes (the card object is rebuilt on every Today read, so only the id is a trigger). */
+function useReportTop(card: TodayCard, onTopChange: DeckProps["onTopChange"]) {
+  const latest = useRef({ card, onTopChange });
+  useEffect(() => {
+    latest.current = { card, onTopChange };
+  });
+  const routineId = card.routineId;
+  useEffect(() => {
+    latest.current.onTopChange?.(latest.current.card);
+  }, [routineId]);
+}
+
+export function RoutineDeck({ cards, onStart, onTopChange }: DeckProps) {
+  if (cards.length === 1) return <SingleCard card={cards[0]} onStart={onStart} onTopChange={onTopChange} />;
+  return <Deck cards={cards} onStart={onStart} onTopChange={onTopChange} />;
+}
+
+function SingleCard({ card, onStart, onTopChange }: { card: TodayCard; onStart: DeckProps["onStart"]; onTopChange: DeckProps["onTopChange"] }) {
+  useReportTop(card, onTopChange);
+  return <RoutineHeroCard card={card} onStart={() => onStart(card)} />;
+}
+
+function Deck({ cards, onStart, onTopChange }: DeckProps) {
   const colors = useColors();
   const [x] = useState(() => new Animated.Value(0));
   const [index, setIndex] = useState(0);
   const [reduceMotion, setReduceMotion] = useState(false);
   const n = cards.length;
   const top = index % n;
+  useReportTop(cards[top], onTopChange);
 
   useEffect(() => {
     let live = true;
