@@ -5,12 +5,9 @@ import { Text } from "@/components";
 import { opacity, radius, size, spacing, useColors } from "@/theme";
 
 import type { TodayCard } from "./todayState";
+import { exerciseCountText } from "./todayText";
 
 const CAPTION: Record<TodayCard["status"], string> = { start: "TODAY", done: "FINISHED", inProgress: "RUNNING" };
-
-function exerciseText(count: number): string {
-  return `${count} ${count === 1 ? "exercise" : "exercises"}`;
-}
 
 /**
  * A Today card. A Routine still to do is an accent "hero" with a white Start pill; Done and In
@@ -38,7 +35,7 @@ export function RoutineHeroCard({ card, onStart, fill }: { card: TodayCard; onSt
           {card.name}
         </Text>
         <Text tone={live ? "onAccent" : "muted"} style={live ? { opacity: opacity.onAccentSoft } : null}>
-          {exerciseText(card.exerciseCount)}
+          {exerciseCountText(card.exerciseCount)}
         </Text>
       </View>
       {live ? (

@@ -1,9 +1,10 @@
 import { router } from "expo-router";
+import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components";
-import { buildToday, dateLine, NoDaysCard, NoRoutineCard, RestDay, RoutineDeck, screenTitle, useDayRollover, useNextPreview, useTodayData, WeekStrip } from "@/today";
+import { buildToday, DeckPreview, dateLine, NoDaysCard, NoRoutineCard, RestDay, RoutineDeck, screenTitle, useDayRollover, useNextPreview, useTodayData, WeekStrip } from "@/today";
 import { spacing, textStyle, useColors } from "@/theme";
 import { useStartWorkout } from "@/workout/useStartWorkout";
 
@@ -13,7 +14,12 @@ export default function TodayScreen() {
   const data = useTodayData(useDayRollover());
   const { start, sheet } = useStartWorkout();
   const today = data ? buildToday(data) : undefined;
-  const preview = useNextPreview(today?.state.kind === "rest" ? today.state.next.routineId : undefined);
+  const [topId, setTopId] = useState<number>();
+  const cards = today?.state.kind === "cards" ? today.state.cards : undefined;
+  // The deck reports its top card; fall back to the first if that Routine is no longer on Today.
+  const topCard = cards ? (cards.find((c) => c.routineId === topId) ?? cards[0]) : undefined;
+  const previewId = today?.state.kind === "rest" ? today.state.next.routineId : topCard?.routineId;
+  const preview = useNextPreview(previewId);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -39,7 +45,10 @@ export default function TodayScreen() {
           <>
             <WeekStrip days={today.strip} restDay={today.state.kind === "rest"} />
             {today.state.kind === "cards" ? (
-              <RoutineDeck cards={today.state.cards} onStart={(card) => start(card.routineId, card.name)} />
+              <>
+                <RoutineDeck cards={today.state.cards} onStart={(card) => start(card.routineId, card.name)} onTopChange={(card) => setTopId(card.routineId)} />
+                {topCard ? <DeckPreview card={topCard} preview={preview} /> : null}
+              </>
             ) : today.state.kind === "rest" ? (
               <RestDay state={today.state} preview={preview} />
             ) : today.state.kind === "noDays" ? (
