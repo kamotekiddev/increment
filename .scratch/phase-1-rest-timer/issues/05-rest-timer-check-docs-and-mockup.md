@@ -4,7 +4,7 @@
 
 **Blocked by:** 03, 04
 
-**Status:** ready-for-agent
+**Status:** owner-check
 
 - [ ] Owner device checklist, on both phones:
   - checking a set starts the right countdown; −15s, +15s and Skip work; checking another set restarts it
@@ -15,7 +15,7 @@
   - minimize the workout and return: the countdown is right
   - lock the phone through a rest: the notification arrives, and its timing on Android is noted
   - deny the permission prompt: the timer still works, and the prompt never returns
-- [ ] `docs/product.md` and `docs/screens.md` updated (rest timer no longer "not yet"; notification permission note beside the onboarding line); `docs/roadmap.md` and the Phase 1 map updated
-- [ ] "Next up" line edit to `Workout.dc.html` prepared locally; published only when the owner asks
+- [x] `docs/product.md` and `docs/screens.md` updated (rest timer no longer "not yet"; notification permission note beside the onboarding line); `docs/roadmap.md` and the Phase 1 map updated
+- [x] "Next up" line edit to `Workout.dc.html` prepared locally; published only when the owner asks
 - [ ] If Android notifications arrive late, the exact-alarm permission is raised as an open item in `docs/decisions.md` for the owner
 - [ ] Type check, lint and tests pass

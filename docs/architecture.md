@@ -10,11 +10,12 @@
 |---|---|
 | App framework | Expo (React Native) + TypeScript, Expo Router |
 | Local database | SQLite (expo-sqlite) + Drizzle ORM, with migrations |
-| App state | Zustand |
+| App state | Zustand (first store: the rest timer, `src/workout/restStore.ts`, so it survives leaving the live screen) |
 | UI | Own components on the Increment tokens, Sora font |
 | Charts | Victory Native (Skia) |
 | One-time purchase | react-native-iap (StoreKit 2 / Google Play Billing) |
-| Reminders | expo-notifications, local only |
+| Reminders and rest-over alert | expo-notifications, local only (the rest timer uses it in Phase 1) |
+| Rest timer extras | react-native-svg (progress ring), expo-haptics (buzz at zero) |
 | Backup, export, PDF | expo-file-system, expo-sharing, expo-document-picker, expo-print |
 | Builds and release | EAS Build, EAS Submit |
 | Tests | Jest (logic), Maestro (flows) |
