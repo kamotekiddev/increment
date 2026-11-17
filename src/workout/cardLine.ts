@@ -39,7 +39,9 @@ export function cardLine({ outcome, reason, next, stepped, remaining }: CardLine
     case "miss-drop":
       return next ? `Missed again. Your rule drops the Target to ${targetText(next)}.` : "Missed again. Your rule drops the Target.";
     case "earned":
-      return stepped ? `Earned. Move up to ${targetText(stepped)}?` : "Earned.";
+      return next
+        ? `Staying at ${formatWeight(next.weightKg, "kg")} kg. The offer comes back after your next clean workout.`
+        : "Earned.";
     case "progressed":
       return next ? `Earned. Moving up to ${targetText(next)}.` : "Earned.";
     case "at-top-of-range":

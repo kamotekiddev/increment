@@ -4,15 +4,15 @@
 
 **Blocked by:** 03 (the inline Offer it replaces)
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
-- [ ] The builder lists the Offers in workout order with Workout exercise id, name, streak, current Target and stepped-up Target; tests cover none, one, several, accepted, declined, and a Deload workout
-- [ ] The Earned-and-stayed card line reads "Staying at X. The offer comes back after your next clean workout."
-- [ ] Finish opens the first Offer screen when there is at least one Offer, otherwise the summary
-- [ ] Each Offer screen shows the progress bar, "N of M", the exercise, its streak, and the change from the current to the stepped-up Target
-- [ ] Go up and Stay are the only buttons; Go up writes `progress_accepted = true`, Stay writes `false`, and either opens the next screen
-- [ ] Answers are final once tapped
-- [ ] Back, swipe and the Android back button do nothing on an Offer screen
-- [ ] After the last Offer the summary opens, with next Targets that reflect the answers and no Offer buttons
-- [ ] Killing the app mid-flow reopens the normal tab; answers already tapped are saved and the rest count as Stay
-- [ ] Engine unchanged; type check, lint and tests pass
+- [x] The builder lists the Offers in workout order with Workout exercise id, name, streak, current Target and stepped-up Target; tests cover none, one, several, accepted, declined, and a Deload workout
+- [x] The Earned-and-stayed card line reads "Staying at X. The offer comes back after your next clean workout."
+- [x] Finish opens the first Offer screen when there is at least one Offer, otherwise the summary
+- [x] Each Offer screen shows the progress bar, "N of M", the exercise, its streak, and the change from the current to the stepped-up Target
+- [x] Go up and Stay are the only buttons; Go up writes `progress_accepted = true`, Stay writes `false`, and either opens the next screen
+- [x] Answers are final once tapped
+- [x] Back, swipe and the Android back button do nothing on an Offer screen
+- [x] After the last Offer the summary opens, with next Targets that reflect the answers and no Offer buttons
+- [x] Killing the app mid-flow reopens the normal tab; answers already tapped are saved and the rest count as Stay
+- [x] Engine unchanged; type check, lint and tests pass

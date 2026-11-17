@@ -49,9 +49,9 @@ describe("cardLine", () => {
     );
   });
 
-  it("asks the Offer question when progression is Earned", () => {
+  it("says the lifter is staying when progression is Earned and not accepted", () => {
     expect(cardLine({ outcome: "clean", reason: "earned", next: t(60, 10), stepped: t(62.5, 10), remaining: null })).toBe(
-      "Earned. Move up to 62.5 kg × 10?",
+      "Staying at 60 kg. The offer comes back after your next clean workout.",
     );
   });
 

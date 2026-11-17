@@ -3,7 +3,7 @@ import { useState } from "react";
 
 import { db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
-import { buildSummary, type Summary } from "./summary";
+import { buildSummary, type OfferItem, type Summary } from "./summary";
 import { JUMP_KG } from "./jump";
 import { toSummaryInput, type SavedExercise } from "./summaryInput";
 import { pastExercises } from "./workoutQueries";
@@ -79,19 +79,13 @@ export function answerOffer(workoutExerciseId: number, accepted: boolean): void 
   db.update(workoutExercises).set({ progressAccepted: accepted }).where(eq(workoutExercises.id, workoutExerciseId)).run();
 }
 
-/**
- * The summary of a finished workout, read when the screen opens. Null when the workout does not
- * exist. `answer` saves an Offer answer and re-reads the summary so the card shows the resulting
- * next Target.
- */
-export function useSummary(workoutId: number): {
-  loaded: LoadedSummary | null;
-  answer: (workoutExerciseId: number, accepted: boolean) => void;
-} {
-  const [loaded, setLoaded] = useState(() => loadSummary(workoutId));
-  function answer(workoutExerciseId: number, accepted: boolean) {
-    answerOffer(workoutExerciseId, accepted);
-    setLoaded(loadSummary(workoutId));
-  }
-  return { loaded, answer };
+/** The Offers of a finished workout, in workout order. Empty when nothing is Earned or the workout is gone. */
+export function loadOffers(workoutId: number): OfferItem[] {
+  return loadSummary(workoutId)?.summary.offers ?? [];
+}
+
+/** The summary of a finished workout, read when the screen opens. Null when the workout does not exist. */
+export function useSummary(workoutId: number): LoadedSummary | null {
+  const [loaded] = useState(() => loadSummary(workoutId));
+  return loaded;
 }

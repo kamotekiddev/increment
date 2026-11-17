@@ -7,9 +7,10 @@ export interface ButtonProps extends Omit<PressableProps, "children" | "style"> 
   label: string;
   /**
    * Primary is the one loud accent block on a screen; secondary is white; danger is the red
-   * destructive action; dashed is the outlined "add" action.
+   * destructive action; dashed is the dashed "add" action; outlined is white with a solid border
+   * (the quieter of two choices).
    */
-  variant?: "primary" | "secondary" | "danger" | "dashed";
+  variant?: "primary" | "secondary" | "danger" | "dashed" | "outlined";
   /** Stretches to the full width and uses the taller 56 pt height of the main screen action. */
   large?: boolean;
 }
@@ -18,7 +19,7 @@ export function Button({ label, variant = "primary", large = false, disabled, ..
   const colors = useColors();
   const filled = variant === "primary" || variant === "danger";
   const background =
-    variant === "primary" ? colors.accent : variant === "danger" ? colors.danger : variant === "secondary" ? colors.card : "transparent";
+    variant === "primary" ? colors.accent : variant === "danger" ? colors.danger : variant === "secondary" || variant === "outlined" ? colors.card : "transparent";
   const height = large ? 56 : minTouch;
   return (
     <Pressable
@@ -36,9 +37,9 @@ export function Button({ label, variant = "primary", large = false, disabled, ..
         paddingVertical: spacing.md,
         borderRadius: radius.pill,
         backgroundColor: background,
-        borderWidth: variant === "dashed" ? 1.5 : 0,
+        borderWidth: variant === "dashed" ? 1.5 : variant === "outlined" ? 2 : 0,
         borderStyle: variant === "dashed" ? "dashed" : "solid",
-        borderColor: colors.iconFaint,
+        borderColor: variant === "outlined" ? colors.lineStrong : colors.iconFaint,
         opacity: disabled ? opacity.disabled : pressed ? opacity.pressed : 1,
       })}
     >

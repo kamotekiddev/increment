@@ -82,7 +82,7 @@ describe("buildSummary cards", () => {
     const card = only(exercise([clean3("2026-11-17"), clean3("2026-11-14"), clean3("2026-11-11")]));
     expect(card.offer).toEqual({ target: { weightKg: 62.5, reps: 10 }, accepted: false });
     expect(card.next).toEqual(t60);
-    expect(card.line).toBe("Earned. Move up to 62.5 kg × 10?");
+    expect(card.line).toBe("Staying at 60 kg. The offer comes back after your next clean workout.");
   });
 
   it("Accepted shows the stepped Target and keeps the Offer so it can be flipped back", () => {
@@ -160,5 +160,44 @@ describe("buildSummary cards", () => {
     const b = exercise([clean3("2026-11-17")], {}, { id: 2, name: "Row" });
     expect(build([b, a]).cards.map((c) => c.name)).toEqual(["Row", "Bench Press"]);
     expect(build([b, a]).cards.map((c) => c.workoutExerciseId)).toEqual([2, 1]);
+  });
+});
+
+describe("buildSummary offers", () => {
+  const earned = (date = "2026-11-17", opts = {}) => [clean3(date, opts), clean3("2026-11-14"), clean3("2026-11-11")];
+
+  it("lists none when nothing is Earned", () => {
+    expect(build([exercise([clean3("2026-11-17")])]).offers).toEqual([]);
+  });
+
+  it("lists one Offer with the exercise, streak, current and stepped-up Target", () => {
+    expect(build([exercise(earned())]).offers).toEqual([
+      { workoutExerciseId: 1, name: "Bench Press", streak: 3, current: t60, stepped: { weightKg: 62.5, reps: 10 }, accepted: false },
+    ]);
+  });
+
+  it("lists several in workout order and skips exercises without an Offer", () => {
+    const a = exercise(earned(), {}, { id: 1, name: "Bench Press" });
+    const b = exercise([clean3("2026-11-17")], {}, { id: 2, name: "Row" });
+    const c = exercise(earned(), {}, { id: 3, name: "Squat" });
+    expect(build([c, b, a]).offers.map((o) => [o.workoutExerciseId, o.name])).toEqual([
+      [3, "Squat"],
+      [1, "Bench Press"],
+    ]);
+  });
+
+  it("keeps an unanswered or declined Offer, with the current Target unchanged", () => {
+    const offer = build([exercise(earned())]).offers[0];
+    expect(offer).toMatchObject({ accepted: false, current: t60 });
+  });
+
+  it("keeps an accepted Offer so the list does not shift after an answer", () => {
+    const offer = build([exercise(earned("2026-11-17", { accepted: true }))]).offers[0];
+    expect(offer).toMatchObject({ accepted: true, current: t60, stepped: { weightKg: 62.5, reps: 10 } });
+  });
+
+  it("lists none on a Deload workout", () => {
+    const history = [session("2026-11-17", { weightKg: 50, reps: 10 }, [10, 10, 10], { deload: true }), clean3("2026-11-14"), clean3("2026-11-11"), clean3("2026-11-08")];
+    expect(build([exercise(history)]).offers).toEqual([]);
   });
 });

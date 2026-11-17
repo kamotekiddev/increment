@@ -58,9 +58,26 @@ export interface SummaryCard {
   offer: SummaryOffer | null;
 }
 
+/** One Offer screen: an exercise that earned a heavier weight, in workout order. */
+export interface OfferItem {
+  /** The workout_exercises row id; pass it to answerOffer(). */
+  workoutExerciseId: number;
+  name: string;
+  /** Clean workouts in a row at the current Target, including this one. */
+  streak: number;
+  /** The Target the lifter just worked at. */
+  current: Target;
+  /** The stepped-up Target. */
+  stepped: Target;
+  /** True once the lifter tapped Go up; false is Stay, answered or not. */
+  accepted: boolean;
+}
+
 export interface Summary {
   header: SummaryHeader;
   cards: SummaryCard[];
+  /** The Offers in workout order. Answered Offers stay listed so each screen keeps its place. */
+  offers: OfferItem[];
 }
 
 const doneWorking = (sets: LoggedSet[]) => sets.filter((s) => s.done && !s.isWarmup);
@@ -80,7 +97,7 @@ function streakLength(history: HistorySession[], planned: Planned): number {
   return count;
 }
 
-function buildCard(ex: SummaryExercise): SummaryCard {
+function buildCard(ex: SummaryExercise): { card: SummaryCard; offer: OfferItem | null } {
   const input: NextTargetInput = { rule: ex.rule, planned: ex.planned, loadType: ex.loadType, history: ex.history, jumpKg: ex.jumpKg };
   const current = ex.history[0];
   const outcome = classify(current, ex.planned);
@@ -102,7 +119,12 @@ function buildCard(ex: SummaryExercise): SummaryCard {
   const stepped = offer?.target ?? (streak !== null && current.target ? stepUp(current.target, input) : null);
   const remaining = streak !== null ? Math.max(0, ex.rule.sessionsToEarn - streak) : null;
   const line = cardLine({ outcome, reason: result.reason, next: result.target, stepped, remaining });
-  return { workoutExerciseId: ex.id, name: ex.name, outcome, streak, line, next: result.target, offer };
+  const card: SummaryCard = { workoutExerciseId: ex.id, name: ex.name, outcome, streak, line, next: result.target, offer };
+  const item: OfferItem | null =
+    offer && current.target
+      ? { workoutExerciseId: ex.id, name: ex.name, streak: streak ?? 0, current: current.target, stepped: offer.target, accepted: offer.accepted }
+      : null;
+  return { card, offer: item };
 }
 
 /** The summary the lifter sees right after Finish: a header and one card per exercise with done sets. */
@@ -110,6 +132,7 @@ export function buildSummary({ startedAt, finishedAt, exercises }: SummaryInput)
   const worked = exercises.filter((ex) => doneWorking(ex.sets).length > 0);
   const all = worked.flatMap((ex) => doneWorking(ex.sets));
   const volumeKg = all.reduce((sum, s) => sum + s.weightKg * s.reps, 0);
+  const built = worked.map(buildCard);
   return {
     header: {
       durationMinutes: Math.max(0, Math.floor((finishedAt - startedAt) / 60_000)),
@@ -118,6 +141,7 @@ export function buildSummary({ startedAt, finishedAt, exercises }: SummaryInput)
       totalReps: all.reduce((sum, s) => sum + s.reps, 0),
       showTotalReps: volumeKg === 0,
     },
-    cards: worked.map(buildCard),
+    cards: built.map((b) => b.card),
+    offers: built.flatMap((b) => (b.offer ? [b.offer] : [])),
   };
 }

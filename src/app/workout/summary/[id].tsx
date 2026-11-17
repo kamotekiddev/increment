@@ -61,7 +61,7 @@ function HeaderCard({ title, header }: { title: string; header: SummaryHeader })
   );
 }
 
-function ExerciseCard({ card, onAnswer }: { card: SummaryCard; onAnswer: (accepted: boolean) => void }) {
+function ExerciseCard({ card }: { card: SummaryCard }) {
   return (
     <Card style={{ borderRadius: radius.card, gap: spacing.md }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.md }}>
@@ -81,27 +81,6 @@ function ExerciseCard({ card, onAnswer }: { card: SummaryCard; onAnswer: (accept
           {card.next ? targetText(card.next) : "No Target yet"}
         </Text>
       </View>
-      {card.offer ? (
-        <View style={{ gap: spacing.sm }}>
-          <Text variant="caption" tone="muted" style={{ fontFamily: fontFamily.medium }}>
-            Offer: move up to {targetText(card.offer.target)} next time?
-          </Text>
-          <View style={{ flexDirection: "row", gap: spacing.sm }}>
-            <Button
-              label="Accept"
-              variant={card.offer.accepted ? "primary" : "secondary"}
-              accessibilityState={{ selected: card.offer.accepted }}
-              onPress={() => onAnswer(true)}
-            />
-            <Button
-              label="Decline"
-              variant={card.offer.accepted ? "secondary" : "primary"}
-              accessibilityState={{ selected: !card.offer.accepted }}
-              onPress={() => onAnswer(false)}
-            />
-          </View>
-        </View>
-      ) : null}
     </Card>
   );
 }
@@ -110,7 +89,7 @@ export default function WorkoutSummaryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { loaded, answer } = useSummary(Number(id));
+  const loaded = useSummary(Number(id));
 
   /** Returns to where the workout started (the root when there is nowhere to go back to). */
   function done() {
@@ -132,7 +111,7 @@ export default function WorkoutSummaryScreen() {
         >
           <HeaderCard title={loaded.title ?? "Workout"} header={loaded.summary.header} />
           {loaded.summary.cards.map((card) => (
-            <ExerciseCard key={card.workoutExerciseId} card={card} onAnswer={(accepted) => answer(card.workoutExerciseId, accepted)} />
+            <ExerciseCard key={card.workoutExerciseId} card={card} />
           ))}
         </ScrollView>
       ) : (
