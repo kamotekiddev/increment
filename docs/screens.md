@@ -19,15 +19,15 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 ## 2 · Train
 | Screen | Notes |
 |---|---|
-| Today | Week strip, today's session, settings gear |
+| Today | Week strip (Sun to Sat: today highlighted, dot = planned, check = finished workout, not tappable) and one compact card per Routine planned today, with only the name and Start. A finished Routine shows Done, the Routine in progress shows In progress, and a workout belongs to the day it was started. Settings gear arrives with Settings (Phase 2) |
 | Live workout | Set rows prefilled with the Target; read-only Last column; weight and reps typed into plain inputs (no −/+ buttons); fixed set count; ⋯ → Discard workout; Finish → Finish prompt. Interactive kg/lb arrives in Phase 2 |
 | Finish workout | Prompt naming unchecked sets (dropped) and skipped exercises (not a Miss); with no sets done it offers Discard instead |
 | Discard workout | Confirmation; deletes the workout and its sets |
 | Start while one is in progress | Resume, or discard it and start the new one |
 | Offer (one per screen) | Opens after Finish, one screen per Earned exercise in workout order. Progress bar and "2 of 5", the exercise and its streak, current Target → stepped-up Target, and only two buttons: Go up and Stay. A tap saves the answer and opens the next screen; answers are final. Back and swipe are disabled. Skipped when nothing is Earned |
 | Workout summary | Opens after the last Offer (or straight after Finish). Duration, sets, volume (total reps when 0 kg); one card per exercise with outcome, a one-line reason and the next Target. Reports only: no Go up or Stay, no records. Done returns to where the workout started |
-| Today, no routine | Empty state |
-| Today, rest day | Rest-day state |
+| Today, no routine | "No routines yet" and Create routine (opens New routine); the strip still shows |
+| Today, rest day | "Rest day. Next: Push on Thu" with no Start; with Routines but no days set, "No training days set. Pick days on a routine to plan your week." |
 
 ## 3 · Routines
 | Screen | Notes |

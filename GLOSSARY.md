@@ -99,3 +99,7 @@ _Avoid_: Active workout, open workout, draft
 **Skipped exercise**:
 An exercise in a Workout with no sets done. It is left out of the saved Workout and is neither a Miss nor a Clean, so its Streak and Target stay as they were.
 _Avoid_: Missed exercise, dropped exercise
+
+**Rest day**:
+A day of the week on which no Routine is planned. Today shows a rest-day message instead of Routine cards.
+_Avoid_: Off day, day off
