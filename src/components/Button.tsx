@@ -1,6 +1,8 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
+import type { ComponentProps } from "react";
 import { Pressable, type PressableProps } from "react-native";
 
-import { fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
 import { Text } from "./Text";
 
 export interface ButtonProps extends Omit<PressableProps, "children" | "style"> {
@@ -16,9 +18,11 @@ export interface ButtonProps extends Omit<PressableProps, "children" | "style"> 
   large?: boolean;
   /** Stretches to the full width at 52 pt: the secondary buttons under a large one in a sheet. */
   stretch?: boolean;
+  /** An icon shown before the label. */
+  icon?: ComponentProps<typeof Ionicons>["name"];
 }
 
-export function Button({ label, variant = "primary", large = false, stretch = false, disabled, ...rest }: ButtonProps) {
+export function Button({ label, variant = "primary", large = false, stretch = false, icon, disabled, ...rest }: ButtonProps) {
   const colors = useColors();
   const filled = variant === "primary" || variant === "danger";
   const background =
@@ -43,6 +47,8 @@ export function Button({ label, variant = "primary", large = false, stretch = fa
         alignSelf: fullWidth ? "stretch" : "flex-start",
         justifyContent: "center",
         alignItems: "center",
+        flexDirection: "row",
+        gap: spacing.sm,
         paddingHorizontal: spacing.xxl,
         paddingVertical: spacing.md,
         borderRadius: radius.pill,
@@ -53,6 +59,7 @@ export function Button({ label, variant = "primary", large = false, stretch = fa
         opacity: disabled ? opacity.disabled : pressed ? opacity.pressed : 1,
       })}
     >
+      {icon ? <Ionicons name={icon} size={size.icon} color={filled ? colors.onAccent : colors.ink} /> : null}
       <Text
         variant="label"
         tone={filled ? "onAccent" : variant === "dangerText" ? "danger" : "ink"}

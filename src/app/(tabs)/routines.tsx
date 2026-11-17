@@ -10,7 +10,7 @@ import { RoutineRow } from "@/routines/RoutineRow";
 import { canCreateRoutine, FREE_ROUTINE_LIMIT } from "@/routines/routineLimit";
 import { routineCounterParts } from "@/routines/routineListText";
 import { useIsPro, useRoutines } from "@/routines/routineQueries";
-import { fontSize, radius, spacing, useColors } from "@/theme";
+import { fontSize, radius, spacing, textStyle, useColors } from "@/theme";
 
 export default function RoutinesScreen() {
   const colors = useColors();
@@ -38,7 +38,7 @@ export default function RoutinesScreen() {
         }}
       >
         <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Text variant="heading" accessibilityRole="header" style={{ fontSize: fontSize.display, lineHeight: 38, letterSpacing: -1 }}>
+          <Text variant="heading" accessibilityRole="header" style={textStyle.screenTitle}>
             Routines
           </Text>
           <RoundButton icon="add" label="New routine" filled onPress={create} />

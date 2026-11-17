@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { fontSize, opacity, radius, spacing, useColors } from "@/theme";
+import { fontSize, opacity, radius, spacing, textStyle, useColors } from "@/theme";
 
 import { routinePreview, routineSubtitle } from "./routineListText";
 import type { RoutineListItem } from "./routineQueries";
@@ -27,7 +27,7 @@ export function RoutineRow({ routine, onPress }: RoutineRowProps) {
         opacity: pressed ? opacity.pressed : 1,
       })}
     >
-      <Text variant="title" style={{ fontSize: fontSize.input, lineHeight: 24, letterSpacing: -0.4 }} numberOfLines={1}>
+      <Text variant="title" style={textStyle.rowTitle} numberOfLines={1}>
         {routine.name}
       </Text>
       <Text tone="muted" style={{ fontSize: fontSize.meta, lineHeight: 19 }} numberOfLines={2}>

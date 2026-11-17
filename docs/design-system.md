@@ -21,6 +21,8 @@ The full system lives at https://claude.ai/artifact/2eEe2GhySr9xx6LqTbmGhs. This
 | icon-faint | `#85858B` | Inactive icons |
 | accent | `#5B3DF5` | Actions, active tab, progress |
 | accent-tint | `#EFEAFF` | Progress pills, highlights (alias: `pr`) |
+| accent-layer-1 | `#9D8BF9` | Second card in the Today deck, under the top card |
+| accent-layer-2 | `#CEC5FC` | Third card in the Today deck |
 | danger | `#C62828` | Destructive actions |
 | danger-tint | `#FDECEC` | Icon circle on the delete and remove sheets |
 | line-strong | `#C9C9CC` | Dashed outline of an empty state |
@@ -43,6 +45,7 @@ Line heights that a component sets itself come from `lineHeight` in `src/theme` 
 - **Round button**: 48 pt white circle with an icon (back, close, more); accent-filled for add.
 - **Set row**: set number, previous set, weight, reps and a done check. The overload target appears in `ink-muted` so it's visible at a glance.
 - **Overload badge**: describes a routine exercise's overload rule.
+- **Routine hero card** (Today): an accent card with a caption, the Routine name in large type, the exercise count and a white Start pill. With two or more Routines the cards form a deck: lighter layers peek out below, dragging the top card tilts it and reveals the next card's content, and releasing past the swipe distance sends it to the back. Done and In progress cards are white.
 - **Tab bar**: a floating white pill; the active tab is an accent pill. Tabs: Today, Routines, Library, Progress.
 - **Bottom sheet**: `bg` colour (not white), with rounded top corners, over a dimmed backdrop. Used for pop-ups, confirmations and pickers. Its React Native content sits in an `RNHostView` (never a `Host`) inside the native sheet.
 - **Routine screens**: in-page headers with round buttons instead of the native header, white cards on `bg`, and the main action fixed at the bottom. Sizes come from `size` in `src/theme`.
