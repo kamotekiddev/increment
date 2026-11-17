@@ -161,10 +161,15 @@ export default function LiveWorkoutScreen() {
   }
 
   function confirmFinish(prompt: FinishPrompt | null) {
-    if (prompt?.kind === "discard") discardWorkout(Number(idParam));
-    else finishWorkout(Number(idParam));
     setFinishing(null);
-    leave();
+    if (prompt?.kind === "discard") {
+      discardWorkout(Number(idParam));
+      leave();
+      return;
+    }
+    finishWorkout(Number(idParam));
+    // Replaces the live screen, so back from the summary lands where the workout started.
+    router.replace({ pathname: "/workout/summary/[id]", params: { id: String(idParam) } });
   }
 
   const exercise = workout?.exercises[current];
