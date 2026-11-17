@@ -4,13 +4,13 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] Header shows duration in minutes, set count, and volume in kg (done working sets, weight × reps)
-- [ ] Volume of 0 is replaced by total reps; weighted bodyweight sets count their added load
-- [ ] Skipped exercises (no done sets) have no card
-- [ ] Each card has outcome, reason line and next Target; Streak progress appears only on Clean cards
-- [ ] An Offer appears only when the engine returns a proposal, and carries the proposed Target
-- [ ] With the step accepted, the next Target is the stepped-up Target; declined or unanswered keeps the current one
-- [ ] Hold, Miss (with and without a drop), baseline, top of range and Deload each have wording and a test
-- [ ] Plain inputs only, no database or React; engine unchanged; type check, lint and tests pass
+- [x] Header shows duration in minutes, set count, and volume in kg (done working sets, weight × reps)
+- [x] Volume of 0 is replaced by total reps; weighted bodyweight sets count their added load
+- [x] Skipped exercises (no done sets) have no card
+- [x] Each card has outcome, reason line and next Target; Streak progress appears only on Clean cards
+- [x] An Offer appears only when the engine returns a proposal, and carries the proposed Target
+- [x] With the step accepted, the next Target is the stepped-up Target; declined or unanswered keeps the current one
+- [x] Hold, Miss (with and without a drop), baseline, top of range and Deload each have wording and a test
+- [x] Plain inputs only, no database or React; engine unchanged; type check, lint and tests pass

@@ -14,3 +14,7 @@ export type { LastSet } from "./lastColumn";
 export { parseWeight, parseReps } from "./parseInput";
 export { toHistory } from "./historyInputs";
 export type { PastExercise } from "./historyInputs";
+export { buildSummary } from "./summary";
+export type { Summary, SummaryCard, SummaryExercise, SummaryHeader, SummaryInput, SummaryOffer } from "./summary";
+export { cardLine, targetText } from "./cardLine";
+export type { CardLineInput } from "./cardLine";
