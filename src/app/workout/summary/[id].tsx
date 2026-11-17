@@ -3,7 +3,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Card, Pill, Text } from "@/components";
-import { fontFamily, fontSize, lineHeight, opacity, radius, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, radius, spacing, useColors } from "@/theme";
 import { formatWeight } from "@/units";
 import type { SummaryCard, SummaryHeader } from "@/workout";
 import { targetText } from "@/workout";
@@ -23,9 +23,9 @@ function Stat({ value, unit, label }: { value: string; unit?: string; label: str
     <View style={{ flex: 1, gap: 2 }}>
       <Text tone="onAccent" style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.screen, letterSpacing: -0.7 }}>
         {value}
-        {unit ? <Text tone="onAccent" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.small, opacity: opacity.pressed }}>{unit}</Text> : null}
+        {unit ? <Text tone="onAccent" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.small }}>{unit}</Text> : null}
       </Text>
-      <Text variant="caption" tone="onAccent" style={{ opacity: opacity.pressed }}>
+      <Text variant="caption" tone="onAccent">
         {label}
       </Text>
     </View>
@@ -37,7 +37,7 @@ function HeaderCard({ title, header }: { title: string; header: SummaryHeader })
   return (
     <View style={{ backgroundColor: colors.accent, borderRadius: radius.card, padding: spacing.xl, gap: spacing.lg }}>
       <View style={{ gap: spacing.xs }}>
-        <Text tone="onAccent" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.label, opacity: opacity.pressed }}>
+        <Text tone="onAccent" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.label }}>
           Workout complete
         </Text>
         <Text
@@ -70,7 +70,7 @@ function ExerciseCard({ card, onAnswer }: { card: SummaryCard; onAnswer: (accept
         </Text>
         <Pill label={outcomeLabel[card.outcome]} tone={card.outcome === "clean" ? "progress" : "neutral"} />
       </View>
-      <Text tone="muted" style={{ fontSize: fontSize.small, lineHeight: lineHeight.title }}>
+      <Text tone="muted" style={{ fontSize: fontSize.small }}>
         {card.line}
       </Text>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
@@ -132,7 +132,7 @@ export default function WorkoutSummaryScreen() {
         >
           <HeaderCard title={loaded.title ?? "Workout"} header={loaded.summary.header} />
           {loaded.summary.cards.map((card) => (
-            <ExerciseCard key={card.id} card={card} onAnswer={(accepted) => answer(card.id, accepted)} />
+            <ExerciseCard key={card.workoutExerciseId} card={card} onAnswer={(accepted) => answer(card.workoutExerciseId, accepted)} />
           ))}
         </ScrollView>
       ) : (

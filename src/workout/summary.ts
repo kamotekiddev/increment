@@ -46,7 +46,8 @@ export interface SummaryOffer {
 }
 
 export interface SummaryCard {
-  id: number;
+  /** The workout_exercises row id; pass it to answer(). */
+  workoutExerciseId: number;
   name: string;
   outcome: Outcome;
   /** Clean workouts in a row at this Target, including this one. Null unless the card is Clean. */
@@ -91,12 +92,17 @@ function buildCard(ex: SummaryExercise): SummaryCard {
   if (outcome !== "deload") {
     if (result.reason === "earned" && result.proposal) offer = { target: result.proposal, accepted: false };
     else if (result.reason === "progressed" && result.target) offer = { target: result.target, accepted: true };
+    else if (current.progressAccepted && current.target) {
+      // Accepted, but the engine's result has no proposal now (e.g. a Deload is due). Keep the Offer so Accept can flip back to Decline.
+      const target = stepUp(current.target, input);
+      if (target) offer = { target, accepted: true };
+    }
   }
 
   const stepped = offer?.target ?? (streak !== null && current.target ? stepUp(current.target, input) : null);
   const remaining = streak !== null ? Math.max(0, ex.rule.sessionsToEarn - streak) : null;
   const line = cardLine({ outcome, reason: result.reason, next: result.target, stepped, remaining });
-  return { id: ex.id, name: ex.name, outcome, streak, line, next: result.target, offer };
+  return { workoutExerciseId: ex.id, name: ex.name, outcome, streak, line, next: result.target, offer };
 }
 
 /** The summary the lifter sees right after Finish: a header and one card per exercise with done sets. */

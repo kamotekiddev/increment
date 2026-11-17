@@ -143,6 +143,12 @@ describe("buildSummary cards", () => {
     expect(card.line).toBe("Deload workout. It does not count toward your Streak.");
   });
 
+  it("keeps an accepted Offer when a Deload is due, so the lifter can flip it back", () => {
+    const history = [clean3("2026-11-17", { accepted: true }), clean3("2026-11-10"), clean3("2026-11-03")];
+    const card = only(exercise(history, { deload: { everyWeeks: 2, percent: 20 } }));
+    expect(card.offer).toEqual({ target: { weightKg: 62.5, reps: 10 }, accepted: true });
+  });
+
   it("announces a Deload coming next", () => {
     const card = only(exercise([clean3("2026-11-17"), clean3("2026-11-10")], { deload: { everyWeeks: 2, percent: 20 } }));
     expect(card.next).toEqual({ weightKg: 47.5, reps: 10 });
@@ -153,5 +159,6 @@ describe("buildSummary cards", () => {
     const a = exercise([clean3("2026-11-17")], {}, { id: 1, name: "Bench Press" });
     const b = exercise([clean3("2026-11-17")], {}, { id: 2, name: "Row" });
     expect(build([b, a]).cards.map((c) => c.name)).toEqual(["Row", "Bench Press"]);
+    expect(build([b, a]).cards.map((c) => c.workoutExerciseId)).toEqual([2, 1]);
   });
 });
