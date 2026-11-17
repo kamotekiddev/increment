@@ -74,8 +74,24 @@ export function loadSummary(workoutId: number): LoadedSummary | null {
   return { title: routineName, summary: buildSummary(input) };
 }
 
-/** The summary of a finished workout, read once when the screen opens. Null when the workout does not exist. */
-export function useSummary(workoutId: number): LoadedSummary | null {
-  const [loaded] = useState(() => loadSummary(workoutId));
-  return loaded;
+/** Saves the lifter's answer to an Offer at once: Accept is true, Decline is false. */
+export function answerOffer(workoutExerciseId: number, accepted: boolean): void {
+  db.update(workoutExercises).set({ progressAccepted: accepted }).where(eq(workoutExercises.id, workoutExerciseId)).run();
+}
+
+/**
+ * The summary of a finished workout, read when the screen opens. Null when the workout does not
+ * exist. `answer` saves an Offer answer and re-reads the summary so the card shows the resulting
+ * next Target.
+ */
+export function useSummary(workoutId: number): {
+  loaded: LoadedSummary | null;
+  answer: (workoutExerciseId: number, accepted: boolean) => void;
+} {
+  const [loaded, setLoaded] = useState(() => loadSummary(workoutId));
+  function answer(workoutExerciseId: number, accepted: boolean) {
+    answerOffer(workoutExerciseId, accepted);
+    setLoaded(loadSummary(workoutId));
+  }
+  return { loaded, answer };
 }

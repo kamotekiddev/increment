@@ -4,12 +4,12 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** built; checked by tsc, lint and Jest only
 
-- [ ] The Offer shows the proposed Target, only when the engine returns a proposal
-- [ ] Accept writes `progress_accepted = true` immediately and the card shows the stepped-up Target
-- [ ] Decline (or tapping it after Accept) writes `false` and the card shows the current Target
-- [ ] Leaving without answering leaves `progress_accepted` false and never blocks Done
-- [ ] After leaving, the answer cannot be changed (the summary cannot be reopened)
-- [ ] The next workout of that routine exercise shows the stepped-up Target after Accept, and the current one after Decline
-- [ ] Type check, lint and tests pass
+- [x] The Offer shows the proposed Target, only when the engine returns a proposal
+- [x] Accept writes `progress_accepted = true` immediately and the card shows the stepped-up Target
+- [x] Decline (or tapping it after Accept) writes `false` and the card shows the current Target
+- [x] Leaving without answering leaves `progress_accepted` false and never blocks Done
+- [x] After leaving, the answer cannot be changed (the summary cannot be reopened)
+- [x] The next workout of that routine exercise shows the stepped-up Target after Accept, and the current one after Decline
+- [x] Type check, lint and tests pass
