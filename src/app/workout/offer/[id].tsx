@@ -108,11 +108,11 @@ export default function OfferScreen() {
             Next time
           </Text>
           <Text tone="muted" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.title }}>
-            {targetText(offer.current)}
+            {targetText(offer.current, "kg")}
           </Text>
           <Ionicons name="arrow-down" size={26} color={colors.accent} />
           <Text tone="accent" style={{ fontFamily: fontFamily.bold, fontSize: 42, lineHeight: 46, letterSpacing: -1.5 }}>
-            {targetText(offer.stepped)}
+            {targetText(offer.stepped, "kg")}
           </Text>
         </View>
         <Text tone="muted" style={{ fontSize: fontSize.small, paddingHorizontal: spacing.xs }}>

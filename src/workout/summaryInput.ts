@@ -1,4 +1,5 @@
 import type { LoadType, OverloadRule, Planned } from "../engine";
+import type { Unit } from "../units";
 import { toHistory, type PastExercise } from "./historyInputs";
 import type { SummaryExercise, SummaryInput } from "./summary";
 
@@ -27,7 +28,7 @@ export interface SavedWorkout {
  * workout is history[0] with its own progressAccepted. An exercise that left the routine has no
  * plan to judge against and is left out.
  */
-export function toSummaryInput(saved: SavedWorkout, jumpKg: number): SummaryInput {
+export function toSummaryInput(saved: SavedWorkout, jumpKg: number, unit: Unit): SummaryInput {
   const exercises: SummaryExercise[] = [];
   for (const ex of saved.exercises) {
     if (!ex.plan) continue;
@@ -44,5 +45,5 @@ export function toSummaryInput(saved: SavedWorkout, jumpKg: number): SummaryInpu
       history: toHistory(ex.past, ex.plan.planned.sets),
     });
   }
-  return { startedAt: saved.startedAt, finishedAt: saved.finishedAt ?? saved.startedAt, exercises };
+  return { startedAt: saved.startedAt, finishedAt: saved.finishedAt ?? saved.startedAt, exercises, unit };
 }

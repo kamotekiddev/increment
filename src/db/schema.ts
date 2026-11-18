@@ -111,6 +111,16 @@ export const settings = sqliteTable("settings", {
 });
 
 /**
+ * The lifter's preferences, one row (id 1), created on first read. Later features add their columns here.
+ * Separate from the key/value `settings` table above, which only holds internal flags such as the seed version.
+ */
+export const userSettings = sqliteTable("user_settings", {
+  id: integer("id").primaryKey(),
+  /** The unit every weight is shown and typed in. Stored weights stay kg. */
+  unit: text("unit", { enum: ["kg", "lb"] }).notNull().default("kg"),
+});
+
+/**
  * Single-row cache of the Pro purchase, so Pro works offline.
  * `is_pro` is only a fast cache; `proof` holds the store's signed transaction or purchase token,
  * which Phase 3 verifies so that editing this table alone cannot unlock Pro.

@@ -70,7 +70,7 @@ export function loadSummary(workoutId: number): LoadedSummary | null {
     past: workout.routineId === null ? [] : pastExercises(db, workout.routineId, e.exerciseId),
   }));
 
-  const input = toSummaryInput({ startedAt: workout.startedAt, finishedAt: workout.finishedAt, exercises: saved }, JUMP_KG);
+  const input = toSummaryInput({ startedAt: workout.startedAt, finishedAt: workout.finishedAt, exercises: saved }, JUMP_KG, "kg");
   return { title: routineName, summary: buildSummary(input) };
 }
 

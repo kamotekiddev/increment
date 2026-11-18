@@ -78,7 +78,7 @@ function ExerciseCard({ card }: { card: SummaryCard }) {
           Next time
         </Text>
         <Text style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.lead, letterSpacing: -0.3 }}>
-          {card.next ? targetText(card.next) : "No Target yet"}
+          {card.next ? targetText(card.next, "kg") : "No Target yet"}
         </Text>
       </View>
     </Card>

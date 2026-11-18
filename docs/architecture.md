@@ -27,7 +27,8 @@
 - **workouts**: id, routine_id (cascade: deleting a routine deletes its workouts, their exercises and sets, [ADR 0002](adr/0002-deleting-a-routine-deletes-its-workouts.md); workouts with no routine are never touched), started_at, finished_at, date, feeling, notes, in_progress, last_edited_at (last saved set change, for crash resume)
 - **workout_exercises**: id, workout_id, exercise_id, position, target_weight_kg, target_reps, progress_accepted, is_deload (the Target shown at the start, and whether the lifter accepted the offered step)
 - **sets**: id, workout_exercise_id, exercise_id, idx, weight_kg, entered_unit, reps, done, is_warmup, edited (the lifter typed this row, so it stops following earlier rows)
-- **settings**: key/value (unit, jump per equipment, rest default, theme, reminders, auto-backup)
+- **user_settings**: one row (id 1, created on first read) of the lifter's preferences. Today: `unit` (kg or lb, default kg). Later features add jump, rest default, theme, reminders and auto-backup as columns
+- **settings**: key/value, internal flags only (the library seed version)
 - **entitlements**: is_pro, product_id, proof, verified_at (a cache; `proof` is the store's signed transaction or purchase token, verified in Phase 3 so editing this table alone cannot unlock Pro)
 
 Foreign keys are switched on after migrations finish (not before), because a migration that rebuilds a table would otherwise cascade-delete child rows.

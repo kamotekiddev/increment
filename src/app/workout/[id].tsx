@@ -213,7 +213,7 @@ export default function LiveWorkoutScreen() {
   useEffect(() => {
     const running = restStore.getState().timer;
     if (!running || !loaded) return;
-    void scheduleRestNotification(running.endsAt, nextUp(restExercises, running.set.exerciseIndex));
+    void scheduleRestNotification(running.endsAt, nextUp(restExercises, running.set.exerciseIndex, "kg"));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endsAt, loaded]);
 
@@ -426,7 +426,7 @@ export default function LiveWorkoutScreen() {
                   lineHeight: 19,
                 }}
               >
-                {bannerText(exercise.target, exercise.range)}
+                {bannerText(exercise.target, exercise.range, "kg")}
               </Text>
             </View>
             <View style={{ gap: spacing.sm }}>
@@ -530,7 +530,7 @@ export default function LiveWorkoutScreen() {
             fraction={rest.fraction}
             endsAt={timer.endsAt}
             totalMs={timer.totalMs}
-            nextUp={nextUp(restExercises, timer.set.exerciseIndex)}
+            nextUp={nextUp(restExercises, timer.set.exerciseIndex, "kg")}
             onAdjust={adjust}
             onSkip={() => restStore.getState().clear()}
             onLayout={(e) => setPanelHeight(e.nativeEvent.layout.height)}

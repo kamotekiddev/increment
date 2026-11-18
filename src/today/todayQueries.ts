@@ -86,7 +86,7 @@ export function loadNextPreview(routineId: number): NextPreview {
       jumpKg: JUMP_KG,
     }).target,
   }));
-  return toNextPreview(first, planned.length);
+  return toNextPreview(first, "kg", planned.length);
 }
 
 /** The Next Routine's preview, re-read each time the screen gains focus (a finished workout moves the Targets). Undefined until read, or with no Routine. */
