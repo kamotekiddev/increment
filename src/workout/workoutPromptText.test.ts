@@ -1,4 +1,4 @@
-import { discardWorkoutText, finishPrompt, resumePromptText } from "./workoutPromptText";
+import { allDonePrompt, discardWorkoutText, finishPrompt, resumePromptText } from "./workoutPromptText";
 
 describe("finishPrompt", () => {
   const names = ["Bench press", "Row", "Curl"];
@@ -71,5 +71,11 @@ describe("discardWorkoutText", () => {
   });
   it("works without a routine name", () => {
     expect(discardWorkoutText(null).body).toBe("Everything you logged today will be deleted. This can't be undone.");
+  });
+});
+
+describe("allDonePrompt", () => {
+  it("offers Finish or Not yet", () => {
+    expect(allDonePrompt()).toMatchObject({ kind: "finish", confirm: "Finish workout", cancel: "Not yet" });
   });
 });

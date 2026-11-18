@@ -6,7 +6,7 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
-import { fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { UnitSegmented, useUnit } from "@/settings";
 import { formatWeight } from "@/units";
 import { type SetEdit, finishCheck, lastColumn, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
@@ -17,9 +17,10 @@ import { useRestNow } from "@/workout/useRestNow";
 import { scheduleRestNotification } from "@/workout/restNotification";
 import { useRestStore } from "@/workout/restStore";
 import { endedWhileAway, trackAway, type AwayTrace } from "@/workout/restAway";
-import { nextUp, onSetToggled, resolveExpiry, restRemaining } from "@/workout/restTimer";
+import { nextUp, onSetToggled, resolveExpiry, restRemaining, workoutComplete } from "@/workout/restTimer";
+import { currentSetIndex } from "@/workout/currentSet";
 import { FinishWorkoutSheet } from "@/workout/FinishWorkoutSheet";
-import { finishPrompt, type FinishPrompt } from "@/workout/workoutPromptText";
+import { allDonePrompt, finishPrompt, type FinishPrompt } from "@/workout/workoutPromptText";
 import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWorkoutSheet";
 import { elapsedText } from "@/workout/elapsedText";
 import { findInProgressWorkout, useNow } from "@/workout/inProgressQueries";
@@ -96,7 +97,7 @@ function NumberField({
   keyboardType: "decimal-pad" | "number-pad";
   parse: (text: string) => number | null | undefined;
   onText: (text: string) => void;
-  /** Done rows show the numbers without a tile. */
+  /** Only the Current set shows its numbers in a tile; every other row is flat. */
   flat: boolean;
 }) {
   const colors = useColors();
@@ -185,7 +186,7 @@ export default function LiveWorkoutScreen() {
 
   /**
    * A rest reached zero (countdown, -15s to zero, or found over on return): clears the timer, buzzes
-   * unless it ended while the app was away, and moves to the next exercise when the rules say so.
+   * unless it ended while the app was away (Skip passes true: the lifter's own tap needs no buzz), and moves to the next exercise when the rules say so.
    */
   function endRest(unseen: boolean) {
     const running = restStore.getState().timer;
@@ -274,6 +275,7 @@ export default function LiveWorkoutScreen() {
 
   const exercise = workout?.exercises[current];
   const total = workout?.exercises.length ?? 0;
+  const currentSet = exercise ? currentSetIndex(exercise.rows) : null;
   const last = exercise ? lastColumn(lastExercises[exercise.id] ?? null, exercise.rows.length) : [];
 
   function edit(index: number, change: SetEdit) {
@@ -302,6 +304,8 @@ export default function LiveWorkoutScreen() {
     });
     if (action.kind === "start" || action.kind === "replace") sawRunning.current = true;
     restStore.getState().apply(action, Number(idParam));
+    // The last open set of the Workout: no rest to run, so offer to finish.
+    if (!row.done && workoutComplete(toRestExercises(exercises))) setFinishing(allDonePrompt());
   }
 
   function adjust(deltaSeconds: number) {
@@ -465,7 +469,11 @@ export default function LiveWorkoutScreen() {
                       paddingRight: spacing.sm,
                       borderRadius: radius.inset,
                       backgroundColor: colors.card,
+                      // The ring is reserved on every row so the current one doesn't shift the layout.
+                      borderWidth: borderWidth.outline,
+                      borderColor: index === currentSet ? colors.accent : "transparent",
                     }}
+                    accessibilityLabel={index === currentSet ? `Set ${index + 1}, current` : undefined}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
                       <Text variant="label" tone={row.done ? "muted" : "ink"} style={{ width: col.set }}>
@@ -480,7 +488,7 @@ export default function LiveWorkoutScreen() {
                           keyboardType="decimal-pad"
                           parse={parseWeight}
                           value={weightFieldText(drafts, row, unit)}
-                          flat={row.done}
+                          flat={index !== currentSet}
                           onText={(t) => {
                             const w = weightFromTyped(t, unit);
                             if (w === undefined) return;
@@ -495,7 +503,7 @@ export default function LiveWorkoutScreen() {
                           keyboardType="number-pad"
                           parse={parseReps}
                           value={String(row.reps)}
-                          flat={row.done}
+                          flat={index !== currentSet}
                           onText={(t) => {
                             const r = parseReps(t);
                             if (r !== undefined) edit(index, { reps: r });
@@ -541,7 +549,7 @@ export default function LiveWorkoutScreen() {
             totalMs={timer.totalMs}
             nextUp={nextUp(restExercises, timer.set.exerciseIndex, unit)}
             onAdjust={adjust}
-            onSkip={() => restStore.getState().clear()}
+            onSkip={() => endRest(true)}
             onLayout={(e) => setPanelHeight(e.nativeEvent.layout.height)}
           />
         ) : null}
