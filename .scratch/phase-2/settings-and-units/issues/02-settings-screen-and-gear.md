@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** needs-triage
+**Status:** built
 
 - [ ] `src/app/settings.tsx` with the Kilograms / Pounds control and the info note, matching `Settings.dc.html`
 - [ ] A gear on Today opens it; Back returns to Today
