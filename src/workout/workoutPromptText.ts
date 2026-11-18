@@ -53,6 +53,17 @@ export function finishPrompt(
   return { kind: "finish", title: "Finish this workout?", body: lines.join("\n"), confirm: "Finish workout", cancel: "Keep training" };
 }
 
+/** Pure: copy for the sheet offered when the last open set of the Workout is checked. */
+export function allDonePrompt(): FinishPrompt {
+  return {
+    kind: "finish",
+    title: "All sets done",
+    body: "Finish this workout and see how it went?",
+    confirm: "Finish workout",
+    cancel: "Not yet",
+  };
+}
+
 /** Pure: copy for the Discard workout confirmation. */
 export function discardWorkoutText(routineName: string | null): { title: string; body: string } {
   return {

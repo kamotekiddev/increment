@@ -36,6 +36,11 @@ export type RestAction =
 
 const hasOpen = (e: RestExercise) => e.rows.some((r) => !r.done);
 
+/** True when no exercise has an open set: the Workout has nothing left to do. */
+export function workoutComplete(exercises: RestExercise[]): boolean {
+  return !exercises.some(hasOpen);
+}
+
 /** What marking a set done or not done does to the timer. `exercises` already has the toggle applied. */
 export function onSetToggled(input: {
   exercises: RestExercise[];

@@ -89,7 +89,7 @@ The seconds the lifter plans to rest between sets of a Routine exercise.
 _Avoid_: Rest timer (that counts down during a workout)
 
 **Rest timer**:
-The countdown that starts when the lifter marks a set done, from that Routine exercise's Rest length. There is only one at a time, and a new one replaces a running one. It does not start after the last open set of the Workout.
+The countdown that starts when the lifter marks a set done, from that Routine exercise's Rest length. There is only one at a time, and a new one replaces a running one. It does not start after the last open set of the Workout. Skipping it ends it like running out does, moving on to the next exercise with open sets when this one is finished, but without a buzz.
 _Avoid_: Rest clock, break timer
 
 **Workout**:
@@ -99,6 +99,10 @@ _Avoid_: Session, log
 **Workout in progress**:
 A Workout that has been started and not yet finished or discarded. Only one can exist at a time, and while it exists its Routine cannot be edited or deleted.
 _Avoid_: Active workout, open workout, draft
+
+**Current set**:
+The first set of the exercise on screen that is not done. It is highlighted on the live workout, and no set is current once every set of the exercise is done.
+_Avoid_: Active set, next set
 
 **Skipped exercise**:
 An exercise in a Workout with no sets done. It is left out of the saved Workout and is neither a Miss nor a Clean, so its Streak and Target stay as they were.

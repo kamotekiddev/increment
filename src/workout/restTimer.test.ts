@@ -4,6 +4,7 @@ import {
   nextUp,
   onSetToggled,
   resolveExpiry,
+  workoutComplete,
   restRemaining,
   type RestExercise,
   type RestTimer,
@@ -143,6 +144,12 @@ describe("resolveExpiry", () => {
       advanceTo: 1,
     });
   });
+  it("a skipped rest (resolved as unseen, no buzz) still advances when the exercise is finished", () => {
+    expect(resolveExpiry({ exercises: finished, timer: timer(), viewingIndex: 0, endedWhileAway: true })).toEqual({
+      buzz: false,
+      advanceTo: 1,
+    });
+  });
   it("wraps around to an earlier exercise", () => {
     const exs = [ex("Squat", 90, [set(100)]), ex("Bench", 90, [set(60, true)])];
     const t = timer({ set: { exerciseIndex: 1, setIndex: 0 } });
@@ -229,5 +236,14 @@ describe("msUntilTextChanges", () => {
   it("returns null once the rest is over", () => {
     expect(msUntilTextChanges(0)).toBeNull();
     expect(msUntilTextChanges(-30)).toBeNull();
+  });
+});
+
+describe("workoutComplete", () => {
+  it("is true when every set of every exercise is done", () => {
+    expect(workoutComplete([ex("Bench", 90, [set(60, true)]), ex("Row", 60, [set(50, true)])])).toBe(true);
+  });
+  it("is false while any exercise has an open set", () => {
+    expect(workoutComplete([ex("Bench", 90, [set(60, true)]), ex("Row", 60, [set(50)])])).toBe(false);
   });
 });
