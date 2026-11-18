@@ -52,7 +52,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 ### Today
 - A date line, the week strip, and a swipeable deck of one card per Routine planned today (name, exercise count, Start; Done and In progress cards are white), with the top Routine's first 3 exercises and Targets listed under the deck.
 - Rest day: a recovery banner with this week's workouts done, and the next planned Routine with its first 3 exercises and Targets. No Start on a rest day.
-- States for no routine yet and for routines with no days set (a card with a Plan your week button). No settings gear until Phase 2, no ready-made plans or empty workout (see `.scratch/phase-1-today/spec.md`).
+- States for no routine yet and for routines with no days set (a card with a Plan your week button). No settings gear until Phase 2, no ready-made plans or empty workout (see `.scratch/phase-1/today/spec.md`).
 
 ### Settings
 - Units, smallest weight jumps by equipment, default rest, show previous set, keep screen awake, light and dark theme, reminders.
