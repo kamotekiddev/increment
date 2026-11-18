@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 03
 
-**Status:** needs-triage
+**Status:** built
 
 - [ ] The pill sits beside "Exercise N of M", matching `Workout.dc.html`, and writes the global preference
 - [ ] Column header, Last column, prefilled and checked weights all convert on a switch
