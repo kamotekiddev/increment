@@ -45,7 +45,7 @@ Both screens are drawn in the design canvas (`Settings.dc.html`, `Workout.dc.htm
 - **Jump is untouched.** Targets still step by the fixed 2.5 kg (`src/workout/jump.ts`) until feature 2, so an lb lifter sees Targets such as 137.79 lb. This is accepted. Do not round the lb display to hide it, because that would break ADR 0001's "display rounds to 0.01".
 - **Rest notification:** a notification already scheduled keeps the unit it was scheduled in. The next rest uses the current one.
 - **Settings screen** lives at `src/app/settings.tsx` as a stack screen opened from the Today gear, using the design tokens and existing base components. It holds only the Units card.
-- No ADR. ADR 0001 already covers the hard-to-reverse choice, and the `settings` table is easy to change later.
+- No ADR. ADR 0001 already covers the hard-to-reverse choice, and the `user_settings` table is easy to change later.
 
 ## Testing Decisions
 
