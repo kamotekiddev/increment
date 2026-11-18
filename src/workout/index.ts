@@ -12,6 +12,7 @@ export { rowFromStored, weightToStore } from "./setStorage";
 export { lastColumn } from "./lastColumn";
 export type { LastSet } from "./lastColumn";
 export { parseWeight, parseReps } from "./parseInput";
+export { weightFromTyped, weightText } from "./typedWeight";
 export { toHistory } from "./historyInputs";
 export type { PastExercise } from "./historyInputs";
 export { buildSummary } from "./summary";

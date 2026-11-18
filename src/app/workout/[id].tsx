@@ -8,9 +8,9 @@ import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { useUnit } from "@/settings";
-import { formatWeight } from "@/units";
+import { formatWeight, type Unit } from "@/units";
 import type { SetEdit } from "@/workout";
-import { finishCheck, lastColumn, parseReps, parseWeight } from "@/workout";
+import { finishCheck, lastColumn, parseReps, parseWeight, weightFromTyped, weightText } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
 import { RestPanel } from "@/workout/RestPanel";
@@ -83,6 +83,48 @@ function ChevronButton({
   );
 }
 
+/** The kg | lb switch beside "Exercise N of M". It writes the global unit preference and nothing else. */
+function UnitPill({ unit, onChange }: { unit: Unit; onChange: (unit: Unit) => void }) {
+  const colors = useColors();
+  return (
+    <View
+      accessibilityRole="radiogroup"
+      accessibilityLabel="Weight unit"
+      style={{ flexDirection: "row", backgroundColor: colors.card, borderRadius: radius.pill, padding: spacing.xs }}
+    >
+      {(["kg", "lb"] as const).map((u) => {
+        const selected = u === unit;
+        return (
+          <Pressable
+            key={u}
+            accessibilityRole="radio"
+            accessibilityLabel={u === "kg" ? "Kilograms" : "Pounds"}
+            accessibilityState={{ selected }}
+            hitSlop={spacing.xs}
+            onPress={() => onChange(u)}
+            style={{
+              width: 46,
+              height: 32,
+              borderRadius: radius.pill,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: selected ? colors.accent : "transparent",
+            }}
+          >
+            <Text
+              variant="label"
+              tone={selected ? "onAccent" : "muted"}
+              style={{ fontSize: fontSize.small, fontFamily: selected ? fontFamily.semibold : fontFamily.medium }}
+            >
+              {u}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 /** A number field that saves as the lifter types. Shows the saved value again whenever it changes elsewhere. */
 function NumberField({
   value,
@@ -130,7 +172,7 @@ function NumberField({
 }
 
 export default function LiveWorkoutScreen() {
-  const { unit } = useUnit();
+  const { unit, setUnit } = useUnit();
   const colors = useColors();
   const { id: idParam } = useLocalSearchParams<{ id: string }>();
   const [workout, setWorkout] = useWorkout(Number(idParam));
@@ -275,7 +317,7 @@ export default function LiveWorkoutScreen() {
 
   function edit(index: number, change: SetEdit) {
     if (!workout || !exercise) return;
-    const rows = editSet(exercise.rows, index, change);
+    const rows = editSet(exercise.rows, index, change, unit);
     setWorkout({
       ...workout,
       exercises: workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e)),
@@ -285,7 +327,7 @@ export default function LiveWorkoutScreen() {
   function toggle(index: number) {
     if (!workout || !exercise) return;
     const row = exercise.rows[index];
-    const rows = markSetDone(exercise.rows, index, !row.done);
+    const rows = markSetDone(exercise.rows, index, !row.done, unit);
     if (rows === exercise.rows) return;
     const exercises = workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e));
     setWorkout({ ...workout, exercises });
@@ -358,16 +400,16 @@ export default function LiveWorkoutScreen() {
           >
             <View style={{ gap: spacing.sm }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <Text variant="caption" tone="muted" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.small }}>
-                  {`Exercise ${current + 1} of ${total}`}
-                </Text>
-                <View style={{ flexDirection: "row" }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <ChevronButton
                     icon="chevron-back"
                     label="Previous exercise"
                     disabled={current === 0}
                     onPress={() => setCurrent(current - 1)}
                   />
+                  <Text variant="caption" tone="muted" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.small }}>
+                    {`Exercise ${current + 1} of ${total}`}
+                  </Text>
                   <ChevronButton
                     icon="chevron-forward"
                     label="Next exercise"
@@ -375,6 +417,7 @@ export default function LiveWorkoutScreen() {
                     onPress={() => setCurrent(current + 1)}
                   />
                 </View>
+                <UnitPill unit={unit} onChange={setUnit} />
               </View>
               <Text
                 accessibilityRole="header"
@@ -474,10 +517,10 @@ export default function LiveWorkoutScreen() {
                           label={`Set ${index + 1} weight`}
                           keyboardType="decimal-pad"
                           parse={parseWeight}
-                          value={row.weightKg === null ? "" : formatWeight(row.weightKg, unit)}
+                          value={weightText(row.weightKg, unit)}
                           flat={row.done}
                           onText={(t) => {
-                            const w = parseWeight(t);
+                            const w = weightFromTyped(t, unit);
                             if (w !== undefined) edit(index, { weightKg: w });
                           }}
                         />
