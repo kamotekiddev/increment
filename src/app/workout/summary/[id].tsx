@@ -3,6 +3,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Card, Pill, Text } from "@/components";
+import { useUnit } from "@/settings";
 import { fontFamily, fontSize, radius, spacing, useColors } from "@/theme";
 import { formatWeight } from "@/units";
 import type { SummaryCard, SummaryHeader } from "@/workout";
@@ -34,6 +35,7 @@ function Stat({ value, unit, label }: { value: string; unit?: string; label: str
 
 function HeaderCard({ title, header }: { title: string; header: SummaryHeader }) {
   const colors = useColors();
+  const { unit } = useUnit();
   return (
     <View style={{ backgroundColor: colors.accent, borderRadius: radius.card, padding: spacing.xl, gap: spacing.lg }}>
       <View style={{ gap: spacing.xs }}>
@@ -54,7 +56,7 @@ function HeaderCard({ title, header }: { title: string; header: SummaryHeader })
         {header.showTotalReps ? (
           <Stat value={String(header.totalReps)} label="Total reps" />
         ) : (
-          <Stat value={formatWeight(header.volumeKg, "kg")} unit="kg" label="Volume" />
+          <Stat value={formatWeight(header.volumeKg, unit)} unit={unit} label="Volume" />
         )}
       </View>
     </View>
@@ -62,6 +64,7 @@ function HeaderCard({ title, header }: { title: string; header: SummaryHeader })
 }
 
 function ExerciseCard({ card }: { card: SummaryCard }) {
+  const { unit } = useUnit();
   return (
     <Card style={{ borderRadius: radius.card, gap: spacing.md }}>
       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.md }}>
@@ -78,7 +81,7 @@ function ExerciseCard({ card }: { card: SummaryCard }) {
           Next time
         </Text>
         <Text style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.lead, letterSpacing: -0.3 }}>
-          {card.next ? targetText(card.next, "kg") : "No Target yet"}
+          {card.next ? targetText(card.next, unit) : "No Target yet"}
         </Text>
       </View>
     </Card>
@@ -89,7 +92,8 @@ export default function WorkoutSummaryScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const loaded = useSummary(Number(id));
+  const { unit } = useUnit();
+  const loaded = useSummary(Number(id), unit);
 
   /** Returns to where the workout started (the root when there is nowhere to go back to). */
   function done() {

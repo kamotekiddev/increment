@@ -1,11 +1,12 @@
 import { asc, eq, inArray, and } from "drizzle-orm";
-import { useState } from "react";
+import { useMemo } from "react";
 
 import { db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { buildSummary, type OfferItem, type Summary } from "./summary";
 import { JUMP_KG } from "./jump";
 import { toSummaryInput, type SavedExercise } from "./summaryInput";
+import type { Unit } from "../units";
 import { pastExercises } from "./workoutQueries";
 
 export interface LoadedSummary {
@@ -19,7 +20,7 @@ export interface LoadedSummary {
  * included, since Finish has already saved it), then builds the summary. Null when the workout does
  * not exist.
  */
-export function loadSummary(workoutId: number): LoadedSummary | null {
+export function loadSummary(workoutId: number, unit: Unit): LoadedSummary | null {
   const workout = db.select().from(workouts).where(eq(workouts.id, workoutId)).get();
   if (!workout) return null;
   const routineName =
@@ -70,7 +71,7 @@ export function loadSummary(workoutId: number): LoadedSummary | null {
     past: workout.routineId === null ? [] : pastExercises(db, workout.routineId, e.exerciseId),
   }));
 
-  const input = toSummaryInput({ startedAt: workout.startedAt, finishedAt: workout.finishedAt, exercises: saved }, JUMP_KG, "kg");
+  const input = toSummaryInput({ startedAt: workout.startedAt, finishedAt: workout.finishedAt, exercises: saved }, JUMP_KG, unit);
   return { title: routineName, summary: buildSummary(input) };
 }
 
@@ -80,12 +81,11 @@ export function answerOffer(workoutExerciseId: number, accepted: boolean): void 
 }
 
 /** The Offers of a finished workout, in workout order. Empty when nothing is Earned or the workout is gone. */
-export function loadOffers(workoutId: number): OfferItem[] {
-  return loadSummary(workoutId)?.summary.offers ?? [];
+export function loadOffers(workoutId: number, unit: Unit): OfferItem[] {
+  return loadSummary(workoutId, unit)?.summary.offers ?? [];
 }
 
-/** The summary of a finished workout, read when the screen opens. Null when the workout does not exist. */
-export function useSummary(workoutId: number): LoadedSummary | null {
-  const [loaded] = useState(() => loadSummary(workoutId));
-  return loaded;
+/** The summary of a finished workout, read when the screen opens and again when the unit changes (the card lines are written in the unit). Null when the workout does not exist. */
+export function useSummary(workoutId: number, unit: Unit): LoadedSummary | null {
+  return useMemo(() => loadSummary(workoutId, unit), [workoutId, unit]);
 }

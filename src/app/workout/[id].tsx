@@ -7,6 +7,7 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { useUnit } from "@/settings";
 import { formatWeight } from "@/units";
 import type { SetEdit } from "@/workout";
 import { finishCheck, lastColumn, parseReps, parseWeight } from "@/workout";
@@ -129,6 +130,7 @@ function NumberField({
 }
 
 export default function LiveWorkoutScreen() {
+  const { unit } = useUnit();
   const colors = useColors();
   const { id: idParam } = useLocalSearchParams<{ id: string }>();
   const [workout, setWorkout] = useWorkout(Number(idParam));
@@ -213,7 +215,7 @@ export default function LiveWorkoutScreen() {
   useEffect(() => {
     const running = restStore.getState().timer;
     if (!running || !loaded) return;
-    void scheduleRestNotification(running.endsAt, nextUp(restExercises, running.set.exerciseIndex, "kg"));
+    void scheduleRestNotification(running.endsAt, nextUp(restExercises, running.set.exerciseIndex, unit));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endsAt, loaded]);
 
@@ -260,7 +262,7 @@ export default function LiveWorkoutScreen() {
     finishWorkout(Number(idParam));
     // Replaces the live screen, so the last screen's back lands where the workout started.
     // The first Offer opens when anything was Earned, otherwise the summary.
-    if (loadOffers(Number(idParam)).length > 0) {
+    if (loadOffers(Number(idParam), unit).length > 0) {
       router.replace({ pathname: "/workout/offer/[id]", params: { id: String(idParam), step: "0" } });
     } else {
       router.replace({ pathname: "/workout/summary/[id]", params: { id: String(idParam) } });
@@ -426,7 +428,7 @@ export default function LiveWorkoutScreen() {
                   lineHeight: 19,
                 }}
               >
-                {bannerText(exercise.target, exercise.range, "kg")}
+                {bannerText(exercise.target, exercise.range, unit)}
               </Text>
             </View>
             <View style={{ gap: spacing.sm }}>
@@ -440,7 +442,7 @@ export default function LiveWorkoutScreen() {
                   Last
                 </Text>
                 <Text variant="caption" tone="muted" style={{ width: col.weight, textAlign: "center", fontFamily: fontFamily.medium }}>
-                  kg
+                  {unit}
                 </Text>
                 <Text variant="caption" tone="muted" style={{ width: col.reps, textAlign: "center", fontFamily: fontFamily.medium }}>
                   Reps
@@ -465,14 +467,14 @@ export default function LiveWorkoutScreen() {
                         {index + 1}
                       </Text>
                       <Text variant="caption" tone="muted" numberOfLines={1} style={{ flex: 1, fontSize: fontSize.meta }}>
-                        {last[index] ? `${formatWeight(last[index].weightKg, "kg")} × ${last[index].reps}` : "–"}
+                        {last[index] ? `${formatWeight(last[index].weightKg, unit)} × ${last[index].reps}` : "–"}
                       </Text>
                       <View style={{ width: col.weight, height: minTouch, flexDirection: "row" }}>
                         <NumberField
                           label={`Set ${index + 1} weight`}
                           keyboardType="decimal-pad"
                           parse={parseWeight}
-                          value={row.weightKg === null ? "" : formatWeight(row.weightKg, "kg")}
+                          value={row.weightKg === null ? "" : formatWeight(row.weightKg, unit)}
                           flat={row.done}
                           onText={(t) => {
                             const w = parseWeight(t);
@@ -530,7 +532,7 @@ export default function LiveWorkoutScreen() {
             fraction={rest.fraction}
             endsAt={timer.endsAt}
             totalMs={timer.totalMs}
-            nextUp={nextUp(restExercises, timer.set.exerciseIndex, "kg")}
+            nextUp={nextUp(restExercises, timer.set.exerciseIndex, unit)}
             onAdjust={adjust}
             onSkip={() => restStore.getState().clear()}
             onLayout={(e) => setPanelHeight(e.nativeEvent.layout.height)}
