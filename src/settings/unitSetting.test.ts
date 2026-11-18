@@ -1,10 +1,18 @@
 import { eq } from "drizzle-orm";
 
+import type { Db } from "@/db/client";
 import { exercises, sets, userSettings, workoutExercises, workouts } from "@/db/schema";
-import { toKg } from "@/units";
+import { KG_PER_LB } from "@/units";
+import { weightFromTyped } from "@/workout";
+import { editSet, markSetDone, type LiveSet } from "@/workout/workoutQueries";
 
-import { createTestDb } from "./testDb";
+import { createTestDb } from "../../test-support/testDb";
 import { readUnit, writeUnit } from "./unitSetting";
+
+// The real write path (`markSetDone`, `editSet`) runs against the app's `db`; point that at an
+// in-memory database with every migration applied.
+jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
+const appDb: Db = jest.requireMock("@/db/client").db;
 
 describe("unit setting", () => {
   it("starts in kg and creates the single row on first read", () => {
@@ -26,7 +34,7 @@ describe("unit setting", () => {
   });
 
   it("changes no stored weight or entered unit when the unit is switched 10 times", () => {
-    const db = createTestDb();
+    const db = appDb;
     const exercise = db
       .insert(exercises)
       .values({ name: "Bench press", equipment: "barbell", loadType: "weighted" })
@@ -38,20 +46,38 @@ describe("unit setting", () => {
       .values({ workoutId: workout.id, exerciseId: exercise.id, position: 0, targetWeightKg: 61.2349 })
       .returning({ id: workoutExercises.id })
       .get();
-    // 135 lb typed in lb: stored as kg at full precision, with the unit it was typed in.
-    const typedKg = toKg(135, "lb");
-    const row = db
-      .insert(sets)
-      .values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx: 0, weightKg: typedKg, enteredUnit: "lb", reps: 5, done: true })
-      .returning({ id: sets.id })
-      .get();
+    const setIds = [0, 1].map(
+      (idx) =>
+        db
+          .insert(sets)
+          .values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx, weightKg: 100, enteredUnit: "kg", reps: 5 })
+          .returning({ id: sets.id })
+          .get().id,
+    );
+    let rows: LiveSet[] = setIds.map((setId) => ({ setId, weightKg: 100, reps: 5, done: false, edited: false }));
+
+    // Set 1: 135 typed in lb, then checked in lb.
+    rows = editSet(rows, 0, { weightKg: weightFromTyped("135", "lb") }, "lb");
+    rows = markSetDone(rows, 0, true, "lb");
+    // Set 2: checked in kg, then its weight retyped as 225 lb while checked.
+    rows = markSetDone(rows, 1, true, "kg");
+    editSet(rows, 1, { weightKg: weightFromTyped("225", "lb") }, "lb");
+
+    const read = () =>
+      db
+        .select()
+        .from(sets)
+        .orderBy(sets.idx)
+        .all()
+        .map((r) => ({ weightKg: r.weightKg, enteredUnit: r.enteredUnit, done: r.done }));
+    const before = read();
+    expect(before[0]).toEqual({ weightKg: 135 * KG_PER_LB, enteredUnit: "lb", done: true });
+    expect(before[1]).toEqual({ weightKg: 225 * KG_PER_LB, enteredUnit: "lb", done: true });
 
     for (let i = 0; i < 10; i++) writeUnit(db, i % 2 === 0 ? "kg" : "lb");
 
-    const after = db.select().from(sets).where(eq(sets.id, row.id)).get();
-    expect(after?.weightKg).toBe(typedKg);
-    expect(after?.weightKg).toBe(135 * 0.45359237);
-    expect(after?.enteredUnit).toBe("lb");
+    // toEqual compares numbers exactly: full precision, not 0.01.
+    expect(read()).toEqual(before);
     expect(db.select().from(workoutExercises).where(eq(workoutExercises.id, we.id)).get()?.targetWeightKg).toBe(61.2349);
   });
 });

@@ -7,10 +7,9 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
-import { useUnit } from "@/settings";
-import { formatWeight, type Unit } from "@/units";
-import type { SetEdit } from "@/workout";
-import { finishCheck, lastColumn, parseReps, parseWeight, weightFromTyped, weightText } from "@/workout";
+import { UnitSegmented, useUnit } from "@/settings";
+import { formatWeight } from "@/units";
+import { type SetEdit, finishCheck, lastColumn, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
 import { RestPanel } from "@/workout/RestPanel";
@@ -83,48 +82,6 @@ function ChevronButton({
   );
 }
 
-/** The kg | lb switch beside "Exercise N of M". It writes the global unit preference and nothing else. */
-function UnitPill({ unit, onChange }: { unit: Unit; onChange: (unit: Unit) => void }) {
-  const colors = useColors();
-  return (
-    <View
-      accessibilityRole="radiogroup"
-      accessibilityLabel="Weight unit"
-      style={{ flexDirection: "row", backgroundColor: colors.card, borderRadius: radius.pill, padding: spacing.xs }}
-    >
-      {(["kg", "lb"] as const).map((u) => {
-        const selected = u === unit;
-        return (
-          <Pressable
-            key={u}
-            accessibilityRole="radio"
-            accessibilityLabel={u === "kg" ? "Kilograms" : "Pounds"}
-            accessibilityState={{ selected }}
-            hitSlop={spacing.xs}
-            onPress={() => onChange(u)}
-            style={{
-              width: 46,
-              height: 32,
-              borderRadius: radius.pill,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: selected ? colors.accent : "transparent",
-            }}
-          >
-            <Text
-              variant="label"
-              tone={selected ? "onAccent" : "muted"}
-              style={{ fontSize: fontSize.small, fontFamily: selected ? fontFamily.semibold : fontFamily.medium }}
-            >
-              {u}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
-}
-
 /** A number field that saves as the lifter types. Shows the saved value again whenever it changes elsewhere. */
 function NumberField({
   value,
@@ -173,6 +130,8 @@ function NumberField({
 
 export default function LiveWorkoutScreen() {
   const { unit, setUnit } = useUnit();
+  // Weight text typed after an edit, per set; dropped on a unit switch, a check, or leaving the screen.
+  const [drafts, setDrafts] = useState<WeightDrafts>(EMPTY_DRAFTS);
   const colors = useColors();
   const { id: idParam } = useLocalSearchParams<{ id: string }>();
   const [workout, setWorkout] = useWorkout(Number(idParam));
@@ -195,9 +154,9 @@ export default function LiveWorkoutScreen() {
   const away = useRef<AwayTrace | null>(trackAway(null, AppState.currentState ?? "active", Date.now()));
   const restExercises = useMemo(() => (workout ? toRestExercises(workout.exercises) : []), [workout]);
   // The latest exercises and viewed index, so a rest ending reads them at call time, not from a stale render.
-  const latest = useRef({ restExercises, current });
+  const latest = useRef({ restExercises, current, unit });
   useEffect(() => {
-    latest.current = { restExercises, current };
+    latest.current = { restExercises, current, unit };
   });
 
   // The workout opens on the first exercise that still has an open set, once it has loaded.
@@ -251,15 +210,17 @@ export default function LiveWorkoutScreen() {
 
   // Schedules or reschedules the rest-over notification when a rest starts, is replaced or is adjusted.
   // Cancelling is done by the store subscriber in restNotification.ts.
+  // The unit is read from `latest` and is not a dependency: a notification keeps the unit it was
+  // scheduled in, so switching unit never reschedules it. The next rest uses the current unit.
   const endsAt = timer?.endsAt;
   // Waits for the workout to load: before that the Next up line cannot be built.
   const loaded = !!workout;
   useEffect(() => {
     const running = restStore.getState().timer;
     if (!running || !loaded) return;
-    void scheduleRestNotification(running.endsAt, nextUp(restExercises, running.set.exerciseIndex, unit));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endsAt, loaded]);
+    const { restExercises: exercises, unit: scheduledUnit } = latest.current;
+    void scheduleRestNotification(running.endsAt, nextUp(exercises, running.set.exerciseIndex, scheduledUnit));
+  }, [endsAt, loaded, restStore]);
 
   function openMenu() {
     setRoutineName(findInProgressWorkout()?.routineName ?? null);
@@ -329,6 +290,7 @@ export default function LiveWorkoutScreen() {
     const row = exercise.rows[index];
     const rows = markSetDone(exercise.rows, index, !row.done, unit);
     if (rows === exercise.rows) return;
+    setDrafts((d) => clearDraft(d, row.setId));
     const exercises = workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e));
     setWorkout({ ...workout, exercises });
     const action = onSetToggled({
@@ -417,7 +379,7 @@ export default function LiveWorkoutScreen() {
                     onPress={() => setCurrent(current + 1)}
                   />
                 </View>
-                <UnitPill unit={unit} onChange={setUnit} />
+                <UnitSegmented unit={unit} onChange={setUnit} size="compact" track="card" />
               </View>
               <Text
                 accessibilityRole="header"
@@ -517,11 +479,13 @@ export default function LiveWorkoutScreen() {
                           label={`Set ${index + 1} weight`}
                           keyboardType="decimal-pad"
                           parse={parseWeight}
-                          value={weightText(row.weightKg, unit)}
+                          value={weightFieldText(drafts, row, unit)}
                           flat={row.done}
                           onText={(t) => {
                             const w = weightFromTyped(t, unit);
-                            if (w !== undefined) edit(index, { weightKg: w });
+                            if (w === undefined) return;
+                            setDrafts((d) => typeDraft(d, row.setId, t, unit));
+                            edit(index, { weightKg: w });
                           }}
                         />
                       </View>

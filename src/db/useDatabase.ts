@@ -1,7 +1,6 @@
 import { useMigrations } from "drizzle-orm/expo-sqlite/migrator";
 
 import migrations from "../../drizzle/migrations";
-import { loadUnit } from "../settings";
 import { db, enableForeignKeys } from "./client";
 import { seedLibrary } from "./seed";
 
@@ -23,8 +22,6 @@ function seedOnce(): { error: Error | null } {
   if (!seedResult) {
     try {
       seedLibrary(db);
-      // The unit is read once here so every screen starts with the saved one (no flash of kg).
-      loadUnit();
       seedResult = { error: null };
     } catch (e) {
       seedResult = { error: e instanceof Error ? e : new Error(String(e)) };

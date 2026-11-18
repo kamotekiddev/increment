@@ -16,3 +16,6 @@ export function enableForeignKeys(): void {
 
 export const db = drizzle(sqlite, { schema });
 export type Db = typeof db;
+
+/** What a read-or-insert query needs: the database or a transaction on it. */
+export type SelectInsertDb = Pick<Db, "select" | "insert">;
