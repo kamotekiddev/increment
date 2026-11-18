@@ -38,7 +38,7 @@ Both screens are drawn in the design canvas (`Settings.dc.html`, `Workout.dc.htm
 
 ## Implementation Decisions
 
-- **Preference store:** a single-row `settings` table in SQLite with a `unit` column (`"kg" | "lb"`, default `"kg"`). One Drizzle migration. Later features add their columns to the same row. The row is created on first read if missing.
+- **Preference store:** a single-row `user_settings` table (a key/value `settings` table already exists for internal flags) in SQLite with a `unit` column (`"kg" | "lb"`, default `"kg"`). One Drizzle migration. Later features add their columns to the same row. The row is created on first read if missing.
 - **Read the unit** through one hook (for example `useUnit()`) so every screen re-renders when it changes. No screen reads the table directly.
 - **Formatters take the unit.** The existing `formatWeight(kg, unit)` and `toKg` stay the single place conversion happens (`src/units`). The call sites that pass `"kg"` and print the word "kg" (`workout/[id].tsx`, `offer/[id].tsx`, `summary/[id].tsx`, `nextPreview.ts`, `bannerText.ts`, `cardLine.ts`, `restTimer.ts`) take the unit as an argument instead, and print the unit label from it.
 - **Typed weights:** the live workout row keeps the exact kg value of an unedited weight, and keeps the typed text only after an edit. On check, kg = `toKg(typed, unit)` for an edited weight, or the kept kg value otherwise. `workoutQueries.ts` writes `enteredUnit` from the unit on screen, replacing the hard-coded `"kg"`.
