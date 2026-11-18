@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** needs-triage
+**Status:** built
 
 - [ ] Offer, workout summary, Today preview, Target banner and rest panel "Next up" read the unit
 - [ ] A search of `src` finds no `"kg"` passed to `formatWeight` (tests and the gallery demo excepted)
