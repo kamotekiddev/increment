@@ -11,7 +11,9 @@ Six phases, about 18 weeks, for one full-time developer. The weeks are estimates
 | 4 · Onboarding and polish | 14–15 | Questions, plan generator, quick start, restore path, accessibility, haptics, icon and store art | Install to first logged set in under 3 minutes |
 | 5 · Beta and launch | 16–18 | TestFlight and Play beta (15–30 lifters), fixes, privacy labels, store listings, review | Two weeks of beta with no lost workouts or purchase failures, then store approval |
 
-Phase 1 is split into seven features, see `.scratch/phase-1-core-training-loop/map.md`.
+Phase 1 is split into seven features, see `.scratch/phase-1/map.md`.
+
+Phase 2 is split into seven features, see `.scratch/phase-2/map.md`.
 
 ## After launch
 - Apple Watch and Wear OS logging

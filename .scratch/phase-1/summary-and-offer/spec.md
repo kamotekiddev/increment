@@ -2,7 +2,7 @@ Status: ready-for-agent
 
 # Phase 1 · Feature 4 · Summary and Offer
 
-Part of Phase 1 (see `.scratch/phase-1-core-training-loop/map.md`). Needs: Live workout core (feature 3). Decisions below come from a grilling session on 2026-11-17, and two design changes the same day: the Offer moved from the summary to its own screens, and then to one Offer per screen.
+Part of Phase 1 (see `.scratch/phase-1/map.md`). Needs: Live workout core (feature 3). Decisions below come from a grilling session on 2026-11-17, and two design changes the same day: the Offer moved from the summary to its own screens, and then to one Offer per screen.
 
 ## Problem Statement
 

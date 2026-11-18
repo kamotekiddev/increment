@@ -2,7 +2,7 @@ Status: ready-for-agent
 
 # Phase 1 · Feature 3 · Live workout core
 
-Part of Phase 1 (see `.scratch/phase-1-core-training-loop/map.md`). Needs: Routines (feature 2). Decisions below come from a grilling session on 2026-11-16.
+Part of Phase 1 (see `.scratch/phase-1/map.md`). Needs: Routines (feature 2). Decisions below come from a grilling session on 2026-11-16.
 
 ## Problem Statement
 

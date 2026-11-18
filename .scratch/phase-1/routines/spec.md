@@ -2,7 +2,7 @@ Status: ready-for-agent
 
 # Phase 1 · Feature 2 · Routines
 
-Part of Phase 1 (see `.scratch/phase-1-core-training-loop/map.md`). Needs: Library browse (feature 1).
+Part of Phase 1 (see `.scratch/phase-1/map.md`). Needs: Library browse (feature 1).
 
 ## Problem Statement
 

@@ -2,7 +2,7 @@ Status: ready-for-human
 
 # Phase 1 · Feature 7 · Crash resume
 
-Part of Phase 1 (see `.scratch/phase-1-core-training-loop/map.md`). Needs: Live workout (3) and Rest timer (6). Decisions come from a grilling session on 2026-11-17.
+Part of Phase 1 (see `.scratch/phase-1/map.md`). Needs: Live workout (3) and Rest timer (6). Decisions come from a grilling session on 2026-11-17.
 
 ## Problem Statement
 
