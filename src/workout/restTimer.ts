@@ -1,4 +1,4 @@
-import { formatWeight } from "../units";
+import { formatWithUnit, type Unit } from "../units";
 import type { SetRow } from "./types";
 
 /** One set in the workout: which exercise (position in the screen's list) and which row. */
@@ -66,18 +66,18 @@ function nextOpenExercise(exercises: RestExercise[], from: number): number | nul
   return null;
 }
 
-function loadText(e: RestExercise, row: SetRow): string | null {
-  return e.bodyweight || row.weightKg === null || row.weightKg === 0 ? null : `${formatWeight(row.weightKg, "kg")} kg`;
+function loadText(e: RestExercise, row: SetRow, unit: Unit): string | null {
+  return e.bodyweight || row.weightKg === null || row.weightKg === 0 ? null : formatWithUnit(row.weightKg, unit);
 }
 
 /** The "Next up" line after a rest in exercise `exerciseIndex`. Null when nothing is open. */
-export function nextUp(exercises: RestExercise[], exerciseIndex: number): string | null {
+export function nextUp(exercises: RestExercise[], exerciseIndex: number, unit: Unit): string | null {
   const current = exercises[exerciseIndex];
   if (current) {
     const i = current.rows.findIndex((r) => !r.done);
     if (i >= 0) {
       const row = current.rows[i];
-      const load = loadText(current, row);
+      const load = loadText(current, row, unit);
       const reps = `${row.reps} ${row.reps === 1 ? "rep" : "reps"}`;
       return `Set ${i + 1} · ${load ? `${load} × ${row.reps}` : reps}`;
     }
@@ -87,7 +87,7 @@ export function nextUp(exercises: RestExercise[], exerciseIndex: number): string
   const next = exercises[n];
   const row = next.rows.find((r) => !r.done);
   if (!row) return null;
-  const load = loadText(next, row);
+  const load = loadText(next, row, unit);
   return load ? `${next.name} · ${load}` : next.name;
 }
 

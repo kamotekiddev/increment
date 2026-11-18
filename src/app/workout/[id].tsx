@@ -7,9 +7,9 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
+import { UnitSegmented, useUnit } from "@/settings";
 import { formatWeight } from "@/units";
-import type { SetEdit } from "@/workout";
-import { finishCheck, lastColumn, parseReps, parseWeight } from "@/workout";
+import { type SetEdit, finishCheck, lastColumn, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
 import { RestPanel } from "@/workout/RestPanel";
@@ -129,6 +129,9 @@ function NumberField({
 }
 
 export default function LiveWorkoutScreen() {
+  const { unit, setUnit } = useUnit();
+  // Weight text typed after an edit, per set; dropped on a unit switch, a check, or leaving the screen.
+  const [drafts, setDrafts] = useState<WeightDrafts>(EMPTY_DRAFTS);
   const colors = useColors();
   const { id: idParam } = useLocalSearchParams<{ id: string }>();
   const [workout, setWorkout] = useWorkout(Number(idParam));
@@ -151,9 +154,9 @@ export default function LiveWorkoutScreen() {
   const away = useRef<AwayTrace | null>(trackAway(null, AppState.currentState ?? "active", Date.now()));
   const restExercises = useMemo(() => (workout ? toRestExercises(workout.exercises) : []), [workout]);
   // The latest exercises and viewed index, so a rest ending reads them at call time, not from a stale render.
-  const latest = useRef({ restExercises, current });
+  const latest = useRef({ restExercises, current, unit });
   useEffect(() => {
-    latest.current = { restExercises, current };
+    latest.current = { restExercises, current, unit };
   });
 
   // The workout opens on the first exercise that still has an open set, once it has loaded.
@@ -207,15 +210,17 @@ export default function LiveWorkoutScreen() {
 
   // Schedules or reschedules the rest-over notification when a rest starts, is replaced or is adjusted.
   // Cancelling is done by the store subscriber in restNotification.ts.
+  // The unit is read from `latest` and is not a dependency: a notification keeps the unit it was
+  // scheduled in, so switching unit never reschedules it. The next rest uses the current unit.
   const endsAt = timer?.endsAt;
   // Waits for the workout to load: before that the Next up line cannot be built.
   const loaded = !!workout;
   useEffect(() => {
     const running = restStore.getState().timer;
     if (!running || !loaded) return;
-    void scheduleRestNotification(running.endsAt, nextUp(restExercises, running.set.exerciseIndex));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [endsAt, loaded]);
+    const { restExercises: exercises, unit: scheduledUnit } = latest.current;
+    void scheduleRestNotification(running.endsAt, nextUp(exercises, running.set.exerciseIndex, scheduledUnit));
+  }, [endsAt, loaded, restStore]);
 
   function openMenu() {
     setRoutineName(findInProgressWorkout()?.routineName ?? null);
@@ -260,7 +265,7 @@ export default function LiveWorkoutScreen() {
     finishWorkout(Number(idParam));
     // Replaces the live screen, so the last screen's back lands where the workout started.
     // The first Offer opens when anything was Earned, otherwise the summary.
-    if (loadOffers(Number(idParam)).length > 0) {
+    if (loadOffers(Number(idParam), unit).length > 0) {
       router.replace({ pathname: "/workout/offer/[id]", params: { id: String(idParam), step: "0" } });
     } else {
       router.replace({ pathname: "/workout/summary/[id]", params: { id: String(idParam) } });
@@ -273,7 +278,7 @@ export default function LiveWorkoutScreen() {
 
   function edit(index: number, change: SetEdit) {
     if (!workout || !exercise) return;
-    const rows = editSet(exercise.rows, index, change);
+    const rows = editSet(exercise.rows, index, change, unit);
     setWorkout({
       ...workout,
       exercises: workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e)),
@@ -283,8 +288,9 @@ export default function LiveWorkoutScreen() {
   function toggle(index: number) {
     if (!workout || !exercise) return;
     const row = exercise.rows[index];
-    const rows = markSetDone(exercise.rows, index, !row.done);
+    const rows = markSetDone(exercise.rows, index, !row.done, unit);
     if (rows === exercise.rows) return;
+    setDrafts((d) => clearDraft(d, row.setId));
     const exercises = workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e));
     setWorkout({ ...workout, exercises });
     const action = onSetToggled({
@@ -356,16 +362,16 @@ export default function LiveWorkoutScreen() {
           >
             <View style={{ gap: spacing.sm }}>
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <Text variant="caption" tone="muted" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.small }}>
-                  {`Exercise ${current + 1} of ${total}`}
-                </Text>
-                <View style={{ flexDirection: "row" }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <ChevronButton
                     icon="chevron-back"
                     label="Previous exercise"
                     disabled={current === 0}
                     onPress={() => setCurrent(current - 1)}
                   />
+                  <Text variant="caption" tone="muted" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.small }}>
+                    {`Exercise ${current + 1} of ${total}`}
+                  </Text>
                   <ChevronButton
                     icon="chevron-forward"
                     label="Next exercise"
@@ -373,6 +379,7 @@ export default function LiveWorkoutScreen() {
                     onPress={() => setCurrent(current + 1)}
                   />
                 </View>
+                <UnitSegmented unit={unit} onChange={setUnit} size="compact" track="card" />
               </View>
               <Text
                 accessibilityRole="header"
@@ -426,7 +433,7 @@ export default function LiveWorkoutScreen() {
                   lineHeight: 19,
                 }}
               >
-                {bannerText(exercise.target, exercise.range)}
+                {bannerText(exercise.target, exercise.range, unit)}
               </Text>
             </View>
             <View style={{ gap: spacing.sm }}>
@@ -440,7 +447,7 @@ export default function LiveWorkoutScreen() {
                   Last
                 </Text>
                 <Text variant="caption" tone="muted" style={{ width: col.weight, textAlign: "center", fontFamily: fontFamily.medium }}>
-                  kg
+                  {unit}
                 </Text>
                 <Text variant="caption" tone="muted" style={{ width: col.reps, textAlign: "center", fontFamily: fontFamily.medium }}>
                   Reps
@@ -465,18 +472,20 @@ export default function LiveWorkoutScreen() {
                         {index + 1}
                       </Text>
                       <Text variant="caption" tone="muted" numberOfLines={1} style={{ flex: 1, fontSize: fontSize.meta }}>
-                        {last[index] ? `${formatWeight(last[index].weightKg, "kg")} × ${last[index].reps}` : "–"}
+                        {last[index] ? `${formatWeight(last[index].weightKg, unit)} × ${last[index].reps}` : "–"}
                       </Text>
                       <View style={{ width: col.weight, height: minTouch, flexDirection: "row" }}>
                         <NumberField
                           label={`Set ${index + 1} weight`}
                           keyboardType="decimal-pad"
                           parse={parseWeight}
-                          value={row.weightKg === null ? "" : formatWeight(row.weightKg, "kg")}
+                          value={weightFieldText(drafts, row, unit)}
                           flat={row.done}
                           onText={(t) => {
-                            const w = parseWeight(t);
-                            if (w !== undefined) edit(index, { weightKg: w });
+                            const w = weightFromTyped(t, unit);
+                            if (w === undefined) return;
+                            setDrafts((d) => typeDraft(d, row.setId, t, unit));
+                            edit(index, { weightKg: w });
                           }}
                         />
                       </View>
@@ -530,7 +539,7 @@ export default function LiveWorkoutScreen() {
             fraction={rest.fraction}
             endsAt={timer.endsAt}
             totalMs={timer.totalMs}
-            nextUp={nextUp(restExercises, timer.set.exerciseIndex)}
+            nextUp={nextUp(restExercises, timer.set.exerciseIndex, unit)}
             onAdjust={adjust}
             onSkip={() => restStore.getState().clear()}
             onLayout={(e) => setPanelHeight(e.nativeEvent.layout.height)}

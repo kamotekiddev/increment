@@ -1,5 +1,5 @@
 import type { LoadType, Target } from "../engine";
-import { formatWeight } from "../units";
+import { formatWithUnit, type Unit } from "../units";
 
 /** How many exercises the rest-day Next card lists. */
 export const PREVIEW_LIMIT = 3;
@@ -26,17 +26,17 @@ export interface NextPreview {
 }
 
 /** The Target as the card writes it: weight and unit only, or the reps for a bodyweight exercise. */
-export function previewTargetText(loadType: LoadType, target: Target | null): string {
+export function previewTargetText(loadType: LoadType, target: Target | null, unit: Unit): string {
   if (!target) return "";
   if (target.weightKg === 0 || loadType === "bodyweight") return `${target.reps} ${target.reps === 1 ? "rep" : "reps"}`;
-  return `${formatWeight(target.weightKg, "kg")} kg`;
+  return formatWithUnit(target.weightKg, unit);
 }
 
 /** Pure: the first exercises of the Next Routine as card rows, and how many more there are. */
-export function toNextPreview(items: PreviewExercise[], total: number = items.length): NextPreview {
+export function toNextPreview(items: PreviewExercise[], unit: Unit, total: number = items.length): NextPreview {
   const shown = items.slice(0, PREVIEW_LIMIT);
   return {
-    rows: shown.map((e) => ({ name: e.name, equipment: e.equipment, targetText: previewTargetText(e.loadType, e.target) })),
+    rows: shown.map((e) => ({ name: e.name, equipment: e.equipment, targetText: previewTargetText(e.loadType, e.target, unit) })),
     more: Math.max(0, total - shown.length),
   };
 }

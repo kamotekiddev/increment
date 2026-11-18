@@ -13,6 +13,7 @@ import { View } from "react-native";
 
 import { Text } from "@/components";
 import { useDatabase } from "@/db/useDatabase";
+import { loadUnitOnce } from "@/settings";
 import { spacing, useColors } from "@/theme";
 import { setupRestNotifications } from "@/workout/restNotification";
 
@@ -29,7 +30,10 @@ export default function RootLayout() {
     Sora_700Bold,
     Sora_800ExtraBold,
   });
-  const { ready: dbReady, error: dbError } = useDatabase();
+  const { ready: dbReady, error: openError } = useDatabase();
+  // Once the database is ready, read the saved unit before any screen renders.
+  const unitError = dbReady ? loadUnitOnce() : null;
+  const dbError = openError ?? unitError;
 
   const fontsDone = fontsLoaded || fontError != null;
   const done = fontsDone && (dbReady || dbError != null);

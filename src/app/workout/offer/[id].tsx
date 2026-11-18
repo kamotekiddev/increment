@@ -1,16 +1,15 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Redirect, router, Stack, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { BackHandler, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Text } from "@/components";
 import { fontFamily, fontSize, radius, spacing, useColors } from "@/theme";
-import { formatWeight } from "@/units";
+import { useUnit } from "@/settings";
+import { formatWithUnit } from "@/units";
 import { targetText } from "@/workout";
 import { answerOffer, loadOffers } from "@/workout/summaryQueries";
-
-const kg = (weightKg: number) => `${formatWeight(weightKg, "kg")} kg`;
 
 /**
  * One Offer, full screen. The workout's Offers are read when the screen opens; `step` is this
@@ -21,9 +20,10 @@ export default function OfferScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { id, step } = useLocalSearchParams<{ id: string; step: string }>();
+  const { unit } = useUnit();
   const workoutId = Number(id);
   const index = Number(step ?? 0);
-  const [offers] = useState(() => loadOffers(workoutId));
+  const offers = useMemo(() => loadOffers(workoutId, unit), [workoutId, unit]);
   const offer = offers[index];
   const answered = useRef(false);
 
@@ -108,21 +108,21 @@ export default function OfferScreen() {
             Next time
           </Text>
           <Text tone="muted" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.title }}>
-            {targetText(offer.current)}
+            {targetText(offer.current, unit)}
           </Text>
           <Ionicons name="arrow-down" size={26} color={colors.accent} />
           <Text tone="accent" style={{ fontFamily: fontFamily.bold, fontSize: 42, lineHeight: 46, letterSpacing: -1.5 }}>
-            {targetText(offer.stepped)}
+            {targetText(offer.stepped, unit)}
           </Text>
         </View>
         <Text tone="muted" style={{ fontSize: fontSize.small, paddingHorizontal: spacing.xs }}>
-          Stay keeps {kg(offer.current.weightKg)}. The offer comes back after your next clean workout.
+          Stay keeps {formatWithUnit(offer.current.weightKg, unit)}. The offer comes back after your next clean workout.
         </Text>
       </View>
 
       <View style={{ gap: spacing.sm + 2 }}>
-        <Button label={`Go up to ${kg(offer.stepped.weightKg)}`} large onPress={() => answer(true)} />
-        <Button label={`Stay at ${kg(offer.current.weightKg)}`} variant="outlined" large onPress={() => answer(false)} />
+        <Button label={`Go up to ${formatWithUnit(offer.stepped.weightKg, unit)}`} large onPress={() => answer(true)} />
+        <Button label={`Stay at ${formatWithUnit(offer.current.weightKg, unit)}`} variant="outlined" large onPress={() => answer(false)} />
       </View>
     </View>
   );

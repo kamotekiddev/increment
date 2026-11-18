@@ -24,3 +24,8 @@ export function displayWeight(kg: number, unit: Unit): number {
 export function formatWeight(kg: number, unit: Unit): string {
   return String(displayWeight(kg, unit));
 }
+
+/** Display text with the unit label: "62.5 kg", "135 lb". */
+export function formatWithUnit(kg: number, unit: Unit): string {
+  return `${formatWeight(kg, unit)} ${unit}`;
+}

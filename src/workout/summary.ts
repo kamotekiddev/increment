@@ -1,5 +1,6 @@
 import { classify, nextTarget, stepUp } from "../engine";
 import type { HistorySession, LoadType, LoggedSet, NextTargetInput, OverloadRule, Outcome, Planned, Target } from "../engine";
+import type { Unit } from "../units";
 import { cardLine } from "./cardLine";
 
 /** One exercise of the finished workout, as plain inputs. */
@@ -23,6 +24,8 @@ export interface SummaryInput {
   finishedAt: number;
   /** In workout order. */
   exercises: SummaryExercise[];
+  /** The unit the card lines write weights in. Totals stay in kg. */
+  unit: Unit;
 }
 
 export interface SummaryHeader {
@@ -97,7 +100,7 @@ function streakLength(history: HistorySession[], planned: Planned): number {
   return count;
 }
 
-function buildCard(ex: SummaryExercise): { card: SummaryCard; offer: OfferItem | null } {
+function buildCard(ex: SummaryExercise, unit: Unit): { card: SummaryCard; offer: OfferItem | null } {
   const input: NextTargetInput = { rule: ex.rule, planned: ex.planned, loadType: ex.loadType, history: ex.history, jumpKg: ex.jumpKg };
   const current = ex.history[0];
   const outcome = classify(current, ex.planned);
@@ -118,7 +121,7 @@ function buildCard(ex: SummaryExercise): { card: SummaryCard; offer: OfferItem |
 
   const stepped = offer?.target ?? (streak !== null && current.target ? stepUp(current.target, input) : null);
   const remaining = streak !== null ? Math.max(0, ex.rule.sessionsToEarn - streak) : null;
-  const line = cardLine({ outcome, reason: result.reason, next: result.target, stepped, remaining });
+  const line = cardLine({ outcome, reason: result.reason, next: result.target, stepped, remaining, unit });
   const card: SummaryCard = { workoutExerciseId: ex.id, name: ex.name, outcome, streak, line, next: result.target, offer };
   const item: OfferItem | null =
     offer && current.target
@@ -128,11 +131,11 @@ function buildCard(ex: SummaryExercise): { card: SummaryCard; offer: OfferItem |
 }
 
 /** The summary the lifter sees right after Finish: a header and one card per exercise with done sets. */
-export function buildSummary({ startedAt, finishedAt, exercises }: SummaryInput): Summary {
+export function buildSummary({ startedAt, finishedAt, exercises, unit }: SummaryInput): Summary {
   const worked = exercises.filter((ex) => doneWorking(ex.sets).length > 0);
   const all = worked.flatMap((ex) => doneWorking(ex.sets));
   const volumeKg = all.reduce((sum, s) => sum + s.weightKg * s.reps, 0);
-  const built = worked.map(buildCard);
+  const built = worked.map((ex) => buildCard(ex, unit));
   return {
     header: {
       durationMinutes: Math.max(0, Math.floor((finishedAt - startedAt) / 60_000)),

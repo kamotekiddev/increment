@@ -1,5 +1,6 @@
 import { defaultRule, type HistorySession, type LoggedSet, type OverloadRule } from "../engine";
 import { planned, session } from "../engine/testing";
+import type { Unit } from "../units";
 import { buildSummary, type SummaryExercise } from "./summary";
 
 const MIN = 60_000;
@@ -22,8 +23,8 @@ function exercise(history: HistorySession[], rule: Partial<OverloadRule> = {}, e
   };
 }
 
-const build = (exercises: SummaryExercise[], minutes = 45) =>
-  buildSummary({ startedAt: 1_000_000, finishedAt: 1_000_000 + minutes * MIN + 20_000, exercises });
+const build = (exercises: SummaryExercise[], minutes = 45, unit: Unit = "kg") =>
+  buildSummary({ startedAt: 1_000_000, finishedAt: 1_000_000 + minutes * MIN + 20_000, exercises, unit });
 
 const only = (ex: SummaryExercise) => build([ex]).cards[0];
 
@@ -199,5 +200,14 @@ describe("buildSummary offers", () => {
   it("lists none on a Deload workout", () => {
     const history = [session("2026-11-17", { weightKg: 50, reps: 10 }, [10, 10, 10], { deload: true }), clean3("2026-11-14"), clean3("2026-11-11"), clean3("2026-11-08")];
     expect(build([exercise(history)]).offers).toEqual([]);
+  });
+});
+
+describe("buildSummary in lb", () => {
+  it("writes the card line in the lifter's unit and leaves volume in kg", () => {
+    const ex = exercise([session("2026-11-17", t60, [10, 10, 10])]);
+    const summary = build([ex], 45, "lb");
+    expect(summary.cards[0].line).toBe("2 more at 132.28 lb × 10 to earn 137.79 lb × 10.");
+    expect(summary.header.volumeKg).toBe(1800);
   });
 });

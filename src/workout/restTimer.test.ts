@@ -87,30 +87,36 @@ describe("onSetToggled", () => {
 describe("nextUp", () => {
   it("names the next open set with weight and reps", () => {
     const exs = [ex("Bench", 90, [set(62.5, true), set(62.5, true), set(62.5, false, 8)])];
-    expect(nextUp(exs, 0)).toBe("Set 3 · 62.5 kg × 8");
+    expect(nextUp(exs, 0, "kg")).toBe("Set 3 · 62.5 kg × 8");
+  });
+  it("names the load in lb", () => {
+    const exs = [ex("Bench", 90, [set(62.5, true), set(62.5, false, 8)])];
+    expect(nextUp(exs, 0, "lb")).toBe("Set 2 · 137.79 lb × 8");
+    const next = [ex("Bench", 90, [set(60, true)]), ex("Overhead press", 90, [set(42.5)])];
+    expect(nextUp(next, 0, "lb")).toBe("Overhead press · 93.7 lb");
   });
   it("shows reps only for a blank weight", () => {
     const exs = [ex("Bench", 90, [set(60, true), set(null, false, 10)])];
-    expect(nextUp(exs, 0)).toBe("Set 2 · 10 reps");
+    expect(nextUp(exs, 0, "kg")).toBe("Set 2 · 10 reps");
   });
   it("shows reps only for a bodyweight exercise", () => {
     const exs = [ex("Pull-up", 90, [set(0, true), set(0, false, 1)], true)];
-    expect(nextUp(exs, 0)).toBe("Set 2 · 1 rep");
+    expect(nextUp(exs, 0, "kg")).toBe("Set 2 · 1 rep");
   });
   it("names the next exercise with an open set when this one is finished", () => {
     const exs = [ex("Bench", 90, [set(60, true)]), ex("Overhead press", 90, [set(42.5), set(42.5)])];
-    expect(nextUp(exs, 0)).toBe("Overhead press · 42.5 kg");
+    expect(nextUp(exs, 0, "kg")).toBe("Overhead press · 42.5 kg");
   });
   it("wraps past the end to an earlier exercise", () => {
     const exs = [ex("Squat", 90, [set(100)]), ex("Bench", 90, [set(60, true)])];
-    expect(nextUp(exs, 1)).toBe("Squat · 100 kg");
+    expect(nextUp(exs, 1, "kg")).toBe("Squat · 100 kg");
   });
   it("gives only the name when the next exercise's weight is blank or bodyweight", () => {
-    expect(nextUp([ex("A", 60, [set(1, true)]), ex("Curl", 60, [set(null)])], 0)).toBe("Curl");
-    expect(nextUp([ex("A", 60, [set(1, true)]), ex("Dip", 60, [set(0)], true)], 0)).toBe("Dip");
+    expect(nextUp([ex("A", 60, [set(1, true)]), ex("Curl", 60, [set(null)])], 0, "kg")).toBe("Curl");
+    expect(nextUp([ex("A", 60, [set(1, true)]), ex("Dip", 60, [set(0)], true)], 0, "kg")).toBe("Dip");
   });
   it("is null when nothing is open", () => {
-    expect(nextUp([ex("A", 60, [set(1, true)])], 0)).toBeNull();
+    expect(nextUp([ex("A", 60, [set(1, true)])], 0, "kg")).toBeNull();
   });
 });
 
@@ -118,7 +124,7 @@ describe("nextUp defensive", () => {
   it("is null instead of crashing when an exercise has no open row", () => {
     const broken = { name: "X", restSeconds: 60, bodyweight: false, rows: [] } as RestExercise;
     const exs = [ex("Bench", 90, [set(60, true)]), broken];
-    expect(nextUp(exs, 0)).toBeNull();
+    expect(nextUp(exs, 0, "kg")).toBeNull();
   });
 });
 

@@ -107,3 +107,7 @@ _Avoid_: Missed exercise, dropped exercise
 **Rest day**:
 A day of the week on which no Routine is planned. Today shows a rest-day message instead of Routine cards.
 _Avoid_: Off day, day off
+
+**Unit**:
+The weight system the lifter has chosen to see and type weights in, kg or lb. One global choice. It changes only what is shown and read; every weight is stored in kg.
+_Avoid_: Measurement system, weight mode

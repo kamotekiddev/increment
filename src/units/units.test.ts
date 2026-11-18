@@ -1,4 +1,21 @@
-import { KG_PER_LB, displayWeight, formatWeight, fromKg, toKg } from "./index";
+import { KG_PER_LB, displayWeight, formatWeight, formatWithUnit, fromKg, toKg } from "./index";
+
+describe("formatWithUnit", () => {
+  it("prints the weight and the unit label in kg", () => {
+    expect(formatWithUnit(62.5, "kg")).toBe("62.5 kg");
+    expect(formatWithUnit(60, "kg")).toBe("60 kg");
+  });
+
+  it("converts and labels in lb", () => {
+    expect(formatWithUnit(60, "lb")).toBe("132.28 lb");
+    expect(formatWithUnit(61.2349, "lb")).toBe("135 lb");
+  });
+
+  it("works for a workout volume", () => {
+    expect(formatWithUnit(4200, "kg")).toBe("4200 kg");
+    expect(formatWithUnit(4200, "lb")).toBe("9259.42 lb");
+  });
+});
 
 describe("units", () => {
   it("uses the exact pound definition", () => {

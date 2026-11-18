@@ -1,5 +1,5 @@
 import type { Outcome, Reason, Target } from "../engine";
-import { formatWeight } from "../units";
+import { formatWithUnit, type Unit } from "../units";
 
 export interface CardLineInput {
   /** How this workout went. */
@@ -12,23 +12,25 @@ export interface CardLineInput {
   stepped: Target | null;
   /** Clean workouts still needed to earn the step. Only used with reason on-track. */
   remaining: number | null;
+  /** The unit the lifter reads weights in. */
+  unit: Unit;
 }
 
 /** A Target as the summary writes it: "62.5 kg × 10". */
-export function targetText(target: Target): string {
-  return `${formatWeight(target.weightKg, "kg")} kg × ${target.reps}`;
+export function targetText(target: Target, unit: Unit): string {
+  return `${formatWithUnit(target.weightKg, unit)} × ${target.reps}`;
 }
 
 /** The one short line on a summary card, chosen from the outcome and the engine's reason. */
-export function cardLine({ outcome, reason, next, stepped, remaining }: CardLineInput): string {
+export function cardLine({ outcome, reason, next, stepped, remaining, unit }: CardLineInput): string {
   if (outcome === "deload") return "Deload workout. It does not count toward your Streak.";
   switch (reason) {
     case "baseline":
       return "First time: baseline set from what you logged.";
     case "on-track": {
       if (!next || remaining === null) return "On track.";
-      const base = `${remaining} more at ${targetText(next)}`;
-      return stepped ? `${base} to earn ${targetText(stepped)}.` : `${base}.`;
+      const base = `${remaining} more at ${targetText(next, unit)}`;
+      return stepped ? `${base} to earn ${targetText(stepped, unit)}.` : `${base}.`;
     }
     case "hold":
       return "Held: short of the Target but inside the rep range. Streak restarts, Target stays.";
@@ -37,13 +39,13 @@ export function cardLine({ outcome, reason, next, stepped, remaining }: CardLine
     case "miss-keep":
       return "Missed again. Your rule keeps the Target.";
     case "miss-drop":
-      return next ? `Missed again. Your rule drops the Target to ${targetText(next)}.` : "Missed again. Your rule drops the Target.";
+      return next ? `Missed again. Your rule drops the Target to ${targetText(next, unit)}.` : "Missed again. Your rule drops the Target.";
     case "earned":
       return next
-        ? `Staying at ${formatWeight(next.weightKg, "kg")} kg. The offer comes back after your next clean workout.`
+        ? `Staying at ${formatWithUnit(next.weightKg, unit)}. The offer comes back after your next clean workout.`
         : "Earned.";
     case "progressed":
-      return next ? `Earned. Moving up to ${targetText(next)}.` : "Earned.";
+      return next ? `Earned. Moving up to ${targetText(next, unit)}.` : "Earned.";
     case "at-top-of-range":
       return "Earned, but you are at the top of your rep range, so there is no step up. Target stays.";
     case "deload":

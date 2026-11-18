@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
 import { nextTarget, type Target } from "@/engine";
+import type { Unit } from "@/units";
 
 import { toHistory, type PastExercise } from "./historyInputs";
 import { applyEdit, type SetEdit } from "./applyEdit";
@@ -120,6 +121,7 @@ export function startWorkout(routineId: number, now: Date = new Date()): number 
             exerciseId: ex.exerciseId,
             idx,
             weightKg: weightToStore(row.weightKg),
+            // Placeholder: set to the unit on screen when the set is checked. Unchecked sets are dropped at Finish.
             enteredUnit: "kg",
             reps: row.reps,
           })
@@ -223,11 +225,15 @@ export function useWorkout(id: number): [LiveWorkout | null | undefined, (w: Liv
  * Marks a set done or not done and writes it at once. A set with a blank weight is not marked
  * (the write is skipped). Returns the updated rows of that exercise.
  */
-export function markSetDone(rows: LiveSet[], index: number, done: boolean): LiveSet[] {
+export function markSetDone(rows: LiveSet[], index: number, done: boolean, unit: Unit): LiveSet[] {
   const next = setDone(rows, index, done) as LiveSet[];
   if (next === rows) return rows;
   db.transaction((tx) => {
-    tx.update(sets).set({ done }).where(eq(sets.id, rows[index].setId)).run();
+    // `entered_unit` is the unit on screen when the set is checked. Unchecking leaves it as it was.
+    tx.update(sets)
+      .set(done ? { done, enteredUnit: unit } : { done })
+      .where(eq(sets.id, rows[index].setId))
+      .run();
     touchWorkout(tx, rows[index].setId);
   });
   return next;
@@ -282,14 +288,20 @@ export function discardAndStartWorkout(inProgressId: number, routineId: number):
 }
 
 /** Applies a typed or stepped edit to one row, following the rule, and writes every row it changed. */
-export function editSet(rows: LiveSet[], index: number, edit: SetEdit): LiveSet[] {
+export function editSet(rows: LiveSet[], index: number, edit: SetEdit, unit: Unit): LiveSet[] {
   const next = applyEdit(rows, index, edit).map((r, i) => ({ ...r, setId: rows[i].setId })) as LiveSet[];
   db.transaction((tx) => {
     let wrote = false;
     next.forEach((r, i) => {
       if (r.weightKg !== rows[i].weightKg || r.reps !== rows[i].reps || r.edited !== rows[i].edited) {
         tx.update(sets)
-          .set({ weightKg: weightToStore(r.weightKg), reps: r.reps, edited: r.edited })
+          .set({
+            weightKg: weightToStore(r.weightKg),
+            reps: r.reps,
+            edited: r.edited,
+            // A weight typed into a checked set was typed in the unit on screen now.
+            ...(r.done && r.weightKg !== rows[i].weightKg && i === index ? { enteredUnit: unit } : {}),
+          })
           .where(eq(sets.id, r.setId))
           .run();
         wrote = true;
