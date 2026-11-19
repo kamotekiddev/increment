@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
 import { nextTarget, type Target } from "@/engine";
+import { jumpKgFor, type Jumps } from "@/settings/jumps";
 import type { Unit } from "@/units";
 
 import { toHistory, type PastExercise } from "./historyInputs";
 import { applyEdit, type SetEdit } from "./applyEdit";
 import { initialSetRows } from "./initialSetRows";
-import { JUMP_KG } from "./jump";
 import { setDone } from "./markDone";
 import { rowFromStored, weightToStore } from "./setStorage";
 import type { SetRow } from "./types";
@@ -65,10 +65,11 @@ function deleteWorkoutExercise(q: Queryable, workoutExerciseId: number): void {
 
 /**
  * Starts a workout from a routine as it is now, in one synchronous transaction. Each exercise's
- * Target comes from the engine, reading only finished workouts of this routine (ADR 0002). Returns
- * the new workout id, or null when the routine has no exercises.
+ * Target comes from the engine, reading only finished workouts of this routine (ADR 0002) and
+ * stepping by the Jump of the exercise's equipment. Returns the new workout id, or null when the
+ * routine has no exercises.
  */
-export function startWorkout(routineId: number, now: Date = new Date()): number | null {
+export function startWorkout(routineId: number, jumps: Jumps, now: Date = new Date()): number | null {
   return db.transaction((tx) => {
     const planned = tx
       .select({
@@ -78,6 +79,7 @@ export function startWorkout(routineId: number, now: Date = new Date()): number 
         repMax: routineExercises.repMax,
         rule: routineExercises.rule,
         loadType: exercises.loadType,
+        equipment: exercises.equipment,
       })
       .from(routineExercises)
       .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
@@ -99,7 +101,7 @@ export function startWorkout(routineId: number, now: Date = new Date()): number 
         planned: { sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax },
         loadType: ex.loadType,
         history: toHistory(rows, ex.sets),
-        jumpKg: JUMP_KG,
+        jumpKg: jumpKgFor(ex.equipment, jumps),
       }).target;
 
       const workoutExercise = tx
@@ -282,9 +284,9 @@ export function finishWorkout(id: number, now: Date = new Date()): void {
 }
 
 /** Discards the workout in progress, then starts the routine. Returns the new workout id (null when the routine is empty). */
-export function discardAndStartWorkout(inProgressId: number, routineId: number): number | null {
+export function discardAndStartWorkout(inProgressId: number, routineId: number, jumps: Jumps): number | null {
   discardWorkout(inProgressId);
-  return startWorkout(routineId);
+  return startWorkout(routineId, jumps);
 }
 
 /** Applies a typed or stepped edit to one row, following the rule, and writes every row it changed. */

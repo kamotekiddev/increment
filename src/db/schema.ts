@@ -118,6 +118,13 @@ export const userSettings = sqliteTable("user_settings", {
   id: integer("id").primaryKey(),
   /** The unit every weight is shown and typed in. Stored weights stay kg. */
   unit: text("unit", { enum: ["kg", "lb"] }).notNull().default("kg"),
+  /** The Jumps: the smallest weight the lifter can add, per equipment group, in kg (a lb lifter's 5 lb is 2.26796185). */
+  jumpBarbellKg: real("jump_barbell_kg").notNull().default(2.5),
+  jumpDumbbellKg: real("jump_dumbbell_kg").notNull().default(2),
+  jumpMachineKg: real("jump_machine_kg").notNull().default(5),
+  jumpCableKg: real("jump_cable_kg").notNull().default(2.5),
+  /** Added weight (belt, vest) on a weighted bodyweight exercise. */
+  jumpBodyweightKg: real("jump_bodyweight_kg").notNull().default(2.5),
 });
 
 /**

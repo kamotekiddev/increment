@@ -6,11 +6,10 @@ import { db } from "@/db/client";
 import { exercises, routineExercises, workouts } from "@/db/schema";
 import { nextTarget } from "@/engine";
 import { useRoutines } from "@/routines/routineQueries";
-import { useUnit } from "@/settings";
+import { jumpKgFor, useJumps, useUnit, type Jumps } from "@/settings";
 import type { Unit } from "@/units";
 import { useInProgressOnFocus } from "@/workout/inProgressQueries";
 import { toHistory } from "@/workout/historyInputs";
-import { JUMP_KG } from "@/workout/jump";
 import { pastExercises } from "@/workout/workoutQueries";
 
 import { toTodayInput } from "./todayInput";
@@ -57,9 +56,10 @@ export function useTodayData(refreshKey = 0): TodayInput | undefined {
 
 /**
  * The first exercises of a Routine with the Target each would get if started now: the same history
- * and engine call Start uses (finished workouts of this Routine only), without writing anything.
+ * and engine call Start uses (finished workouts of this Routine only, the Jump of each exercise's
+ * equipment), without writing anything.
  */
-export function loadNextPreview(routineId: number, unit: Unit): NextPreview {
+export function loadNextPreview(routineId: number, unit: Unit, jumps: Jumps): NextPreview {
   const planned = db
     .select({
       exerciseId: routineExercises.exerciseId,
@@ -85,7 +85,7 @@ export function loadNextPreview(routineId: number, unit: Unit): NextPreview {
       planned: { sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax },
       loadType: ex.loadType,
       history: toHistory(pastExercises(db, routineId, ex.exerciseId), ex.sets),
-      jumpKg: JUMP_KG,
+      jumpKg: jumpKgFor(ex.equipment, jumps),
     }).target,
   }));
   return toNextPreview(first, unit, planned.length);
@@ -94,12 +94,13 @@ export function loadNextPreview(routineId: number, unit: Unit): NextPreview {
 /** The Next Routine's preview, re-read each time the screen gains focus (a finished workout moves the Targets). Undefined until read, or with no Routine. */
 export function useNextPreview(routineId: number | undefined): NextPreview | undefined {
   const { unit } = useUnit();
+  const { jumps } = useJumps();
   const [preview, setPreview] = useState<{ routineId: number; value: NextPreview }>();
   useFocusEffect(
     useCallback(() => {
       if (routineId === undefined) return;
-      setPreview({ routineId, value: loadNextPreview(routineId, unit) });
-    }, [routineId, unit]),
+      setPreview({ routineId, value: loadNextPreview(routineId, unit, jumps) });
+    }, [routineId, unit, jumps]),
   );
   return preview && preview.routineId === routineId ? preview.value : undefined;
 }

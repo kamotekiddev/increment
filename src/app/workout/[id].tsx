@@ -7,7 +7,7 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
-import { UnitSegmented, useUnit } from "@/settings";
+import { UnitSegmented, useJumps, useUnit } from "@/settings";
 import { formatWeight } from "@/units";
 import { type SetEdit, finishCheck, lastColumn, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
@@ -131,6 +131,7 @@ function NumberField({
 
 export default function LiveWorkoutScreen() {
   const { unit, setUnit } = useUnit();
+  const { jumps } = useJumps();
   // Weight text typed after an edit, per set; dropped on a unit switch, a check, or leaving the screen.
   const [drafts, setDrafts] = useState<WeightDrafts>(EMPTY_DRAFTS);
   const colors = useColors();
@@ -266,7 +267,7 @@ export default function LiveWorkoutScreen() {
     finishWorkout(Number(idParam));
     // Replaces the live screen, so the last screen's back lands where the workout started.
     // The first Offer opens when anything was Earned, otherwise the summary.
-    if (loadOffers(Number(idParam), unit).length > 0) {
+    if (loadOffers(Number(idParam), unit, jumps).length > 0) {
       router.replace({ pathname: "/workout/offer/[id]", params: { id: String(idParam), step: "0" } });
     } else {
       router.replace({ pathname: "/workout/summary/[id]", params: { id: String(idParam) } });
