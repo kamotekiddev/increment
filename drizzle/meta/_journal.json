@@ -54,15 +54,8 @@
     {
       "idx": 7,
       "version": "6",
-      "when": 1795080961709,
-      "tag": "0007_nostalgic_eternity",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "6",
-      "when": 1795083392580,
-      "tag": "0008_workable_manta",
+      "when": 1795084288393,
+      "tag": "0007_round_loki",
       "breakpoints": true
     }
   ]

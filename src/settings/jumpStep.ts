@@ -14,16 +14,31 @@ export const JUMP_LADDER: Record<Unit, readonly number[]> = {
 /** One tap of − or +. */
 export type JumpDirection = "up" | "down";
 
-/** Absorbs float noise from converting kg to lb and back, so 5 lb stays on the 5 lb rung. */
+/** Absorbs float noise from converting kg to lb and back, so a Jump halfway between two rungs goes up. */
 const EPSILON = 1e-9;
 
-/** The rung strictly above or below, in the lifter's unit, or undefined past the end of the ladder. */
-function nextRung(kg: number, unit: Unit, direction: JumpDirection): number | undefined {
+/**
+ * The rung of the unit's ladder nearest to a Jump, in that unit; a tie goes to the higher rung. A Jump set in
+ * the other unit lands on a real step here: 5 kg (11.02 lb) is 10 lb, 2 kg (4.41 lb) is 5 lb.
+ */
+function nearestRung(kg: number, unit: Unit): number {
   const value = fromKg(kg, unit);
+  let best = JUMP_LADDER[unit][0];
+  for (const rung of JUMP_LADDER[unit]) {
+    if (Math.abs(rung - value) <= Math.abs(best - value) + EPSILON) best = rung;
+  }
+  return best;
+}
+
+/** The Jump as shown in the unit, in kg: the nearest rung, so the engine steps by what the lifter sees. */
+export function snapJump(kg: number, unit: Unit): number {
+  return toKg(nearestRung(kg, unit), unit);
+}
+
+/** The rung above or below the one shown, in the lifter's unit, or undefined past the end of the ladder. */
+function nextRung(kg: number, unit: Unit, direction: JumpDirection): number | undefined {
   const rungs = JUMP_LADDER[unit];
-  if (direction === "up") return rungs.find((r) => r > value + EPSILON);
-  const below = rungs.filter((r) => r < value - EPSILON);
-  return below[below.length - 1];
+  return rungs[rungs.indexOf(nearestRung(kg, unit)) + (direction === "up" ? 1 : -1)];
 }
 
 /** Whether − (down) or + (up) can move this Jump without leaving the ladder. */
@@ -32,11 +47,10 @@ export function canStepJump(kg: number, unit: Unit, direction: JumpDirection): b
 }
 
 /**
- * The Jump in kg after one tap of − or +. It moves to the next rung of the ladder strictly above or
- * below, so a Jump that is off the ladder (5.51 lb) lands on it (10 lb up, 5 lb down). At either end it
- * returns the Jump unchanged.
+ * The Jump in kg after one tap of − or +: one rung above or below the shown rung, saved in kg. In lb, a saved
+ * 5 kg shows as 10 lb, and + gives 15 lb (6.80388555 kg). At either end it returns the shown Jump.
  */
 export function stepJump(kg: number, unit: Unit, direction: JumpDirection): number {
   const rung = nextRung(kg, unit, direction);
-  return rung === undefined ? kg : toKg(rung, unit);
+  return rung === undefined ? snapJump(kg, unit) : toKg(rung, unit);
 }

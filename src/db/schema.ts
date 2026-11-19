@@ -135,11 +135,10 @@ export const userSettings = sqliteTable("user_settings", {
   /** The unit every weight is shown and typed in. Stored weights stay kg. */
   unit: text("unit", { enum: ["kg", "lb"] }).notNull().default("kg"),
   /**
-   * The Jumps: the smallest weight the lifter can add, per equipment group. Each unit keeps its own five,
-   * and the current unit picks which five are used. Both sets are stored in kg.
-   * NULL until the lifter changes that Jump: an untouched Jump is that unit's default (`effectiveJumps`).
-   *
-   * The kg Jumps (2.5 kg is 2.5).
+   * The Jumps: the smallest weight the lifter can add, one per equipment group, stored in kg whichever unit
+   * set it (15 lb is 6.80388555). In the other unit it shows as the nearest rung of that unit's ladder
+   * (`effectiveJumps`): 5 kg is 10 lb. NULL until the lifter changes that Jump: an untouched Jump is the
+   * current unit's default (2.5 kg, 5 lb for Barbell).
    */
   jumpBarbellKg: real("jump_barbell_kg"),
   jumpDumbbellKg: real("jump_dumbbell_kg"),
@@ -147,12 +146,6 @@ export const userSettings = sqliteTable("user_settings", {
   jumpCableKg: real("jump_cable_kg"),
   /** Added weight (belt, vest) on a weighted bodyweight exercise. */
   jumpBodyweightKg: real("jump_bodyweight_kg"),
-  /** The lb Jumps, stored in kg (5 lb is 2.26796185). */
-  jumpLbBarbellKg: real("jump_lb_barbell_kg"),
-  jumpLbDumbbellKg: real("jump_lb_dumbbell_kg"),
-  jumpLbMachineKg: real("jump_lb_machine_kg"),
-  jumpLbCableKg: real("jump_lb_cable_kg"),
-  jumpLbBodyweightKg: real("jump_lb_bodyweight_kg"),
 });
 
 /**

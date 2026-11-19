@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { useStore } from "zustand";
 
 import { db } from "@/db/client";
@@ -29,15 +29,14 @@ export function loadJumpsOnce(): Error | null {
 }
 
 /**
- * The current unit's Jumps in kg, one per equipment group, and a setter that saves into the current unit only.
- * Each unit keeps its own Jumps; an untouched one is that unit's default (5 lb for a lb lifter's Barbell).
- * Screens re-render when a Jump or the unit changes.
+ * The Jumps in kg as shown in the current unit, one per equipment group, and a setter that saves a Jump in kg.
+ * A saved Jump shows as the nearest rung of the unit's ladder (5 kg is 10 lb); an untouched one is the unit's
+ * default (5 lb for an lb lifter's Barbell). Screens re-render when a Jump or the unit changes.
  */
 export function useJumps(): { jumps: Jumps; setJump: (key: JumpKey, kg: number) => void } {
   const saved = useStore(jumpStore, (s) => s.saved);
-  const setUnitJump = useStore(jumpStore, (s) => s.setJump);
+  const setJump = useStore(jumpStore, (s) => s.setJump);
   const { unit } = useUnit();
   const jumps = useMemo(() => effectiveJumps(saved, unit), [saved, unit]);
-  const setJump = useCallback((key: JumpKey, kg: number) => setUnitJump(unit, key, kg), [setUnitJump, unit]);
   return { jumps, setJump };
 }

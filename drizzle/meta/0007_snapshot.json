@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "916278b6-e45f-4a19-8036-3ca32a826d5c",
+  "id": "624c4fe6-8e6b-4b62-9a83-3ab2956156e3",
   "prevId": "c91450f1-b6cf-49a5-a793-22db7524e81b",
   "tables": {
     "entitlements": {
@@ -485,41 +485,6 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "jump_lb_barbell_kg": {
-          "name": "jump_lb_barbell_kg",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "jump_lb_dumbbell_kg": {
-          "name": "jump_lb_dumbbell_kg",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "jump_lb_machine_kg": {
-          "name": "jump_lb_machine_kg",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "jump_lb_cable_kg": {
-          "name": "jump_lb_cable_kg",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "jump_lb_bodyweight_kg": {
-          "name": "jump_lb_bodyweight_kg",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         }
       },
       "indexes": {},
@@ -573,6 +538,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "target_unit": {
+          "name": "target_unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "progress_accepted": {
           "name": "progress_accepted",
           "type": "integer",
@@ -591,6 +563,13 @@
         "accepted_target_reps": {
           "name": "accepted_target_reps",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "accepted_target_unit": {
+          "name": "accepted_target_unit",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

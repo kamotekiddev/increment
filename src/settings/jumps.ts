@@ -1,6 +1,8 @@
-/** The Jump settings: the smallest weight a lifter can add, one per equipment group and unit, in kg. Pure. */
+/** The Jump settings: the smallest weight a lifter can add, one per equipment group, in kg. Pure. */
 
 import { toKg, type Unit } from "@/units";
+
+import { snapJump } from "./jumpStep";
 
 /** One Jump per equipment group. `bodyweight` is the added weight on a weighted bodyweight exercise (belt, vest). */
 export type JumpKey = "barbell" | "dumbbell" | "machine" | "cable" | "bodyweight";
@@ -8,18 +10,16 @@ export type JumpKey = "barbell" | "dumbbell" | "machine" | "cable" | "bodyweight
 /** Every Jump, in kg: what the engine steps by. */
 export type Jumps = Record<JumpKey, number>;
 
-/** One unit's Jumps as saved: kg once the lifter has changed one, null while it is untouched. */
-export type SavedUnitJumps = Record<JumpKey, number | null>;
-
-/** The Jumps as saved: each unit keeps its own five, both in kg. A 5 lb Jump is saved as 2.26796185 under `lb`. */
-export type SavedJumps = Record<Unit, SavedUnitJumps>;
+/**
+ * The Jumps as saved, one per equipment group whichever unit set it: kg once the lifter has changed one
+ * (15 lb is saved as 6.80388555), null while it is untouched.
+ */
+export type SavedJumps = Record<JumpKey, number | null>;
 
 export const JUMP_KEYS: readonly JumpKey[] = ["barbell", "dumbbell", "machine", "cable", "bodyweight"];
 
-const UNTOUCHED_UNIT: SavedUnitJumps = { barbell: null, dumbbell: null, machine: null, cable: null, bodyweight: null };
-
-/** A lifter who has never changed a Jump, in either unit. */
-export const UNTOUCHED_JUMPS: SavedJumps = { kg: UNTOUCHED_UNIT, lb: UNTOUCHED_UNIT };
+/** A lifter who has never changed a Jump. */
+export const UNTOUCHED_JUMPS: SavedJumps = { barbell: null, dumbbell: null, machine: null, cable: null, bodyweight: null };
 
 /** The Jump of an untouched row, in the lifter's unit (not kg), so every default is loadable in that unit. */
 export const DEFAULT_JUMPS: Record<Unit, Record<JumpKey, number>> = {
@@ -28,11 +28,17 @@ export const DEFAULT_JUMPS: Record<Unit, Record<JumpKey, number>> = {
 };
 
 /**
- * The Jumps the engine uses, in kg: the current unit's saved Jump, or that unit's default while untouched.
- * The other unit's Jumps are never read, so a Jump set in kg never shows up in lb.
+ * The Jumps the engine uses, in kg: each saved Jump as shown in the current unit, the nearest rung of that
+ * unit's ladder (5 kg is 10 lb in lb, and back in kg it is 5 kg again), or the unit's default while untouched.
+ * Pure: switching unit never writes a Jump.
  */
 export function effectiveJumps(saved: SavedJumps, unit: Unit): Jumps {
-  return Object.fromEntries(JUMP_KEYS.map((key) => [key, saved[unit][key] ?? toKg(DEFAULT_JUMPS[unit][key], unit)])) as Jumps;
+  return Object.fromEntries(
+    JUMP_KEYS.map((key) => {
+      const kg = saved[key];
+      return [key, kg === null ? toKg(DEFAULT_JUMPS[unit][key], unit) : snapJump(kg, unit)];
+    }),
+  ) as Jumps;
 }
 
 /** A kg lifter's Jumps before they change any. */

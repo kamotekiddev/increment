@@ -73,33 +73,60 @@ describe("an untouched Jump uses the default of the lifter's unit", () => {
     const jumps = effectiveJumps(UNTOUCHED_JUMPS, "lb");
     expect(JUMP_KEYS.map((key) => formatWithUnit(jumps[key], "lb"))).toEqual(["5 lb", "5 lb", "10 lb", "5 lb", "5 lb"]);
   });
-
 });
 
-describe("each unit keeps its own Jumps", () => {
-  it("a Jump changed in kg is used only in kg; lb keeps its own default", () => {
-    const saved = { ...UNTOUCHED_JUMPS, kg: { ...UNTOUCHED_JUMPS.kg, dumbbell: 1 } };
-    expect(effectiveJumps(saved, "kg").dumbbell).toBe(1);
-    expect(formatWithUnit(effectiveJumps(saved, "lb").dumbbell, "lb")).toBe("5 lb");
+describe("one Jump per equipment, shown in either unit as the nearest rung", () => {
+  const savedBarbell = (kg: number) => ({ ...UNTOUCHED_JUMPS, barbell: kg });
+
+  it("a 5 kg Barbell Jump shows as 10 lb in lb and exactly 5 kg in kg", () => {
+    expect(effectiveJumps(savedBarbell(5), "lb").barbell).toBe(toKg(10, "lb"));
+    expect(formatWithUnit(effectiveJumps(savedBarbell(5), "lb").barbell, "lb")).toBe("10 lb");
+    expect(effectiveJumps(savedBarbell(5), "kg").barbell).toBe(5);
   });
 
-  it("a Jump changed in lb is used only in lb; kg keeps its own default", () => {
-    const saved = { ...UNTOUCHED_JUMPS, lb: { ...UNTOUCHED_JUMPS.lb, barbell: toKg(10, "lb") } };
-    expect(formatWithUnit(effectiveJumps(saved, "lb").barbell, "lb")).toBe("10 lb");
-    expect(effectiveJumps(saved, "kg").barbell).toBe(2.5);
+  it.each([
+    [2.5, "5 lb"],
+    [1.25, "2.5 lb"],
+    [2, "5 lb"],
+    [10, "20 lb"],
+  ])("%s kg shows as %s", (kg, shown) => {
+    expect(formatWithUnit(effectiveJumps(savedBarbell(kg), "lb").barbell, "lb")).toBe(shown);
   });
 
-  it("an lb lifter at 62.5 kg (137.79 lb, set in kg) with a 5 lb Barbell Jump stays at 140 lb or goes up to 145 lb, not by the 2.5 kg one", () => {
-    const saved = {
-      kg: { ...UNTOUCHED_JUMPS.kg, barbell: 2.5 },
-      lb: { ...UNTOUCHED_JUMPS.lb, barbell: toKg(5, "lb") },
-    };
+  it.each([
+    [15, "5 kg"],
+    [10, "5 kg"],
+    [5, "2.5 kg"],
+    [2.5, "1.25 kg"],
+  ])("%s lb shows as %s", (lb, shown) => {
+    expect(formatWithUnit(effectiveJumps(savedBarbell(toKg(lb, "lb")), "kg").barbell, "kg")).toBe(shown);
+  });
+
+  it("a Jump halfway between two rungs shows as the higher one", () => {
+    // 7.5 lb is halfway between the 5 and 10 lb rungs.
+    expect(formatWithUnit(effectiveJumps(savedBarbell(toKg(7.5, "lb")), "lb").barbell, "lb")).toBe("10 lb");
+  });
+
+  it("changes only the Jump that was set: the others are the current unit's defaults", () => {
+    const jumps = effectiveJumps(savedBarbell(5), "lb");
+    expect(JUMP_KEYS.map((key) => formatWithUnit(jumps[key], "lb"))).toEqual(["10 lb", "5 lb", "10 lb", "5 lb", "5 lb"]);
+  });
+
+  it("an lb lifter with a 5 kg Barbell Jump steps by 10 lb: 140 lb goes up to 150 lb", () => {
+    const t = { weightKg: toKg(140, "lb"), reps: 8 };
+    const earned = [0, 1, 2].map((i) => session(`2026-01-${26 - 7 * i}`, t, [8, 8, 8], { unit: "lb" }));
+    const jumpKg = jumpKgFor("barbell", effectiveJumps(savedBarbell(5), "lb"));
+    const r = nextTarget(input(earned, { step: "weight" }, { unit: "lb", jumpKg }));
+    expect(formatWeight(r.target!.weightKg, "lb")).toBe("140");
+    expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("150");
+  });
+
+  it("an lb lifter at 62.5 kg (137.79 lb, set in kg) with the untouched 5 lb Barbell Jump stays at 140 lb or goes up to 145 lb", () => {
     const t = { weightKg: 62.5, reps: 8 };
     const earned = [session("2026-01-26", t, [8, 8, 8]), session("2026-01-19", t, [8, 8, 8]), session("2026-01-12", t, [8, 8, 8])];
     expect(formatWeight(62.5, "lb")).toBe("137.79");
-    const r = nextTarget(input(earned, { step: "weight" }, { unit: "lb", jumpKg: jumpKgFor("barbell", effectiveJumps(saved, "lb")) }));
+    const r = nextTarget(input(earned, { step: "weight" }, { unit: "lb", jumpKg: jumpKgFor("barbell", effectiveJumps(UNTOUCHED_JUMPS, "lb")) }));
     expect(formatWeight(r.target!.weightKg, "lb")).toBe("140");
     expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("145");
   });
 });
-

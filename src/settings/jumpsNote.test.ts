@@ -1,11 +1,11 @@
 import { jumpsNote } from "./jumpsNote";
 
 describe("jumpsNote", () => {
-  it("tells a kg lifter their lb jumps are kept separately", () => {
-    expect(jumpsNote("kg")).toBe("Each unit keeps its own jumps. A change here doesn’t touch your lb jumps.");
+  it("tells a kg lifter how their jumps show in lb", () => {
+    expect(jumpsNote("kg")).toBe("In lb, each jump shows as the nearest plate step.");
   });
 
-  it("tells an lb lifter their kg jumps are kept separately", () => {
-    expect(jumpsNote("lb")).toBe("Each unit keeps its own jumps. A change here doesn’t touch your kg jumps.");
+  it("tells an lb lifter how their jumps show in kg", () => {
+    expect(jumpsNote("lb")).toBe("In kg, each jump shows as the nearest plate step.");
   });
 });
