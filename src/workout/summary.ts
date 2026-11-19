@@ -1,4 +1,4 @@
-import { classify, nextTarget, stepUp } from "../engine";
+import { classify, nextTarget, stepUp, withoutAddedWeight } from "../engine";
 import type { HistorySession, LoadType, LoggedSet, NextTargetInput, OverloadRule, Outcome, Planned, Target } from "../engine";
 import type { Unit } from "../units";
 import { cardLine } from "./cardLine";
@@ -100,6 +100,10 @@ function streakLength(history: HistorySession[], planned: Planned): number {
   return count;
 }
 
+/** A bodyweight exercise reads weight logged before the split as 0, as the engine does, so the Streak matches it. */
+const asLogged = (ex: SummaryExercise): SummaryExercise =>
+  ex.loadType === "bodyweight" ? { ...ex, history: withoutAddedWeight(ex.history) } : ex;
+
 function buildCard(ex: SummaryExercise, unit: Unit): { card: SummaryCard; offer: OfferItem | null } {
   const input: NextTargetInput = { rule: ex.rule, planned: ex.planned, loadType: ex.loadType, history: ex.history, jumpKg: ex.jumpKg };
   const current = ex.history[0];
@@ -135,7 +139,7 @@ export function buildSummary({ startedAt, finishedAt, exercises, unit }: Summary
   const worked = exercises.filter((ex) => doneWorking(ex.sets).length > 0);
   const all = worked.flatMap((ex) => doneWorking(ex.sets));
   const volumeKg = all.reduce((sum, s) => sum + s.weightKg * s.reps, 0);
-  const built = worked.map((ex) => buildCard(ex, unit));
+  const built = worked.map((ex) => buildCard(asLogged(ex), unit));
   return {
     header: {
       durationMinutes: Math.max(0, Math.floor((finishedAt - startedAt) / 60_000)),

@@ -224,16 +224,17 @@ export function useWorkout(id: number): [LiveWorkout | null | undefined, (w: Liv
 }
 
 /**
- * Marks a set done or not done and writes it at once. A set with a blank weight is not marked
- * (the write is skipped). Returns the updated rows of that exercise.
+ * Marks a set done or not done and writes it at once. A weighted set with a blank weight is not
+ * marked (the write is skipped); a bodyweight set is saved at weight 0. Returns the updated rows of that exercise.
  */
-export function markSetDone(rows: LiveSet[], index: number, done: boolean, unit: Unit): LiveSet[] {
-  const next = setDone(rows, index, done) as LiveSet[];
+export function markSetDone(rows: LiveSet[], index: number, done: boolean, unit: Unit, loadType: LoadType = "weighted"): LiveSet[] {
+  const next = setDone(rows, index, done, loadType) as LiveSet[];
   if (next === rows) return rows;
+  const bodyweight = done && loadType === "bodyweight" ? { weightKg: 0 } : {};
   db.transaction((tx) => {
     // `entered_unit` is the unit on screen when the set is checked. Unchecking leaves it as it was.
     tx.update(sets)
-      .set(done ? { done, enteredUnit: unit } : { done })
+      .set(done ? { done, enteredUnit: unit, ...bodyweight } : { done })
       .where(eq(sets.id, rows[index].setId))
       .run();
     touchWorkout(tx, rows[index].setId);

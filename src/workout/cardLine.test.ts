@@ -1,4 +1,4 @@
-import { cardLine, targetText } from "./cardLine";
+import { cardLine, loadText, offerHeading, targetText } from "./cardLine";
 
 const t = (weightKg: number, reps: number) => ({ weightKg, reps });
 
@@ -93,5 +93,38 @@ describe("targetText", () => {
   it("writes weight, unit and reps", () => {
     expect(targetText(t(62.5, 10), "kg")).toBe("62.5 kg × 10");
     expect(targetText(t(62.5, 10), "lb")).toBe("137.79 lb × 10");
+  });
+  it("writes a bodyweight Target (no weight) as reps only", () => {
+    expect(targetText(t(0, 9), "kg")).toBe("9 reps");
+    expect(targetText(t(0, 1), "lb")).toBe("1 rep");
+  });
+});
+
+describe("loadText", () => {
+  it("writes the weight of a Target, or its reps when it has no weight", () => {
+    expect(loadText(t(62.5, 10), "kg")).toBe("62.5 kg");
+    expect(loadText(t(0, 9), "kg")).toBe("9 reps");
+  });
+});
+
+describe("offerHeading", () => {
+  it("names a heavier weight when the step adds weight", () => {
+    expect(offerHeading(t(60, 8), t(62.5, 8))).toBe("You earned a heavier weight");
+  });
+  it("names more reps when the step adds reps only, as on a bodyweight exercise", () => {
+    expect(offerHeading(t(0, 8), t(0, 9))).toBe("You earned more reps");
+  });
+});
+
+describe("cardLine on a bodyweight exercise", () => {
+  it("writes the Streak progress in reps", () => {
+    expect(cardLine({ outcome: "clean", reason: "on-track", next: t(0, 8), stepped: t(0, 9), remaining: 2, unit: "kg" })).toBe(
+      "2 more at 8 reps to earn 9 reps.",
+    );
+  });
+  it("says where it stays in reps", () => {
+    expect(cardLine({ outcome: "clean", reason: "earned", next: t(0, 8), stepped: null, remaining: null, unit: "lb" })).toBe(
+      "Staying at 8 reps. The offer comes back after your next clean workout.",
+    );
   });
 });

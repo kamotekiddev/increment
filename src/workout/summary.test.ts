@@ -211,3 +211,18 @@ describe("buildSummary in lb", () => {
     expect(summary.header.volumeKg).toBe(1800);
   });
 });
+
+describe("buildSummary on a bodyweight exercise logged with added weight before the split", () => {
+  const bw = (target: { weightKg: number; reps: number }, date: string) => session(date, target, [8, 8, 8]);
+  const pullup = exercise(
+    [bw({ weightKg: 0, reps: 8 }, "2026-11-17"), bw({ weightKg: 0, reps: 8 }, "2026-11-10"), bw({ weightKg: 20, reps: 8 }, "2026-11-03")],
+    defaultRule("bodyweight"),
+    { name: "Pullups", loadType: "bodyweight" },
+  );
+
+  it("counts the Streak across the old weighted Target and offers reps, never a weight", () => {
+    const summary = build([pullup]);
+    expect(summary.cards[0]).toMatchObject({ outcome: "clean", streak: 3, next: { weightKg: 0, reps: 8 } });
+    expect(summary.offers[0]).toMatchObject({ current: { weightKg: 0, reps: 8 }, stepped: { weightKg: 0, reps: 9 } });
+  });
+});
