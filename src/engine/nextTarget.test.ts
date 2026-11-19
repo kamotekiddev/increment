@@ -1,5 +1,5 @@
 import { classify } from "./outcome";
-import { nextTarget, weekIndex } from "./nextTarget";
+import { nextTarget, stepUp, weekIndex } from "./nextTarget";
 import { defaultRule } from "./rule";
 import { input, planned, session } from "./testing";
 
@@ -243,6 +243,29 @@ describe("nextTarget: deload", () => {
     const dl = session("2026-02-09", { weightKg: 52.5, reps: 8 }, [8, 8, 8], { deload: true });
     const h = [dl, wk("2026-02-02"), wk("2026-01-26"), wk("2026-01-19")];
     expect(nextTarget(input(h)).reason).toBe("earned");
+  });
+});
+
+describe("nextTarget: bodyweight exercises ignore weight logged before the split", () => {
+  const bw = { loadType: "bodyweight" as const };
+  it("the baseline from sets logged with added weight has no weight", () => {
+    const r = nextTarget(input([session("2026-01-05", null, [9, 8, 8], { weightKg: 20 })], {}, bw));
+    expect(r).toEqual({ target: { weightKg: 0, reps: 8 }, proposal: null, reason: "baseline" });
+  });
+  it("an old weighted Target carries forward as reps only", () => {
+    const r = nextTarget(input([session("2026-01-05", { weightKg: 20, reps: 8 }, [9, 8, 7])], {}, bw));
+    expect(r.target).toEqual({ weightKg: 0, reps: 8 });
+  });
+  it("a Streak runs across the old weighted Target and new bodyweight workouts", () => {
+    const history = [
+      session("2026-01-26", { weightKg: 0, reps: 8 }, [8, 8, 8]),
+      session("2026-01-19", { weightKg: 0, reps: 8 }, [8, 8, 8]),
+      session("2026-01-12", { weightKg: 20, reps: 8 }, [8, 8, 8]),
+    ];
+    expect(nextTarget(input(history, {}, bw))).toEqual({ target: { weightKg: 0, reps: 8 }, proposal: { weightKg: 0, reps: 9 }, reason: "earned" });
+  });
+  it("stepUp from an old weighted Target has no weight", () => {
+    expect(stepUp({ weightKg: 20, reps: 8 }, input([], {}, bw))).toEqual({ weightKg: 0, reps: 9 });
   });
 });
 

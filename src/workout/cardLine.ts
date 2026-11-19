@@ -16,9 +16,22 @@ export interface CardLineInput {
   unit: Unit;
 }
 
-/** A Target as the summary writes it: "62.5 kg × 10". */
+const repsText = (reps: number) => `${reps} ${reps === 1 ? "rep" : "reps"}`;
+
+/** A Target as the summary writes it: "62.5 kg × 10", or "9 reps" for a bodyweight Target (weight 0). */
 export function targetText(target: Target, unit: Unit): string {
+  if (target.weightKg === 0) return repsText(target.reps);
   return `${formatWithUnit(target.weightKg, unit)} × ${target.reps}`;
+}
+
+/** What "Go up to …" and "Stay at …" name: the weight, or the reps of a bodyweight Target (weight 0). */
+export function loadText(target: Target, unit: Unit): string {
+  return target.weightKg === 0 ? repsText(target.reps) : formatWithUnit(target.weightKg, unit);
+}
+
+/** The Offer screen's heading: a heavier weight when the step adds weight, otherwise more reps (as on a bodyweight exercise). */
+export function offerHeading(current: Target, stepped: Target): string {
+  return stepped.weightKg > current.weightKg ? "You earned a heavier weight" : "You earned more reps";
 }
 
 /** The one short line on a summary card, chosen from the outcome and the engine's reason. */
@@ -42,7 +55,7 @@ export function cardLine({ outcome, reason, next, stepped, remaining, unit }: Ca
       return next ? `Missed again. Your rule drops the Target to ${targetText(next, unit)}.` : "Missed again. Your rule drops the Target.";
     case "earned":
       return next
-        ? `Staying at ${formatWithUnit(next.weightKg, unit)}. The offer comes back after your next clean workout.`
+        ? `Staying at ${loadText(next, unit)}. The offer comes back after your next clean workout.`
         : "Earned.";
     case "progressed":
       return next ? `Earned. Moving up to ${targetText(next, unit)}.` : "Earned.";

@@ -22,3 +22,18 @@ describe("bannerText", () => {
     expect(bannerText(null, null, "kg")).toBe("First time on this exercise. Pick a weight you can do.");
   });
 });
+
+describe("bannerText on a bodyweight exercise", () => {
+  it("states the Target in reps only", () => {
+    expect(bannerText({ weightKg: 0, reps: 9 }, { repMin: 8, repMax: 12 }, "lb", "bodyweight")).toBe("Target: 9 reps");
+  });
+
+  it("never shows a weight, even one stored before the split", () => {
+    expect(bannerText({ weightKg: 20, reps: 8 }, null, "kg", "bodyweight")).toBe("Target: 8 reps");
+  });
+
+  it("asks a first-timer for reps, not a weight", () => {
+    expect(bannerText(null, { repMin: 8, repMax: 12 }, "kg", "bodyweight")).toBe("First time on this exercise. Aim for 8 to 12 reps.");
+    expect(bannerText(null, null, "kg", "bodyweight")).toBe("First time on this exercise. Log the reps you do.");
+  });
+});
