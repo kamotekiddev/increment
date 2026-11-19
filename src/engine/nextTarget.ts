@@ -12,9 +12,22 @@ export function weekIndex(date: string): number {
   return Math.floor((day + 3) / 7); // 1970-01-01 was a Thursday
 }
 
+/**
+ * A bodyweight exercise has no weight. Sets and Targets logged with added weight before the exercise
+ * was split (Pull-up and Weighted pull-up) read as 0, so nothing hidden is carried forward.
+ */
+export function withoutAddedWeight(history: HistorySession[]): HistorySession[] {
+  return history.map((s) => ({
+    ...s,
+    target: s.target ? { ...s.target, weightKg: 0 } : null,
+    sets: s.sets.map((set) => ({ ...set, weightKg: 0 })),
+  }));
+}
+
 /** The next step up from `base`: what to offer, or null when no step is possible. */
-export function stepUp(base: Target, input: NextTargetInput): Target | null {
+export function stepUp(target: Target, input: NextTargetInput): Target | null {
   const { rule, planned, loadType, jumpKg } = input;
+  const base = loadType === "bodyweight" ? { ...target, weightKg: 0 } : target;
   const step = effectiveStep(rule.step, loadType);
   const reps = Math.min(base.reps + rule.repStep, planned.repMax);
   const canAddReps = base.reps < planned.repMax;
@@ -66,7 +79,8 @@ function deloadDue(history: HistorySession[], everyWeeks: number): boolean {
   return weeks.size >= everyWeeks;
 }
 
-export function nextTarget(input: NextTargetInput): TargetResult {
+export function nextTarget(given: NextTargetInput): TargetResult {
+  const input = given.loadType === "bodyweight" ? { ...given, history: withoutAddedWeight(given.history) } : given;
   const { rule, jumpKg } = input;
   const regular = input.history.filter((s) => !s.isDeload);
   const latest = regular[0];

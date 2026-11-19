@@ -26,3 +26,13 @@ describe("setDone", () => {
     expect(next[0].done).toBe(false);
   });
 });
+
+describe("on a bodyweight exercise", () => {
+  it("a set can be marked done with reps only", () => {
+    expect(canMarkDone(row(null), "bodyweight")).toBe(true);
+  });
+  it("a done set saves weight 0, whatever weight it carried", () => {
+    expect(setDone([row(null), row(20)], 0, true, "bodyweight")[0]).toEqual({ weightKg: 0, reps: 8, done: true, edited: false });
+    expect(setDone([row(20)], 0, true, "bodyweight")[0].weightKg).toBe(0);
+  });
+});
