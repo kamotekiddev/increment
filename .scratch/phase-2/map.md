@@ -44,5 +44,5 @@ Workout reminders in Settings, with the notification permission asked there. Reu
 - Charts, All records and the plate calculator stay in Phase 3, as in the roadmap.
 
 ## Open
-- "Your gym's plates" appears on the Weight jumps screen in `docs/screens.md`, but the roadmap puts the plate calculator in Phase 3. Proposed: plates move to Phase 3 with the calculator, and feature 2 covers the Jump only.
+- Resolved 2026-11-19: "Your gym's plates" moves to Phase 3 with the plate calculator; feature 2 covers the Jump only.
 - Light/dark theme is in the Settings list in `docs/product.md` but not named in the roadmap's Phase 2 line. Proposed: keep it in feature 3.

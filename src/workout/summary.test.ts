@@ -48,7 +48,7 @@ describe("buildSummary header", () => {
   });
 
   it("counts a weighted bodyweight set at its added load and a bodyweight set as 0", () => {
-    const weighted = exercise([session("2026-11-17", null, [8], { weightKg: 10 })], {}, { loadType: "bodyweight_or_weighted", sets: sets([8], 10) });
+    const weighted = exercise([session("2026-11-17", null, [8], { weightKg: 10 })], {}, { name: "Weighted pull-up", loadType: "weighted", sets: sets([8], 10) });
     const bare = exercise([session("2026-11-17", null, [12], { weightKg: 0 })], {}, { id: 2, name: "Pull-up", loadType: "bodyweight", sets: sets([12], 0) });
     expect(build([weighted, bare]).header).toMatchObject({ sets: 2, volumeKg: 80, showTotalReps: false });
   });

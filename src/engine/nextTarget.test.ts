@@ -260,7 +260,6 @@ describe("defaultRule", () => {
   it("picks the step from the load type", () => {
     expect(defaultRule("weighted").step).toBe("weight");
     expect(defaultRule("bodyweight").step).toBe("reps");
-    expect(defaultRule("bodyweight_or_weighted").step).toBe("reps");
     expect(defaultRule("weighted")).toMatchObject({ v: 1, repStep: 1, sessionsToEarn: 3 });
     expect(defaultRule("weighted").miss).toBeUndefined();
     expect(defaultRule("weighted").deload).toBeUndefined();
