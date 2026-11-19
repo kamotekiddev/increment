@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { defaultRule } from "@/engine";
+import { DEFAULT_JUMPS_KG } from "@/settings/jumps";
 
 import { loadWorkout, markSetDone, startWorkout } from "./workoutQueries";
 
@@ -27,7 +28,7 @@ function pullupsLoggedWithABelt(): number {
 
 describe("a bodyweight exercise in the live workout", () => {
   it("carries no weight logged before the split into the Target or the prefilled sets, and saves done sets at 0", async () => {
-    const workoutId = startWorkout(pullupsLoggedWithABelt(), new Date(2026, 10, 9))!;
+    const workoutId = startWorkout(pullupsLoggedWithABelt(), DEFAULT_JUMPS_KG, new Date(2026, 10, 9))!;
 
     const workout = await loadWorkout(workoutId);
     const pullups = workout!.exercises[0];

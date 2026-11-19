@@ -4,12 +4,12 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] Jump columns on the `user_settings` row, in kg: Barbell 2.5, Dumbbell 2, Machine 5, Cable 2.5, Bodyweight added weight 2.5. One migration
-- [ ] One hook (like `useUnit()`) returns the Jumps and a setter; screens re-render on change
-- [ ] A pure function maps equipment to a Jump key: barbell and ez bar → Barbell; dumbbell and kettlebell → Dumbbell; machine → Machine; cable → Cable; bodyweight → Bodyweight added weight
-- [ ] Every `nextTarget` caller (Offer, summary, Today preview, live workout) passes the exercise's Jump; `JUMP_KG` and `src/workout/jump.ts` are removed
-- [ ] Jest: the mapping for all 7 equipment values; a step up and a drop with each default; 135 lb with a 5 lb Jump (2.268 kg) shows 140 lb
-- [ ] Database test: save a Jump at 5 lb, switch the unit 10 times, it reads back identical at full precision
-- [ ] Type check, lint and tests pass
+- [x] Jump columns on the `user_settings` row, in kg: Barbell 2.5, Dumbbell 2, Machine 5, Cable 2.5, Bodyweight added weight 2.5. One migration
+- [x] One hook (like `useUnit()`) returns the Jumps and a setter; screens re-render on change
+- [x] A pure function maps equipment to a Jump key: barbell and ez bar → Barbell; dumbbell and kettlebell → Dumbbell; machine → Machine; cable → Cable; bodyweight → Bodyweight added weight
+- [x] Every `nextTarget` caller (Offer, summary, Today preview, live workout) passes the exercise's Jump; `JUMP_KG` and `src/workout/jump.ts` are removed
+- [x] Jest: the mapping for all 7 equipment values; a step up and a drop with each default; 135 lb with a 5 lb Jump (2.268 kg) shows 140 lb
+- [x] Database test: save a Jump at 5 lb, switch the unit 10 times, it reads back identical at full precision
+- [x] Type check, lint and tests pass

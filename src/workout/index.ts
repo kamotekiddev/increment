@@ -6,7 +6,6 @@ export type { FinishCheck } from "./finishCheck";
 export { judgedSets } from "./judgedSets";
 export type { SetRow } from "./types";
 export { bannerText } from "./bannerText";
-export { JUMP_KG } from "./jump";
 export { canMarkDone, setDone } from "./markDone";
 export { rowFromStored, weightToStore } from "./setStorage";
 export { lastColumn, lastSetText } from "./lastColumn";
