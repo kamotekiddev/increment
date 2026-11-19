@@ -9,7 +9,7 @@ import m0004 from './0004_tearful_butterfly.sql';
 import m0005 from './0005_blushing_chimera.sql';
 import m0006 from './0006_yellow_rictor.sql';
 import m0007 from './0007_nostalgic_eternity.sql';
-import m0008 from './0008_loose_cloak.sql';
+import m0008 from './0008_workable_manta.sql';
 
   export default {
     journal,

@@ -12,6 +12,8 @@ export interface PastExercise {
   /** The accepted stepped-up Target; null after Stay and on rows saved before it was stored. */
   acceptedTargetWeightKg?: number | null;
   acceptedTargetReps?: number | null;
+  /** The unit the lifter was in when they tapped Go up. Null after Stay and on rows saved before it was stored. */
+  acceptedTargetUnit?: WeightUnit | null;
   isDeload: boolean;
   sets: { idx: number; weightKg: number; reps: number; done: boolean; isWarmup: boolean; enteredUnit?: WeightUnit }[];
 }
@@ -48,10 +50,13 @@ export function toHistory(rows: PastExercise[], plannedSets: number): HistorySes
     .map((r) => {
       const judged = judgedPastSets(r.sets, plannedSets).sort((a, b) => a.idx - b.idx);
       const target = r.targetWeightKg !== null && r.targetReps !== null ? { weightKg: r.targetWeightKg, reps: r.targetReps } : null;
+      const targetUnit = targetUnitOf(r, judged, target !== null);
       return {
         date: r.date,
         target,
-        targetUnit: targetUnitOf(r, judged, target !== null),
+        targetUnit,
+        // An accepted Target was offered in the unit of the Go up tap; older rows fall back to the Target's unit.
+        acceptedTargetUnit: r.acceptedTargetUnit ?? targetUnit,
         progressAccepted: r.progressAccepted,
         acceptedTarget:
           r.acceptedTargetWeightKg != null && r.acceptedTargetReps != null ? { weightKg: r.acceptedTargetWeightKg, reps: r.acceptedTargetReps } : null,

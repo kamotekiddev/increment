@@ -80,14 +80,16 @@ export function loadSummary(workoutId: number, unit: Unit, jumps: Jumps): Loaded
 
 /**
  * Saves the lifter's answer to an Offer at once: Accept is true, Decline is false. Accept also saves
- * `stepped`, the Target the Offer showed, so the next Start shows that Target even if a Jump changes.
+ * `stepped`, the Target the Offer showed, so the next Start shows that Target even if a Jump changes,
+ * and `unit`, the unit it was offered in, so it snaps to the Jump's grid if the lifter later switches unit.
  */
-export function answerOffer(workoutExerciseId: number, accepted: boolean, stepped: Target): void {
+export function answerOffer(workoutExerciseId: number, accepted: boolean, stepped: Target, unit: Unit): void {
   db.update(workoutExercises)
     .set({
       progressAccepted: accepted,
       acceptedTargetWeightKg: accepted ? stepped.weightKg : null,
       acceptedTargetReps: accepted ? stepped.reps : null,
+      acceptedTargetUnit: accepted ? unit : null,
     })
     .where(eq(workoutExercises.id, workoutExerciseId))
     .run();

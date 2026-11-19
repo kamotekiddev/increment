@@ -56,6 +56,8 @@ export interface HistorySession {
    * snaps to the Jump's grid.
    */
   targetUnit?: WeightUnit;
+  /** The unit the accepted Target was offered in (the lifter's unit at Go up). Absent means `targetUnit`. */
+  acceptedTargetUnit?: WeightUnit;
   sets: LoggedSet[];
 }
 

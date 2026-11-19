@@ -39,6 +39,7 @@ export function pastExercises(q: Queryable, routineId: number, exerciseId: numbe
       progressAccepted: workoutExercises.progressAccepted,
       acceptedTargetWeightKg: workoutExercises.acceptedTargetWeightKg,
       acceptedTargetReps: workoutExercises.acceptedTargetReps,
+      acceptedTargetUnit: workoutExercises.acceptedTargetUnit,
       isDeload: workoutExercises.isDeload,
     })
     .from(workoutExercises)

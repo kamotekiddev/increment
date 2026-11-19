@@ -120,7 +120,7 @@ function buildCard(ex: SummaryExercise, unit: Unit): { card: SummaryCard; offer:
     else if (result.reason === "progressed" && result.target) offer = { target: result.target, accepted: true };
     else if (current.progressAccepted && shown) {
       // Accepted, but the engine's result has no proposal now (e.g. a Deload is due). Keep the Offer so Accept can flip back to Decline.
-      const target = current.acceptedTarget ? inCurrentUnit(current.acceptedTarget, current.targetUnit, input) : stepUp(shown, input);
+      const target = current.acceptedTarget ? inCurrentUnit(current.acceptedTarget, current.acceptedTargetUnit ?? current.targetUnit, input) : stepUp(shown, input);
       if (target) offer = { target, accepted: true };
     }
   }

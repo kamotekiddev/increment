@@ -89,6 +89,11 @@ export const workoutExercises = sqliteTable(
      */
     acceptedTargetWeightKg: real("accepted_target_weight_kg"),
     acceptedTargetReps: integer("accepted_target_reps"),
+    /**
+     * The lifter's unit when they tapped Go up, which the accepted Target was offered in. Null after Stay and on
+     * rows saved before it was stored: those use target_unit's fallbacks.
+     */
+    acceptedTargetUnit: text("accepted_target_unit", { enum: ["kg", "lb"] }),
     isDeload: integer("is_deload", { mode: "boolean" }).notNull().default(false),
   },
   (t) => [uniqueIndex("workout_exercises_unique").on(t.workoutId, t.exerciseId, t.position)],

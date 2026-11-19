@@ -78,6 +78,11 @@ describe("toHistory: the unit a Target was set in", () => {
   it("falls back to kg when nothing says otherwise", () => {
     expect(unitOf({ ...target, targetUnit: null, sets: [] })).toBe("kg");
   });
+  it("an accepted Target uses the unit of the Go up tap, or the Target's unit on an older row", () => {
+    const accepted = { ...target, acceptedTargetWeightKg: 12, acceptedTargetReps: 8, targetUnit: "kg" as const };
+    expect(toHistory([past({ ...accepted, acceptedTargetUnit: "lb" })], 3)[0].acceptedTargetUnit).toBe("lb");
+    expect(toHistory([past({ ...accepted, acceptedTargetUnit: null })], 3)[0].acceptedTargetUnit).toBe("kg");
+  });
   it("a first workout with no Target uses the unit its heaviest set was logged in", () => {
     const sets = [set(10, "kg"), { ...set(20, "lb"), idx: 1 }];
     expect(unitOf({ targetUnit: "kg", sets })).toBe("lb");

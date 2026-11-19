@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "bef37a9e-467f-4c69-91f7-09f93e7eb359",
+  "id": "d235d415-6943-46e8-8c94-274bdd6e417e",
   "prevId": "916278b6-e45f-4a19-8036-3ca32a826d5c",
   "tables": {
     "entitlements": {
@@ -598,6 +598,13 @@
         "accepted_target_reps": {
           "name": "accepted_target_reps",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "accepted_target_unit": {
+          "name": "accepted_target_unit",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

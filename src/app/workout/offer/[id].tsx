@@ -40,7 +40,7 @@ export default function OfferScreen() {
   function answer(accepted: boolean) {
     if (answered.current) return;
     answered.current = true;
-    answerOffer(offer.workoutExerciseId, accepted, offer.stepped);
+    answerOffer(offer.workoutExerciseId, accepted, offer.stepped, unit);
     if (index + 1 < offers.length) {
       router.replace({ pathname: "/workout/offer/[id]", params: { id: String(workoutId), step: String(index + 1) } });
     } else {

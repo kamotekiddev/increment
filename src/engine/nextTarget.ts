@@ -125,7 +125,8 @@ function regularTarget(input: NextTargetInput, regular: HistorySession[]): Targe
   if (earned) {
     // An accepted step keeps the Target the lifter saw, even if the Jump changed since (it snaps only after a unit switch).
     if (latest.progressAccepted && latest.acceptedTarget) {
-      return { target: inCurrentUnit(latest.acceptedTarget, latest.targetUnit, input), proposal: null, reason: "progressed" };
+      const setIn = latest.acceptedTargetUnit ?? latest.targetUnit;
+      return { target: inCurrentUnit(latest.acceptedTarget, setIn, input), proposal: null, reason: "progressed" };
     }
     if (!stepped) return { target: base, proposal: null, reason: "at-top-of-range" };
     if (latest.progressAccepted) return { target: stepped, proposal: null, reason: "progressed" };
