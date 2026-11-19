@@ -89,7 +89,7 @@ describe("each unit keeps its own Jumps", () => {
     expect(effectiveJumps(saved, "kg").barbell).toBe(2.5);
   });
 
-  it("an lb lifter at 62.5 kg (137.79 lb) with a 5 lb Barbell Jump steps to 140 lb, not by the 2.5 kg one", () => {
+  it("an lb lifter at 62.5 kg (137.79 lb, set in kg) with a 5 lb Barbell Jump stays at 140 lb or goes up to 145 lb, not by the 2.5 kg one", () => {
     const saved = {
       kg: { ...UNTOUCHED_JUMPS.kg, barbell: 2.5 },
       lb: { ...UNTOUCHED_JUMPS.lb, barbell: toKg(5, "lb") },
@@ -97,8 +97,9 @@ describe("each unit keeps its own Jumps", () => {
     const t = { weightKg: 62.5, reps: 8 };
     const earned = [session("2026-01-26", t, [8, 8, 8]), session("2026-01-19", t, [8, 8, 8]), session("2026-01-12", t, [8, 8, 8])];
     expect(formatWeight(62.5, "lb")).toBe("137.79");
-    const r = nextTarget(input(earned, { step: "weight" }, { jumpKg: jumpKgFor("barbell", effectiveJumps(saved, "lb")) }));
-    expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("140");
+    const r = nextTarget(input(earned, { step: "weight" }, { unit: "lb", jumpKg: jumpKgFor("barbell", effectiveJumps(saved, "lb")) }));
+    expect(formatWeight(r.target!.weightKg, "lb")).toBe("140");
+    expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("145");
   });
 });
 

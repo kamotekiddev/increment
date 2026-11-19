@@ -1,4 +1,4 @@
-import { classify, nextTarget, onGrid, stepUp, withoutAddedWeight } from "../engine";
+import { classify, inCurrentUnit, nextTarget, stepUp, withoutAddedWeight } from "../engine";
 import type { HistorySession, LoadType, LoggedSet, NextTargetInput, OverloadRule, Outcome, Planned, Target } from "../engine";
 import type { Unit } from "../units";
 import { cardLine } from "./cardLine";
@@ -105,10 +105,12 @@ const withoutPreSplitWeight = (ex: SummaryExercise): SummaryExercise =>
   ex.loadType === "bodyweight" ? { ...ex, history: withoutAddedWeight(ex.history) } : ex;
 
 function buildCard(ex: SummaryExercise, unit: Unit): { card: SummaryCard; offer: OfferItem | null } {
-  const input: NextTargetInput = { rule: ex.rule, planned: ex.planned, loadType: ex.loadType, history: ex.history, jumpKg: ex.jumpKg };
+  const input: NextTargetInput = { rule: ex.rule, planned: ex.planned, loadType: ex.loadType, history: ex.history, jumpKg: ex.jumpKg, unit };
   const current = ex.history[0];
   const outcome = classify(current, ex.planned);
   const result = nextTarget(input);
+  // This workout's Target as the engine sees it now: snapped to the Jump's grid if it was set in the other unit.
+  const shown = current.target ? inCurrentUnit(current.target, current.targetUnit, input) : null;
 
   const streak = outcome === "clean" ? streakLength(ex.history, ex.planned) : null;
   // A Deload workout never re-asks an earlier Offer.
@@ -116,20 +118,20 @@ function buildCard(ex: SummaryExercise, unit: Unit): { card: SummaryCard; offer:
   if (outcome !== "deload") {
     if (result.reason === "earned" && result.proposal) offer = { target: result.proposal, accepted: false };
     else if (result.reason === "progressed" && result.target) offer = { target: result.target, accepted: true };
-    else if (current.progressAccepted && current.target) {
+    else if (current.progressAccepted && shown) {
       // Accepted, but the engine's result has no proposal now (e.g. a Deload is due). Keep the Offer so Accept can flip back to Decline.
-      const target = current.acceptedTarget ? onGrid(current.acceptedTarget, ex.jumpKg) : stepUp(current.target, input);
+      const target = current.acceptedTarget ? inCurrentUnit(current.acceptedTarget, current.targetUnit, input) : stepUp(shown, input);
       if (target) offer = { target, accepted: true };
     }
   }
 
-  const stepped = offer?.target ?? (streak !== null && current.target ? stepUp(current.target, input) : null);
+  const stepped = offer?.target ?? (streak !== null && shown ? stepUp(shown, input) : null);
   const remaining = streak !== null ? Math.max(0, ex.rule.sessionsToEarn - streak) : null;
   const line = cardLine({ outcome, reason: result.reason, next: result.target, stepped, remaining, unit });
   const card: SummaryCard = { workoutExerciseId: ex.id, name: ex.name, outcome, streak, line, next: result.target, offer };
   const item: OfferItem | null =
-    offer && current.target
-      ? { workoutExerciseId: ex.id, name: ex.name, streak: streak ?? 0, current: current.target, stepped: offer.target, accepted: offer.accepted }
+    offer && shown
+      ? { workoutExerciseId: ex.id, name: ex.name, streak: streak ?? 0, current: shown, stepped: offer.target, accepted: offer.accepted }
       : null;
   return { card, offer: item };
 }

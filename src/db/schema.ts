@@ -76,6 +76,11 @@ export const workoutExercises = sqliteTable(
     /** The Target shown at the start; null when none existed (first workout). */
     targetWeightKg: real("target_weight_kg"),
     targetReps: integer("target_reps"),
+    /**
+     * The lifter's unit when Start set the Target. The next Target snaps to the Jump's grid only when the unit
+     * differs. Null on rows saved before it was stored: those fall back to their sets' entered_unit, then kg.
+     */
+    targetUnit: text("target_unit", { enum: ["kg", "lb"] }),
     /** The lifter accepted the offered step after this workout. */
     progressAccepted: integer("progress_accepted", { mode: "boolean" }).notNull().default(false),
     /**

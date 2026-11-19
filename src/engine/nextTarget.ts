@@ -1,7 +1,7 @@
 import { classify } from "./outcome";
 import { floorToMultiple, nearestMultiple, nextMultipleAbove, sameWeight } from "./rounding";
 import { effectiveStep } from "./rule";
-import type { HistorySession, NextTargetInput, Planned, Target, TargetResult } from "./types";
+import type { HistorySession, NextTargetInput, Planned, Target, TargetResult, WeightUnit } from "./types";
 
 const sameTarget = (a: Target, b: Target) => sameWeight(a.weightKg, b.weightKg) && a.reps === b.reps;
 
@@ -81,20 +81,17 @@ function deloadDue(history: HistorySession[], everyWeeks: number): boolean {
 }
 
 /**
- * A Target's weight snapped to the nearest multiple of the Jump (ties round up), so it can be loaded
- * after the Jump or the unit changed: 10 kg is 22.05 lb, which a 5 lb grid shows as 20 lb.
+ * A past Target as the lifter can load it now. One set in another unit than the current one snaps to the
+ * nearest multiple of the Jump (a tie rounds up): 10 kg is 22.05 lb, which a 5 lb grid shows as 20 lb. One
+ * set in the current unit is kept as is, even if the Jump changed since. A Target already on the grid, and
+ * a bodyweight 0, are unchanged.
  */
-export function onGrid(target: Target, jumpKg: number): Target {
-  return { ...target, weightKg: nearestMultiple(target.weightKg, jumpKg) };
+export function inCurrentUnit(target: Target, setIn: WeightUnit | undefined, input: Pick<NextTargetInput, "unit" | "jumpKg">): Target {
+  if ((setIn ?? "kg") === input.unit) return target;
+  return { ...target, weightKg: nearestMultiple(target.weightKg, input.jumpKg) };
 }
 
-/** Every Target leaves on the Jump's grid: a Hold, a Stay, an accepted Target and a step alike. A bodyweight 0 stays 0. */
 export function nextTarget(given: NextTargetInput): TargetResult {
-  const result = unsnappedTarget(given);
-  return result.target ? { ...result, target: onGrid(result.target, given.jumpKg) } : result;
-}
-
-function unsnappedTarget(given: NextTargetInput): TargetResult {
   const input = given.loadType === "bodyweight" ? { ...given, history: withoutAddedWeight(given.history) } : given;
   const { rule, jumpKg } = input;
   const regular = input.history.filter((s) => !s.isDeload);
@@ -117,15 +114,19 @@ function regularTarget(input: NextTargetInput, regular: HistorySession[]): Targe
   const { rule, planned, jumpKg } = input;
   const latest = regular[0];
   if (!latest.target) {
-    return { target: baselineTarget(latest, planned), proposal: null, reason: "baseline" };
+    const baseline = baselineTarget(latest, planned);
+    return { target: baseline && inCurrentUnit(baseline, latest.targetUnit, input), proposal: null, reason: "baseline" };
   }
-  const base = latest.target;
+  // A Target set in the other unit snaps first, so a step goes one Jump above what Stay would show.
+  const base = inCurrentUnit(latest.target, latest.targetUnit, input);
   const earned = streakLength(regular, planned) >= rule.sessionsToEarn;
   const stepped = stepUp(base, input);
 
   if (earned) {
-    // An accepted step keeps the Target the lifter saw, not a step recomputed with today's Jump. nextTarget still snaps it to today's grid.
-    if (latest.progressAccepted && latest.acceptedTarget) return { target: latest.acceptedTarget, proposal: null, reason: "progressed" };
+    // An accepted step keeps the Target the lifter saw, even if the Jump changed since (it snaps only after a unit switch).
+    if (latest.progressAccepted && latest.acceptedTarget) {
+      return { target: inCurrentUnit(latest.acceptedTarget, latest.targetUnit, input), proposal: null, reason: "progressed" };
+    }
     if (!stepped) return { target: base, proposal: null, reason: "at-top-of-range" };
     if (latest.progressAccepted) return { target: stepped, proposal: null, reason: "progressed" };
     return { target: base, proposal: stepped, reason: "earned" };

@@ -86,6 +86,7 @@ export function loadNextPreview(routineId: number, unit: Unit, jumps: Jumps): Ne
       loadType: ex.loadType,
       history: toHistory(pastExercises(db, routineId, ex.exerciseId), ex.sets),
       jumpKg: jumpKgFor(ex.equipment, jumps),
+      unit,
     }).target,
   }));
   return toNextPreview(first, unit, planned.length);

@@ -35,6 +35,7 @@ export function pastExercises(q: Queryable, routineId: number, exerciseId: numbe
       date: workouts.date,
       targetWeightKg: workoutExercises.targetWeightKg,
       targetReps: workoutExercises.targetReps,
+      targetUnit: workoutExercises.targetUnit,
       progressAccepted: workoutExercises.progressAccepted,
       acceptedTargetWeightKg: workoutExercises.acceptedTargetWeightKg,
       acceptedTargetReps: workoutExercises.acceptedTargetReps,
@@ -68,10 +69,11 @@ function deleteWorkoutExercise(q: Queryable, workoutExerciseId: number): void {
 /**
  * Starts a workout from a routine as it is now, in one synchronous transaction. Each exercise's
  * Target comes from the engine, reading only finished workouts of this routine (ADR 0002) and
- * stepping by the Jump of the exercise's equipment. Returns the new workout id, or null when the
- * routine has no exercises.
+ * stepping by the Jump of the exercise's equipment in the lifter's current `unit`. Each Target records
+ * that unit, so a Target set in the other unit snaps to the Jump's grid next time. Returns the new
+ * workout id, or null when the routine has no exercises.
  */
-export function startWorkout(routineId: number, jumps: Jumps, now: Date = new Date()): number | null {
+export function startWorkout(routineId: number, jumps: Jumps, unit: Unit, now: Date = new Date()): number | null {
   return db.transaction((tx) => {
     const planned = tx
       .select({
@@ -104,6 +106,7 @@ export function startWorkout(routineId: number, jumps: Jumps, now: Date = new Da
         loadType: ex.loadType,
         history: toHistory(rows, ex.sets),
         jumpKg: jumpKgFor(ex.equipment, jumps),
+        unit,
       }).target;
 
       const workoutExercise = tx
@@ -114,6 +117,7 @@ export function startWorkout(routineId: number, jumps: Jumps, now: Date = new Da
           position,
           targetWeightKg: target?.weightKg ?? null,
           targetReps: target?.reps ?? null,
+          targetUnit: unit,
         })
         .returning({ id: workoutExercises.id })
         .get();
@@ -287,9 +291,9 @@ export function finishWorkout(id: number, now: Date = new Date()): void {
 }
 
 /** Discards the workout in progress, then starts the routine. Returns the new workout id (null when the routine is empty). */
-export function discardAndStartWorkout(inProgressId: number, routineId: number, jumps: Jumps): number | null {
+export function discardAndStartWorkout(inProgressId: number, routineId: number, jumps: Jumps, unit: Unit): number | null {
   discardWorkout(inProgressId);
-  return startWorkout(routineId, jumps);
+  return startWorkout(routineId, jumps, unit);
 }
 
 /** Applies a typed or stepped edit to one row, following the rule, and writes every row it changed. */

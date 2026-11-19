@@ -57,6 +57,13 @@
       "when": 1795080961709,
       "tag": "0007_nostalgic_eternity",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1795083074879,
+      "tag": "0008_loose_cloak",
+      "breakpoints": true
     }
   ]
 }

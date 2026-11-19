@@ -39,7 +39,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 ### Progressive overload
 - **Free**: one simple rule, chosen from the exercise's load type. Weighted exercises add the Jump, and bodyweight exercises add reps. Progression is Earned after 3 clean workouts in a row, then the app asks the lifter whether to progress.
 - **Pro**: your own rule per exercise. Choose the step (add weight, add reps, or both), the rep step, how many clean workouts in a row earn progression (1–5), what happens after misses ("if you miss twice in a row: keep the weight / drop 10%"), and deload weeks (off unless you turn them on). A live preview shows the result before you save, e.g. "hit 8 on every set and it becomes 65 kg".
-- Targets round to a multiple of your Jump: a step goes up to the next one, a drop or deload down, and any other Target to the nearest, so a Target set in kg stays loadable in lb (10 kg with a 5 lb Jump is 20 lb).
+- Targets round to a multiple of your Jump: a step goes up to the next one, and a drop or deload down. After you switch unit, a Target set in the other unit moves to the nearest multiple of your Jump so you can load it (10 kg with a 5 lb Jump is 20 lb), and Go up is one Jump above that. Changing a Jump never moves a Target you already have.
 
 ### Units (kg / lb)
 - A global preference in Settings, also switchable during a workout.

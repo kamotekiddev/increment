@@ -210,6 +210,17 @@ describe("buildSummary in lb", () => {
     expect(summary.cards[0].line).toBe("2 more at 132.28 lb × 10 to earn 137.79 lb × 10.");
     expect(summary.header.volumeKg).toBe(1800);
   });
+
+  it("offers one Jump above the snapped Target when the Target was set in kg: Stay 140 lb, Go up 145 lb", () => {
+    const LB = 0.45359237;
+    const t = { weightKg: 62.5, reps: 10 };
+    const history = ["2026-11-17", "2026-11-10", "2026-11-03"].map((d) => session(d, t, [10, 10, 10], { unit: "kg" }));
+    const summary = build([exercise(history, {}, { jumpKg: 5 * LB })], 45, "lb");
+    const inLb = (kg: number) => Number((kg / LB).toFixed(2));
+    expect(inLb(summary.cards[0].next!.weightKg)).toBe(140);
+    const offer = summary.offers[0];
+    expect([inLb(offer.current.weightKg), inLb(offer.stepped.weightKg)]).toEqual([140, 145]);
+  });
 });
 
 describe("buildSummary on a bodyweight exercise logged with added weight before the split", () => {
