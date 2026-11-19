@@ -1,6 +1,6 @@
 import library from "./exercises.json";
 
-const LOAD_TYPES = ["weighted", "bodyweight", "bodyweight_or_weighted"];
+const LOAD_TYPES = ["weighted", "bodyweight"];
 const EQUIPMENT = ["barbell", "dumbbell", "cable", "machine", "bodyweight", "ez bar", "kettlebell"];
 
 describe("library seed data", () => {
@@ -41,8 +41,20 @@ describe("library seed data", () => {
     }
   });
 
-  it("keeps the bodyweight-or-weighted set small and deliberate", () => {
-    const names = library.filter((e) => e.loadType === "bodyweight_or_weighted").map((e) => e.name);
-    expect(names).toEqual(expect.arrayContaining(["Pullups", "Chin-Up", "Dips - Triceps Version"]));
+  it("splits each exercise done with or without added weight into a bodyweight one and a weighted twin", () => {
+    const pairs = [
+      ["pullups", "weighted-pullups"],
+      ["chin-up", "weighted-chin-up"],
+      ["dips-triceps-version", "weighted-dips-triceps-version"],
+      ["bench-dips", "weighted-bench-dips"],
+      ["hyperextensions-with-no-hyperextension-bench", "weighted-hyperextensions-with-no-hyperextension-bench"],
+      ["glute-ham-raise", "weighted-glute-ham-raise"],
+    ];
+    const bySlug = new Map(library.map((e) => [e.slug, e]));
+    for (const [plain, weighted] of pairs) {
+      expect(bySlug.get(plain)).toMatchObject({ loadType: "bodyweight", equipment: "bodyweight" });
+      expect(bySlug.get(weighted)).toMatchObject({ loadType: "weighted", equipment: "bodyweight" });
+      expect(bySlug.get(weighted)?.name).toBe(`Weighted ${bySlug.get(plain)?.name}`);
+    }
   });
 });

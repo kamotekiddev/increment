@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
-import { nextTarget, type Target } from "@/engine";
+import { nextTarget, type LoadType, type Target } from "@/engine";
 import { jumpKgFor, type Jumps } from "@/settings/jumps";
 import type { Unit } from "@/units";
 
@@ -148,7 +148,7 @@ export interface LiveExercise {
   range: { repMin: number; repMax: number } | null;
   /** The Routine exercise's Rest length in seconds; the default when the routine exercise is gone. */
   restSeconds: number;
-  loadType: "weighted" | "bodyweight" | "bodyweight_or_weighted";
+  loadType: LoadType;
   rows: LiveSet[];
 }
 

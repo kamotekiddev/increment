@@ -14,7 +14,7 @@ export const exercises = sqliteTable("exercises", {
   equipment: text("equipment").notNull(),
   /** JSON array of how-to steps. */
   instructions: text("instructions", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
-  loadType: text("load_type", { enum: ["weighted", "bodyweight", "bodyweight_or_weighted"] }).notNull(),
+  loadType: text("load_type", { enum: ["weighted", "bodyweight"] }).notNull(),
   isCustom: integer("is_custom", { mode: "boolean" }).notNull().default(false),
 });
 

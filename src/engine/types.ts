@@ -1,6 +1,6 @@
 /** Overload engine types. Weights are kg. No I/O, no React, no database. */
 
-export type LoadType = "weighted" | "bodyweight" | "bodyweight_or_weighted";
+export type LoadType = "weighted" | "bodyweight";
 export type Step = "weight" | "reps" | "both";
 
 export type MissAction = { kind: "keep" } | { kind: "drop"; percent: number };

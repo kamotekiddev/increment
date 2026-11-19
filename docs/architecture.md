@@ -21,7 +21,7 @@
 | Tests | Jest (logic), Maestro (flows) |
 
 ## Data model (first draft)
-- **exercises**: id, slug, name, muscles, equipment, instructions, load_type (weighted, bodyweight, bodyweight_or_weighted), is_custom
+- **exercises**: id, slug, name, muscles, equipment, instructions, load_type (weighted, bodyweight), is_custom
 - **routines**: id, name, days (bitmask), position
 - **routine_exercises**: routine_id, exercise_id, position, sets, rep_min, rep_max, rest_s, rule (JSON)
 - **workouts**: id, routine_id (cascade: deleting a routine deletes its workouts, their exercises and sets, [ADR 0002](adr/0002-deleting-a-routine-deletes-its-workouts.md); workouts with no routine are never touched), started_at, finished_at, date, feeling, notes, in_progress, last_edited_at (last saved set change, for crash resume)
