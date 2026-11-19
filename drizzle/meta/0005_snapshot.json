@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "002ae93e-7a70-47e0-be95-e283570bb241",
+  "id": "b044dead-2dae-48a7-baee-8db888bfe95b",
   "prevId": "caf993f8-1d90-4a55-a895-974004d0f9a9",
   "tables": {
     "entitlements": {
@@ -455,41 +455,36 @@
           "name": "jump_barbell_kg",
           "type": "real",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 2.5
+          "notNull": false,
+          "autoincrement": false
         },
         "jump_dumbbell_kg": {
           "name": "jump_dumbbell_kg",
           "type": "real",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 2
+          "notNull": false,
+          "autoincrement": false
         },
         "jump_machine_kg": {
           "name": "jump_machine_kg",
           "type": "real",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 5
+          "notNull": false,
+          "autoincrement": false
         },
         "jump_cable_kg": {
           "name": "jump_cable_kg",
           "type": "real",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 2.5
+          "notNull": false,
+          "autoincrement": false
         },
         "jump_bodyweight_kg": {
           "name": "jump_bodyweight_kg",
           "type": "real",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 2.5
+          "notNull": false,
+          "autoincrement": false
         }
       },
       "indexes": {},

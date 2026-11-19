@@ -3,25 +3,25 @@ import { createStore } from "zustand/vanilla";
 import type { SelectInsertDb } from "@/db/client";
 
 import { readJumps, writeJump } from "./jumpSetting";
-import { DEFAULT_JUMPS_KG, type JumpKey, type Jumps } from "./jumps";
+import { UNTOUCHED_JUMPS, type JumpKey, type SavedJumps } from "./jumps";
 
 export interface JumpState {
-  /** Every Jump, in kg. */
-  jumps: Jumps;
+  /** The Jumps as saved: kg, or null while the lifter has not changed one. `effectiveJumps` turns them into kg. */
+  saved: SavedJumps;
   /** Reads the saved Jumps from the database. Call once the migrations have run. */
   load: () => void;
   /** Saves one Jump (kg) and updates every screen that reads the Jumps. */
   setJump: (key: JumpKey, kg: number) => void;
 }
 
-/** The Jumps as shared state, backed by the settings row. The defaults until `load` runs. */
+/** The Jumps as shared state, backed by the settings row. Untouched until `load` runs. */
 export function createJumpStore(db: SelectInsertDb) {
   return createStore<JumpState>((set, get) => ({
-    jumps: DEFAULT_JUMPS_KG,
-    load: () => set({ jumps: readJumps(db) }),
+    saved: UNTOUCHED_JUMPS,
+    load: () => set({ saved: readJumps(db) }),
     setJump: (key, kg) => {
       writeJump(db, key, kg);
-      set({ jumps: { ...get().jumps, [key]: kg } });
+      set({ saved: { ...get().saved, [key]: kg } });
     },
   }));
 }

@@ -1,8 +1,8 @@
 import { nextTarget } from "@/engine";
 import { input, session } from "@/engine/testing";
-import { formatWeight, toKg } from "@/units";
+import { formatWeight, formatWithUnit, toKg } from "@/units";
 
-import { DEFAULT_JUMPS_KG, jumpKeyFor, jumpKgFor } from "./jumps";
+import { DEFAULT_JUMPS_KG, effectiveJumps, JUMP_KEYS, jumpKeyFor, jumpKgFor, UNTOUCHED_JUMPS } from "./jumps";
 
 describe("jumpKeyFor", () => {
   it.each([
@@ -26,7 +26,9 @@ describe("jumpKgFor", () => {
   });
 
   it("has the defaults 2.5, 2, 5, 2.5 and 2.5 kg", () => {
-    expect(DEFAULT_JUMPS_KG).toEqual({ barbell: 2.5, dumbbell: 2, machine: 5, cable: 2.5, bodyweight: 2.5 });
+    const expected = { barbell: 2.5, dumbbell: 2, machine: 5, cable: 2.5, bodyweight: 2.5 };
+    expect(effectiveJumps(UNTOUCHED_JUMPS, "kg")).toEqual(expected);
+    expect(DEFAULT_JUMPS_KG).toEqual(expected);
   });
 });
 
@@ -49,7 +51,7 @@ describe("Targets step by the Jump of the equipment", () => {
     ["cable", 20, 22.5, 17.5],
     ["bodyweight", 10, 12.5, 7.5],
   ])("%s at %s kg steps up to %s kg and drops to %s kg", (equipment, current, up, dropped) => {
-    const jumpKg = jumpKgFor(equipment, DEFAULT_JUMPS_KG);
+    const jumpKg = jumpKgFor(equipment, effectiveJumps(UNTOUCHED_JUMPS, "kg"));
     expect(nextTarget(input(earned(current), { step: "weight" }, { jumpKg })).proposal).toEqual({ weightKg: up, reps: 8 });
     expect(nextTarget(input(missed(current), drop, { jumpKg })).target).toEqual({ weightKg: dropped, reps: 8 });
   });
@@ -59,4 +61,42 @@ describe("Targets step by the Jump of the equipment", () => {
     const r = nextTarget(input(earned(toKg(135, "lb")), { step: "weight" }, { jumpKg: jumpKgFor("barbell", jumps) }));
     expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("140");
   });
+
+  it("has the lb defaults 5, 5, 10, 5 and 5 lb", () => {
+    const jumps = effectiveJumps(UNTOUCHED_JUMPS, "lb");
+    expect(JUMP_KEYS.map((key) => formatWithUnit(jumps[key], "lb"))).toEqual(["5 lb", "5 lb", "10 lb", "5 lb", "5 lb"]);
+  });
+
+  it("a changed Jump keeps its saved kg in either unit", () => {
+    const saved = { ...UNTOUCHED_JUMPS, dumbbell: 1 };
+    expect(effectiveJumps(saved, "kg").dumbbell).toBe(1);
+    expect(effectiveJumps(saved, "lb").dumbbell).toBe(1);
+    expect(effectiveJumps(saved, "lb").barbell).toBe(toKg(5, "lb"));
+  });
 });
+
+describe("an untouched Jump uses the default of the lifter's unit", () => {
+  it("an untouched lb lifter's Barbell Jump is exactly 5 lb, and 135 lb steps to 140 lb", () => {
+    const jumps = effectiveJumps(UNTOUCHED_JUMPS, "lb");
+    expect(jumps.barbell).toBe(toKg(5, "lb"));
+    expect(formatWeight(jumps.barbell, "lb")).toBe("5");
+    const earned = [135, 135, 135].map((_, i) =>
+      session(`2026-01-${26 - 7 * i}`, { weightKg: toKg(135, "lb"), reps: 8 }, [8, 8, 8]),
+    );
+    const r = nextTarget(input(earned, { step: "weight" }, { jumpKg: jumpKgFor("barbell", jumps) }));
+    expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("140");
+  });
+
+  it("has the lb defaults 5, 5, 10, 5 and 5 lb", () => {
+    const jumps = effectiveJumps(UNTOUCHED_JUMPS, "lb");
+    expect(JUMP_KEYS.map((key) => formatWithUnit(jumps[key], "lb"))).toEqual(["5 lb", "5 lb", "10 lb", "5 lb", "5 lb"]);
+  });
+
+  it("a changed Jump keeps its saved kg in either unit", () => {
+    const saved = { ...UNTOUCHED_JUMPS, dumbbell: 1 };
+    expect(effectiveJumps(saved, "kg").dumbbell).toBe(1);
+    expect(effectiveJumps(saved, "lb").dumbbell).toBe(1);
+    expect(effectiveJumps(saved, "lb").barbell).toBe(toKg(5, "lb"));
+  });
+});
+

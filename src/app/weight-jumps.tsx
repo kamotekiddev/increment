@@ -55,7 +55,7 @@ export default function WeightJumpsScreen() {
         >
           <Ionicons name="information-circle-outline" size={17} color={colors.accent} style={{ marginTop: 1 }} />
           <Text tone="soft" style={{ flex: 1, fontSize: fontSize.small, lineHeight: 19 }}>
-            Switch to lb in Settings and the jumps switch too.
+            Switch to lb in Settings and the jumps you haven’t changed switch too (5 lb, 5 lb, 10 lb, 5 lb, 5 lb).
           </Text>
         </View>
       </ScrollView>

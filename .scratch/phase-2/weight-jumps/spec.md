@@ -28,7 +28,7 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 5. As a lifter, I want my choice saved at once and kept after closing the app.
 
 **Units**
-6. As a lifter in pounds, I want the rows shown in lb (5 lb, 5 lb, 10 lb, 5 lb, 5 lb by default) and my choice saved as kg like every other weight, so that switching unit never changes stored data.
+6. As a lifter in pounds, I want a Jump I never changed to be the lb default (5 lb, 5 lb, 10 lb, 5 lb, 5 lb exactly, not 2.5 kg shown as 5.51 lb), and a Jump I changed saved as kg like every other weight, so that every Target is loadable and switching unit never changes stored data.
 7. As a lifter in pounds, I want 135 lb to step to 140 lb after a 5 lb Jump, so that the Target is loadable.
 
 **Targets**
@@ -43,7 +43,7 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 
 ## Implementation Decisions
 
-- **Storage:** add the Jump columns to the `user_settings` row from feature 1 (one per equipment group, kg, defaults above). One Drizzle migration. Read through one hook, like `useUnit()`.
+- **Storage:** add the Jump columns to the `user_settings` row from feature 1 (one per equipment group, kg, nullable). One Drizzle migration. NULL means the lifter never changed that Jump: its effective Jump is the default in the lifter's current unit (kg 2.5 / 2 / 5 / 2.5 / 2.5, lb 5 / 5 / 10 / 5 / 5), converted to kg for the engine. The first − or + saves the value in kg; switching unit never writes a Jump. Read through one hook, like `useUnit()`, which returns the effective Jumps in kg.
 - **Equipment to Jump:** a pure function maps an exercise's equipment to a Jump key: barbell and ez bar to Barbell; dumbbell and kettlebell to Dumbbell; machine to Machine; cable to Cable; a weighted exercise tagged bodyweight to "Bodyweight, added weight". The engine still receives one `jumpKg`; the caller looks it up. `JUMP_KG` is removed.
 - **Rounding:** unchanged (data rule 4). A step up goes to the next multiple of the Jump strictly above the current weight; a drop or deload rounds down. The Jump is stored in kg, so a lb lifter's 5 lb is 2.268 kg, and display rounds to 0.01 (ADR 0001).
 - **Library split:** the six `bodyweight_or_weighted` exercises each become two exercises, one `bodyweight` and one `weighted` (equipment `bodyweight`, which maps to the added-weight Jump). Update `exercises.json` and the seed. Workouts already logged keep their exercise; the old exercise becomes the bodyweight one. The load type `bodyweight_or_weighted` is removed from the type, schema and engine.
@@ -54,7 +54,7 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 ## Testing Decisions
 
 - **Pure seams (Jest):** equipment to Jump key; the nextTarget step and rounding with each Jump in kg and in lb values (135 lb + 5 lb = 140 lb); the Jump display in both units; bounds of − and +.
-- **Database test:** save a Jump at 5 lb, switch the unit 10 times, read it back: identical at full precision.
+- **Database test:** save a Jump at 5 lb, switch the unit 10 times, read it back: identical at full precision, and the untouched Jumps still NULL.
 - **Seed test:** no exercise has load type `bodyweight_or_weighted`; each split pair exists.
 - **Search check:** `JUMP_KG` no longer appears in `src`.
 - **Owner check on a phone:** set Dumbbell to 1 kg and Barbell to 5 lb, finish a Clean streak, and see a loadable Target; do a Pull-up (no weight box) and a Weighted pull-up.

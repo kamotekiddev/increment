@@ -1,7 +1,7 @@
 import type { SelectInsertDb } from "@/db/client";
 import { userSettings } from "@/db/schema";
 
-import { DEFAULT_JUMPS_KG, type JumpKey, type Jumps } from "./jumps";
+import { UNTOUCHED_JUMPS, type JumpKey, type SavedJumps } from "./jumps";
 
 /** The one settings row (shared with the unit). */
 const ROW_ID = 1;
@@ -14,11 +14,11 @@ const COLUMN: Record<JumpKey, "jumpBarbellKg" | "jumpDumbbellKg" | "jumpMachineK
   bodyweight: "jumpBodyweightKg",
 };
 
-/** The saved Jumps in kg. Creates the settings row (defaults) the first time it is read. */
-export function readJumps(q: SelectInsertDb): Jumps {
+/** The saved Jumps in kg, null where the lifter never changed one. Creates the settings row the first time it is read. */
+export function readJumps(q: SelectInsertDb): SavedJumps {
   q.insert(userSettings).values({ id: ROW_ID }).onConflictDoNothing().run();
   const row = q.select().from(userSettings).get();
-  if (!row) return { ...DEFAULT_JUMPS_KG };
+  if (!row) return { ...UNTOUCHED_JUMPS };
   return {
     barbell: row.jumpBarbellKg,
     dumbbell: row.jumpDumbbellKg,
