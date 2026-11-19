@@ -10,7 +10,7 @@ export function bannerText(
   target: Target | null,
   range: { repMin: number; repMax: number } | null,
   unit: Unit,
-  loadType: LoadType = "weighted",
+  loadType: LoadType,
 ): string {
   const bodyweight = loadType === "bodyweight";
   if (target) return `Target: ${targetText(bodyweight ? { ...target, weightKg: 0 } : target, unit)}`;

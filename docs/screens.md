@@ -70,7 +70,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Screen | Notes |
 |---|---|
 | Settings | Interactive kg/lb |
-| Weight jumps | Smallest jump by equipment, and your gym's plates |
+| Weight jumps | Smallest jump for each equipment (Barbell, Dumbbell, Machine, Cable, Bodyweight added weight). No plates: "Plates at your gym" moves to Phase 3 |
 | Your data | Free state: backup locked → Paywall |
 | Backup ready | Share sheet for the backup file |
 | Automatic backups (Pro) | Frequency, location, files kept |

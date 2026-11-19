@@ -1,5 +1,6 @@
 import type { LoadType, Target } from "../engine";
 import { formatWithUnit, type Unit } from "../units";
+import { repsText } from "../workout/repsText";
 
 /** How many exercises the rest-day Next card lists. */
 export const PREVIEW_LIMIT = 3;
@@ -28,7 +29,7 @@ export interface NextPreview {
 /** The Target as the card writes it: weight and unit only, or the reps for a bodyweight exercise. */
 export function previewTargetText(loadType: LoadType, target: Target | null, unit: Unit): string {
   if (!target) return "";
-  if (target.weightKg === 0 || loadType === "bodyweight") return `${target.reps} ${target.reps === 1 ? "rep" : "reps"}`;
+  if (target.weightKg === 0 || loadType === "bodyweight") return repsText(target.reps);
   return formatWithUnit(target.weightKg, unit);
 }
 

@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
 import { nextTarget, type LoadType, type Target } from "@/engine";
-import { jumpKgFor, type Jumps } from "@/settings/jumps";
+import { jumpKgFor, type Jumps } from "@/settings";
 import type { Unit } from "@/units";
 
 import { toHistory, type PastExercise } from "./historyInputs";
 import { applyEdit, type SetEdit } from "./applyEdit";
 import { initialSetRows } from "./initialSetRows";
-import { setDone } from "./markDone";
+import { doneFields, setDone } from "./markDone";
 import { rowFromStored, weightToStore } from "./setStorage";
 import type { SetRow } from "./types";
 
@@ -227,14 +227,14 @@ export function useWorkout(id: number): [LiveWorkout | null | undefined, (w: Liv
  * Marks a set done or not done and writes it at once. A weighted set with a blank weight is not
  * marked (the write is skipped); a bodyweight set is saved at weight 0. Returns the updated rows of that exercise.
  */
-export function markSetDone(rows: LiveSet[], index: number, done: boolean, unit: Unit, loadType: LoadType = "weighted"): LiveSet[] {
+export function markSetDone(rows: LiveSet[], index: number, done: boolean, unit: Unit, loadType: LoadType): LiveSet[] {
   const next = setDone(rows, index, done, loadType) as LiveSet[];
   if (next === rows) return rows;
-  const bodyweight = done && loadType === "bodyweight" ? { weightKg: 0 } : {};
+  const changed = doneFields(done, loadType);
   db.transaction((tx) => {
     // `entered_unit` is the unit on screen when the set is checked. Unchecking leaves it as it was.
     tx.update(sets)
-      .set(done ? { done, enteredUnit: unit, ...bodyweight } : { done })
+      .set(done ? { ...changed, enteredUnit: unit } : changed)
       .where(eq(sets.id, rows[index].setId))
       .run();
     touchWorkout(tx, rows[index].setId);

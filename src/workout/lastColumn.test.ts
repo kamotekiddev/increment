@@ -34,11 +34,11 @@ describe("lastColumn", () => {
 
 describe("lastSetText", () => {
   it("writes weight in the unit on screen and reps", () => {
-    expect(lastSetText({ weightKg: 60, reps: 8 }, "kg")).toBe("60 × 8");
-    expect(lastSetText({ weightKg: 61.2349, reps: 5 }, "lb")).toBe("135 × 5");
+    expect(lastSetText({ weightKg: 60, reps: 8 }, "kg", "weighted")).toBe("60 × 8");
+    expect(lastSetText({ weightKg: 61.2349, reps: 5 }, "lb", "weighted")).toBe("135 × 5");
   });
   it("writes a dash when there is no past set", () => {
-    expect(lastSetText(null, "kg")).toBe("–");
+    expect(lastSetText(null, "kg", "weighted")).toBe("–");
   });
   it("writes reps only on a bodyweight exercise, hiding weight logged before the split", () => {
     expect(lastSetText({ weightKg: 0, reps: 8 }, "kg", "bodyweight")).toBe("8 reps");

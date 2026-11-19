@@ -61,9 +61,9 @@ describe("unit setting", () => {
 
     // Set 1: 135 typed in lb, then checked in lb.
     rows = editSet(rows, 0, { weightKg: weightFromTyped("135", "lb") }, "lb");
-    rows = markSetDone(rows, 0, true, "lb");
+    rows = markSetDone(rows, 0, true, "lb", "weighted");
     // Set 2: checked in kg, then its weight retyped as 225 lb while checked.
-    rows = markSetDone(rows, 1, true, "kg");
+    rows = markSetDone(rows, 1, true, "kg", "weighted");
     editSet(rows, 1, { weightKg: weightFromTyped("225", "lb") }, "lb");
 
     const read = () =>

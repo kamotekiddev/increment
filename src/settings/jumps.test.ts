@@ -55,24 +55,6 @@ describe("Targets step by the Jump of the equipment", () => {
     expect(nextTarget(input(earned(current), { step: "weight" }, { jumpKg })).proposal).toEqual({ weightKg: up, reps: 8 });
     expect(nextTarget(input(missed(current), drop, { jumpKg })).target).toEqual({ weightKg: dropped, reps: 8 });
   });
-
-  it("135 lb with a 5 lb Jump steps to 140 lb", () => {
-    const jumps = { ...DEFAULT_JUMPS_KG, barbell: toKg(5, "lb") };
-    const r = nextTarget(input(earned(toKg(135, "lb")), { step: "weight" }, { jumpKg: jumpKgFor("barbell", jumps) }));
-    expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("140");
-  });
-
-  it("has the lb defaults 5, 5, 10, 5 and 5 lb", () => {
-    const jumps = effectiveJumps(UNTOUCHED_JUMPS, "lb");
-    expect(JUMP_KEYS.map((key) => formatWithUnit(jumps[key], "lb"))).toEqual(["5 lb", "5 lb", "10 lb", "5 lb", "5 lb"]);
-  });
-
-  it("a changed Jump keeps its saved kg in either unit", () => {
-    const saved = { ...UNTOUCHED_JUMPS, dumbbell: 1 };
-    expect(effectiveJumps(saved, "kg").dumbbell).toBe(1);
-    expect(effectiveJumps(saved, "lb").dumbbell).toBe(1);
-    expect(effectiveJumps(saved, "lb").barbell).toBe(toKg(5, "lb"));
-  });
 });
 
 describe("an untouched Jump uses the default of the lifter's unit", () => {

@@ -1,16 +1,15 @@
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { fontFamily, fontSize, opacity, radius, size, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, letterSpacing, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
 import { formatWithUnit, type Unit } from "@/units";
 
 import { EquipmentIcon } from "./EquipmentIcon";
 import { canStepJump, stepJump, type JumpDirection } from "./jumpStep";
 import type { JumpKey } from "./jumps";
 
-/** The − / + buttons are drawn at 36 pt; hitSlop takes the touch target to 44 pt. */
-const STEPPER = 36;
-const STEPPER_SLOP = (44 - STEPPER) / 2;
+/** The − / + buttons are drawn at `size.stepper`; hitSlop takes the touch target to `minTouch`. */
+const STEPPER_SLOP = (minTouch - size.stepper) / 2;
 
 const SIGNS: Record<JumpDirection, string> = { down: "−", up: "+" };
 const WORDS: Record<JumpDirection, string> = { down: "Smaller", up: "Bigger" };
@@ -45,8 +44,8 @@ export function JumpRow({
         hitSlop={STEPPER_SLOP}
         onPress={() => onChange(stepJump(kg, unit, direction))}
         style={({ pressed }) => ({
-          width: STEPPER,
-          height: STEPPER,
+          width: size.stepper,
+          height: size.stepper,
           borderRadius: radius.pill,
           backgroundColor: colors.sunk,
           alignItems: "center",
@@ -86,7 +85,7 @@ export function JumpRow({
       <Text
         variant="label"
         accessibilityLabel={`${name} jump ${formatWithUnit(kg, unit)}`}
-        style={{ minWidth: 62, textAlign: "center", fontSize: fontSize.body, letterSpacing: -0.3 }}
+        style={{ minWidth: size.jumpValue, textAlign: "center", fontSize: fontSize.body, letterSpacing: letterSpacing.value }}
       >
         {formatWithUnit(kg, unit)}
       </Text>

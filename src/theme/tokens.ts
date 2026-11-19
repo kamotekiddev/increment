@@ -55,8 +55,28 @@ export const fontSize = {
   numeral: 40,
 } as const;
 
-/** Fixed heights and widths of the routine screens' controls and rows, in points. */
-export const size = { round: 48, control: 56, row: 66, pickerRow: 62, day: 46, tile: 40, icon: 20, check: 16, dot: 6, heroTile: 64, heroIcon: 32, bannerCircle: 44, smallTile: 32 } as const;
+/** Fixed heights and widths of controls and rows, in points. */
+export const size = {
+  round: 48,
+  control: 56,
+  row: 66,
+  pickerRow: 62,
+  day: 46,
+  tile: 40,
+  icon: 20,
+  check: 16,
+  dot: 6,
+  heroTile: 64,
+  heroIcon: 32,
+  bannerCircle: 44,
+  smallTile: 32,
+  /** A Settings list row (Smallest weight jump). */
+  settingsRow: 54,
+  /** The round − / + of a Weight jumps row; hitSlop takes its touch target to `minTouch`. */
+  stepper: 36,
+  /** The least width of a Jump value between − and +, so the row does not shift as the value changes. */
+  jumpValue: 62,
+} as const;
 
 /** Border widths. */
 export const borderWidth = { outline: 2 } as const;
@@ -92,7 +112,20 @@ export const minTouch = 44;
 export const opacity = { pressed: 0.85, disabled: 0.4, onAccentSoft: 0.85 } as const;
 
 /** Line heights for text that sets its own size. */
-export const lineHeight = { title: 24, screen: 38 } as const;
+export const lineHeight = {
+  /** A note or caption at `fontSize.small`. */
+  small: 19,
+  /** A paragraph at `fontSize.body`. */
+  body: 21,
+  title: 24,
+  screen: 38,
+} as const;
+
+/** Letter spacing for text that sets its own tracking. */
+export const letterSpacing = {
+  /** A weight shown as a value (a Jump between − and +): numbers use tight tracking. */
+  value: -0.3,
+} as const;
 
 /** Shared text styles for headings that set their own size, line height and tracking. */
 export const textStyle = {

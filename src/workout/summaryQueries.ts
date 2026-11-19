@@ -5,7 +5,7 @@ import { db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { buildSummary, type OfferItem, type Summary } from "./summary";
 import { toSummaryInput, type SavedExercise } from "./summaryInput";
-import type { Jumps } from "../settings/jumps";
+import type { Jumps } from "@/settings";
 import type { Unit } from "../units";
 import { pastExercises } from "./workoutQueries";
 

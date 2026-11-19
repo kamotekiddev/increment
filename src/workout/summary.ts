@@ -101,7 +101,7 @@ function streakLength(history: HistorySession[], planned: Planned): number {
 }
 
 /** A bodyweight exercise reads weight logged before the split as 0, as the engine does, so the Streak matches it. */
-const asLogged = (ex: SummaryExercise): SummaryExercise =>
+const withoutPreSplitWeight = (ex: SummaryExercise): SummaryExercise =>
   ex.loadType === "bodyweight" ? { ...ex, history: withoutAddedWeight(ex.history) } : ex;
 
 function buildCard(ex: SummaryExercise, unit: Unit): { card: SummaryCard; offer: OfferItem | null } {
@@ -139,7 +139,7 @@ export function buildSummary({ startedAt, finishedAt, exercises, unit }: Summary
   const worked = exercises.filter((ex) => doneWorking(ex.sets).length > 0);
   const all = worked.flatMap((ex) => doneWorking(ex.sets));
   const volumeKg = all.reduce((sum, s) => sum + s.weightKg * s.reps, 0);
-  const built = worked.map((ex) => buildCard(asLogged(ex), unit));
+  const built = worked.map((ex) => buildCard(withoutPreSplitWeight(ex), unit));
   return {
     header: {
       durationMinutes: Math.max(0, Math.floor((finishedAt - startedAt) / 60_000)),

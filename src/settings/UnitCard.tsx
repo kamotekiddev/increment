@@ -3,15 +3,12 @@ import { router } from "expo-router";
 import { Pressable, View } from "react-native";
 
 import { Card, Text } from "@/components";
-import { fontFamily, fontSize, opacity, radius, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, opacity, radius, size, spacing, useColors } from "@/theme";
 import { formatWithUnit } from "@/units";
 
 import { UnitSegmented } from "./UnitSegmented";
 import { useJumps } from "./useJumps";
 import { useUnit } from "./useUnit";
-
-/** Height of a Settings list row. */
-const ROW_HEIGHT = 54;
 
 /**
  * The Units card of Settings: a Kilograms / Pounds control, a note, and the "Smallest weight jump" row
@@ -40,7 +37,7 @@ export function UnitCard() {
           accessibilityLabel={`Smallest weight jump, ${barbell}`}
           onPress={() => router.push("/weight-jumps")}
           style={({ pressed }) => ({
-            height: ROW_HEIGHT,
+            height: size.settingsRow,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",

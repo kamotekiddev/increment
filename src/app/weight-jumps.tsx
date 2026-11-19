@@ -4,9 +4,8 @@ import { ScrollView, View } from "react-native";
 
 import { Card, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
-import { JUMP_KEYS, useJumps, useUnit, type JumpKey } from "@/settings";
-import { JumpRow } from "@/settings/JumpRow";
-import { fontSize, radius, spacing, useColors } from "@/theme";
+import { JUMP_KEYS, JumpRow, untouchedJumpsNote, useJumps, useUnit, type JumpKey } from "@/settings";
+import { fontSize, lineHeight, radius, spacing, useColors } from "@/theme";
 
 const ROWS: Record<JumpKey, { name: string; example: string }> = {
   barbell: { name: "Barbell", example: "Bench press, squat" },
@@ -25,7 +24,7 @@ export default function WeightJumpsScreen() {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScreenHeader left={<RoundButton icon="chevron-back" label="Back" onPress={() => router.back()} />} title="Weight jumps" />
       <ScrollView contentContainerStyle={{ padding: spacing.xl, paddingTop: spacing.md, gap: spacing.md + 2 }}>
-        <Text tone="muted" style={{ fontSize: fontSize.body, lineHeight: 21, paddingHorizontal: spacing.xs }}>
+        <Text tone="muted" style={{ fontSize: fontSize.body, lineHeight: lineHeight.body, paddingHorizontal: spacing.xs }}>
           How much Increment adds when you’re ready to go up. Each exercise uses its equipment’s jump.
         </Text>
         <Card style={{ borderRadius: radius.card, paddingVertical: 0, paddingLeft: spacing.md + 2, paddingRight: spacing.md }}>
@@ -54,8 +53,8 @@ export default function WeightJumpsScreen() {
           }}
         >
           <Ionicons name="information-circle-outline" size={17} color={colors.accent} style={{ marginTop: 1 }} />
-          <Text tone="soft" style={{ flex: 1, fontSize: fontSize.small, lineHeight: 19 }}>
-            Switch to lb in Settings and the jumps you haven’t changed switch too (5 lb, 5 lb, 10 lb, 5 lb, 5 lb).
+          <Text tone="soft" style={{ flex: 1, fontSize: fontSize.small, lineHeight: lineHeight.small }}>
+            {untouchedJumpsNote(unit)}
           </Text>
         </View>
       </ScrollView>

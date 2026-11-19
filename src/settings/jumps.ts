@@ -24,14 +24,7 @@ export const DEFAULT_JUMPS: Record<Unit, Record<JumpKey, number>> = {
 
 /** The Jumps the engine uses, in kg: the saved Jump, or the default of the lifter's current unit while untouched. */
 export function effectiveJumps(saved: SavedJumps, unit: Unit): Jumps {
-  const jump = (key: JumpKey) => saved[key] ?? toKg(DEFAULT_JUMPS[unit][key], unit);
-  return {
-    barbell: jump("barbell"),
-    dumbbell: jump("dumbbell"),
-    machine: jump("machine"),
-    cable: jump("cable"),
-    bodyweight: jump("bodyweight"),
-  };
+  return Object.fromEntries(JUMP_KEYS.map((key) => [key, saved[key] ?? toKg(DEFAULT_JUMPS[unit][key], unit)])) as Jumps;
 }
 
 /** A kg lifter's Jumps before they change any. */

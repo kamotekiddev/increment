@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { defaultRule } from "@/engine";
-import { DEFAULT_JUMPS_KG } from "@/settings/jumps";
+import { DEFAULT_JUMPS_KG } from "@/settings";
 
 import { loadWorkout, markSetDone, startWorkout } from "./workoutQueries";
 

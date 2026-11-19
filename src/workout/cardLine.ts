@@ -1,5 +1,6 @@
 import type { Outcome, Reason, Target } from "../engine";
 import { formatWithUnit, type Unit } from "../units";
+import { repsText } from "./repsText";
 
 export interface CardLineInput {
   /** How this workout went. */
@@ -15,8 +16,6 @@ export interface CardLineInput {
   /** The unit the lifter reads weights in. */
   unit: Unit;
 }
-
-const repsText = (reps: number) => `${reps} ${reps === 1 ? "rep" : "reps"}`;
 
 /** A Target as the summary writes it: "62.5 kg × 10", or "9 reps" for a bodyweight Target (weight 0). */
 export function targetText(target: Target, unit: Unit): string {

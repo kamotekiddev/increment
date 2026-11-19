@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { defaultRule } from "@/engine";
-import { DEFAULT_JUMPS_KG } from "@/settings/jumps";
+import { DEFAULT_JUMPS_KG } from "@/settings";
 
 import { startWorkout } from "./workoutQueries";
 
@@ -49,5 +49,11 @@ describe("startWorkout", () => {
     const jumps = { ...DEFAULT_JUMPS_KG, dumbbell: 1 };
     expect(startedTarget(startWorkout(earnedRoutine("dumbbell"), jumps))).toEqual({ weightKg: 9, reps: 8 });
     expect(startedTarget(startWorkout(earnedRoutine("machine"), jumps))).toEqual({ weightKg: 10, reps: 8 });
+  });
+
+  it("steps a weighted twin (weighted, equipment bodyweight) by the Bodyweight added weight Jump", () => {
+    // 1 kg differs from every other Jump, so a twin that fell back to the Barbell Jump would step to 10 kg.
+    const jumps = { ...DEFAULT_JUMPS_KG, bodyweight: 1 };
+    expect(startedTarget(startWorkout(earnedRoutine("bodyweight"), jumps))).toEqual({ weightKg: 9, reps: 8 });
   });
 });
