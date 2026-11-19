@@ -13,6 +13,8 @@ jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/tes
 const db: Db = jest.requireMock("@/db/client").db;
 
 const fiveKgBarbell = { ...DEFAULT_JUMPS_KG, barbell: 5 };
+// 62.5 kg is on a 1.25 kg grid, so it is kept; a recompute would give 61.25 kg.
+const smallBarbell = { ...DEFAULT_JUMPS_KG, barbell: 1.25 };
 
 /** A barbell routine with three finished Clean workouts at 60 kg × 8. Returns the routine and the newest workout. */
 function earnedBarbellRoutine(newest: { progressAccepted?: boolean } = {}): { routineId: number; workoutId: number } {
@@ -64,16 +66,22 @@ function goUp(workoutId: number) {
 }
 
 describe("an accepted Offer keeps the Target it showed", () => {
-  it("starts the next workout at the accepted 62.5 kg after the Barbell Jump changes to 5 kg", () => {
+  it("starts the next workout at the accepted 62.5 kg after the Barbell Jump changes to 1.25 kg", () => {
     const { routineId, workoutId } = earnedBarbellRoutine();
     goUp(workoutId);
-    expect(startedTarget(startWorkout(routineId, fiveKgBarbell))).toEqual({ weightKg: 62.5, reps: 8 });
+    expect(startedTarget(startWorkout(routineId, smallBarbell))).toEqual({ weightKg: 62.5, reps: 8 });
   });
 
   it("shows the accepted 62.5 kg as the summary's next Target after the Jump changes", () => {
     const { workoutId } = earnedBarbellRoutine();
     goUp(workoutId);
-    expect(loadSummary(workoutId, "kg", fiveKgBarbell)?.summary.cards[0].next).toEqual({ weightKg: 62.5, reps: 8 });
+    expect(loadSummary(workoutId, "kg", smallBarbell)?.summary.cards[0].next).toEqual({ weightKg: 62.5, reps: 8 });
+  });
+
+  it("snaps an accepted 62.5 kg off a 5 kg grid to 65 kg, the nearest multiple (a tie rounds up)", () => {
+    const { routineId, workoutId } = earnedBarbellRoutine();
+    goUp(workoutId);
+    expect(startedTarget(startWorkout(routineId, fiveKgBarbell))).toEqual({ weightKg: 65, reps: 8 });
   });
 
   it("recomputes with the current Jump for an accepted row saved before the Target was stored", () => {

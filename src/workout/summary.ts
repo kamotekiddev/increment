@@ -1,4 +1,4 @@
-import { classify, nextTarget, stepUp, withoutAddedWeight } from "../engine";
+import { classify, nextTarget, onGrid, stepUp, withoutAddedWeight } from "../engine";
 import type { HistorySession, LoadType, LoggedSet, NextTargetInput, OverloadRule, Outcome, Planned, Target } from "../engine";
 import type { Unit } from "../units";
 import { cardLine } from "./cardLine";
@@ -118,7 +118,7 @@ function buildCard(ex: SummaryExercise, unit: Unit): { card: SummaryCard; offer:
     else if (result.reason === "progressed" && result.target) offer = { target: result.target, accepted: true };
     else if (current.progressAccepted && current.target) {
       // Accepted, but the engine's result has no proposal now (e.g. a Deload is due). Keep the Offer so Accept can flip back to Decline.
-      const target = current.acceptedTarget ?? stepUp(current.target, input);
+      const target = current.acceptedTarget ? onGrid(current.acceptedTarget, ex.jumpKg) : stepUp(current.target, input);
       if (target) offer = { target, accepted: true };
     }
   }

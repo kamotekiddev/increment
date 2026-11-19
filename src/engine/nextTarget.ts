@@ -1,5 +1,5 @@
 import { classify } from "./outcome";
-import { floorToMultiple, nextMultipleAbove, sameWeight } from "./rounding";
+import { floorToMultiple, nearestMultiple, nextMultipleAbove, sameWeight } from "./rounding";
 import { effectiveStep } from "./rule";
 import type { HistorySession, NextTargetInput, Planned, Target, TargetResult } from "./types";
 
@@ -80,7 +80,21 @@ function deloadDue(history: HistorySession[], everyWeeks: number): boolean {
   return weeks.size >= everyWeeks;
 }
 
+/**
+ * A Target's weight snapped to the nearest multiple of the Jump (ties round up), so it can be loaded
+ * after the Jump or the unit changed: 10 kg is 22.05 lb, which a 5 lb grid shows as 20 lb.
+ */
+export function onGrid(target: Target, jumpKg: number): Target {
+  return { ...target, weightKg: nearestMultiple(target.weightKg, jumpKg) };
+}
+
+/** Every Target leaves on the Jump's grid: a Hold, a Stay, an accepted Target and a step alike. A bodyweight 0 stays 0. */
 export function nextTarget(given: NextTargetInput): TargetResult {
+  const result = unsnappedTarget(given);
+  return result.target ? { ...result, target: onGrid(result.target, given.jumpKg) } : result;
+}
+
+function unsnappedTarget(given: NextTargetInput): TargetResult {
   const input = given.loadType === "bodyweight" ? { ...given, history: withoutAddedWeight(given.history) } : given;
   const { rule, jumpKg } = input;
   const regular = input.history.filter((s) => !s.isDeload);
@@ -110,7 +124,7 @@ function regularTarget(input: NextTargetInput, regular: HistorySession[]): Targe
   const stepped = stepUp(base, input);
 
   if (earned) {
-    // An accepted step keeps the Target the lifter saw, even if the Jump changed since.
+    // An accepted step keeps the Target the lifter saw, not a step recomputed with today's Jump. nextTarget still snaps it to today's grid.
     if (latest.progressAccepted && latest.acceptedTarget) return { target: latest.acceptedTarget, proposal: null, reason: "progressed" };
     if (!stepped) return { target: base, proposal: null, reason: "at-top-of-range" };
     if (latest.progressAccepted) return { target: stepped, proposal: null, reason: "progressed" };

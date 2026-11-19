@@ -45,7 +45,7 @@ export interface HistorySession {
   target: Target | null;
   /** The lifter accepted the offered step after this workout. */
   progressAccepted: boolean;
-  /** The stepped-up Target the lifter accepted, as offered. Absent or null when not stored (Stay, or saved before it was kept); the step is then recomputed. */
+  /** The stepped-up Target the lifter accepted, as offered (the next Target snaps it to today's Jump grid). Absent or null when not stored (Stay, or saved before it was kept); the step is then recomputed. */
   acceptedTarget?: Target | null;
   isDeload: boolean;
   sets: LoggedSet[];

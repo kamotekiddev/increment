@@ -15,6 +15,16 @@ export function nextMultipleAbove(w: number, jump: number): number {
   return clean((Math.floor(w / jump + EPS) + 1) * jump);
 }
 
+/**
+ * The nearest multiple of `jump` to `w`; an exact tie rounds up. A weight already on the grid comes
+ * back unchanged (not re-derived), so a stored Target keeps comparing equal to itself.
+ */
+export function nearestMultiple(w: number, jump: number): number {
+  const q = w / jump;
+  if (Math.abs(q - Math.round(q)) < EPS) return w;
+  return clean(Math.floor(q + 0.5 + EPS) * jump);
+}
+
 /** The largest multiple of `jump` at or below `w`. Never negative. */
 export function floorToMultiple(w: number, jump: number): number {
   return clean(Math.max(0, Math.floor(w / jump + EPS) * jump));

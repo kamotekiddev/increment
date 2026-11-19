@@ -77,8 +77,14 @@ describe("nextTarget: earning progression (free rule, 3 clean in a row)", () => 
   });
   it("an accepted Target that was stored is used as is, not recomputed with today's Jump", () => {
     const accepted = { ...session("2026-01-26", T, [8, 8, 8], { accepted: true }), acceptedTarget: { weightKg: 62.5, reps: 8 } };
-    const r = nextTarget(input([accepted, clean("2026-01-19"), clean("2026-01-12")], {}, { jumpKg: 5 }));
+    // A 1.25 kg Jump would recompute 61.25 kg; 62.5 is on its grid, so it is kept.
+    const r = nextTarget(input([accepted, clean("2026-01-19"), clean("2026-01-12")], {}, { jumpKg: 1.25 }));
     expect(r).toEqual({ target: { weightKg: 62.5, reps: 8 }, proposal: null, reason: "progressed" });
+  });
+  it("an accepted Target off today's grid snaps to the nearest multiple, a tie rounding up", () => {
+    const accepted = { ...session("2026-01-26", T, [8, 8, 8], { accepted: true }), acceptedTarget: { weightKg: 62.5, reps: 8 } };
+    const r = nextTarget(input([accepted, clean("2026-01-19"), clean("2026-01-12")], {}, { jumpKg: 5 }));
+    expect(r).toEqual({ target: { weightKg: 65, reps: 8 }, proposal: null, reason: "progressed" });
   });
   it("an accepted step with no stored Target is recomputed with today's Jump", () => {
     const accepted = session("2026-01-26", T, [8, 8, 8], { accepted: true });
@@ -162,6 +168,58 @@ describe("nextTarget: steps", () => {
     const w = 135 * 0.45359237;
     const r = nextTarget(input(earned({ weightKg: w, reps: 8 }), { step: "weight" }, { jumpKg }));
     expect(r.proposal!.weightKg).toBeCloseTo(w + jumpKg, 6);
+  });
+});
+
+describe("nextTarget: a Target off the Jump's grid snaps to the nearest multiple", () => {
+  const LB = 0.45359237;
+  const lb = (n: number) => n * LB;
+  const inLb = (kg: number) => Number((kg / LB).toFixed(2));
+  const onTrack = (weightKg: number) => [session("2026-01-12", { weightKg, reps: 8 }, [8, 8, 8])];
+
+  it("10 kg (22.05 lb) with a 5 lb Jump shows 20 lb", () => {
+    const r = nextTarget(input(onTrack(10), {}, { jumpKg: lb(5) }));
+    expect(r.reason).toBe("on-track");
+    expect(inLb(r.target!.weightKg)).toBe(20);
+  });
+  it("62.5 kg (137.79 lb) with a 5 lb Jump shows 140 lb", () => {
+    expect(inLb(nextTarget(input(onTrack(62.5), {}, { jumpKg: lb(5) })).target!.weightKg)).toBe(140);
+  });
+  it("50 kg (110.23 lb) with a 10 lb Jump shows 110 lb", () => {
+    expect(inLb(nextTarget(input(onTrack(50), {}, { jumpKg: lb(10) })).target!.weightKg)).toBe(110);
+  });
+  it("an exact tie rounds up: 22.5 lb with a 5 lb Jump shows 25 lb, 61.25 kg with a 2.5 kg Jump shows 62.5 kg", () => {
+    expect(inLb(nextTarget(input(onTrack(lb(22.5)), {}, { jumpKg: lb(5) })).target!.weightKg)).toBe(25);
+    expect(nextTarget(input(onTrack(61.25))).target).toEqual({ weightKg: 62.5, reps: 8 });
+  });
+  it("a Target already on the grid is left exactly as it is", () => {
+    expect(nextTarget(input(onTrack(60))).target!.weightKg).toBe(60);
+    expect(nextTarget(input(onTrack(lb(135)), {}, { jumpKg: lb(5) })).target!.weightKg).toBe(lb(135));
+  });
+  it("a Hold keeps the Target but snaps it: 10 kg with a 5 lb Jump is 20 lb", () => {
+    const hold = session("2026-01-12", { weightKg: 10, reps: 8 }, [8, 8, 8], { weightKg: lb(20) });
+    const r = nextTarget(input([hold], {}, { jumpKg: lb(5) }));
+    expect(r.reason).toBe("hold");
+    expect(inLb(r.target!.weightKg)).toBe(20);
+  });
+  it("a snapped Target is a changed Target, so the Streak restarts", () => {
+    const at = (date: string, weightKg: number) => session(date, { weightKg, reps: 8 }, [8, 8, 8]);
+    const r = nextTarget(input([at("2026-01-26", lb(20)), at("2026-01-19", 10), at("2026-01-12", 10)], {}, { jumpKg: lb(5) }));
+    expect(r.reason).toBe("on-track");
+    expect(r.proposal).toBeNull();
+    expect(inLb(r.target!.weightKg)).toBe(20);
+  });
+  it("a step up still goes to the next multiple strictly above the current weight", () => {
+    const earned = ["2026-01-26", "2026-01-19", "2026-01-12"].map((d) => session(d, { weightKg: 10, reps: 8 }, [8, 8, 8]));
+    expect(inLb(nextTarget(input(earned, {}, { jumpKg: lb(5) })).proposal!.weightKg)).toBe(25);
+  });
+  it("a baseline from an off-grid weight snaps too: 12.5 kg with a 2 kg Jump is 12 kg", () => {
+    const r = nextTarget(input([session("2026-01-05", null, [8, 8, 8], { weightKg: 12.5 })], {}, { jumpKg: 2 }));
+    expect(r).toEqual({ target: { weightKg: 12, reps: 8 }, proposal: null, reason: "baseline" });
+  });
+  it("a bodyweight Target stays at 0", () => {
+    const bw = session("2026-01-12", { weightKg: 0, reps: 8 }, [8, 8, 8]);
+    expect(nextTarget(input([bw], {}, { loadType: "bodyweight", jumpKg: lb(5) })).target).toEqual({ weightKg: 0, reps: 8 });
   });
 });
 

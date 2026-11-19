@@ -3,7 +3,10 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { defaultRule } from "@/engine";
-import { DEFAULT_JUMPS_KG } from "@/settings";
+import { DEFAULT_JUMPS_KG, effectiveJumps } from "@/settings";
+import { readJumps } from "@/settings/jumpSetting";
+import { readUnit, writeUnit } from "@/settings/unitSetting";
+import { formatWeight } from "@/units";
 
 import { startWorkout } from "./workoutQueries";
 
@@ -55,5 +58,59 @@ describe("startWorkout", () => {
     // 1 kg differs from every other Jump, so a twin that fell back to the Barbell Jump would step to 10 kg.
     const jumps = { ...DEFAULT_JUMPS_KG, bodyweight: 1 };
     expect(startedTarget(startWorkout(earnedRoutine("bodyweight"), jumps))).toEqual({ weightKg: 9, reps: 8 });
+  });
+});
+
+describe("startWorkout after a unit switch", () => {
+  /** A dumbbell routine with one finished Clean workout at a 10 kg Target, logged in kg. */
+  function tenKgDumbbellRoutine(): { routineId: number; workoutExerciseId: number } {
+    const exercise = db.insert(exercises).values({ name: "Hammer curl", equipment: "dumbbell", loadType: "weighted" }).returning().get();
+    const routine = db.insert(routines).values({ name: "Arms" }).returning().get();
+    db.insert(routineExercises)
+      .values({ routineId: routine.id, exerciseId: exercise.id, position: 0, sets: 3, repMin: 8, repMax: 10, restS: 90, rule: defaultRule("weighted") })
+      .run();
+    const workout = db
+      .insert(workouts)
+      .values({ routineId: routine.id, startedAt: 1, finishedAt: 2, date: "2026-11-17", inProgress: false })
+      .returning()
+      .get();
+    const we = db
+      .insert(workoutExercises)
+      .values({ workoutId: workout.id, exerciseId: exercise.id, position: 0, targetWeightKg: 10, targetReps: 8 })
+      .returning()
+      .get();
+    for (let idx = 0; idx < 3; idx++) {
+      db.insert(sets).values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx, weightKg: 10, enteredUnit: "kg", reps: 8, done: true }).run();
+    }
+    return { routineId: routine.id, workoutExerciseId: we.id };
+  }
+
+  const currentJumps = () => effectiveJumps(readJumps(db), readUnit(db));
+  const startedSets = (workoutId: number | null) =>
+    db
+      .select({ weightKg: sets.weightKg })
+      .from(sets)
+      .innerJoin(workoutExercises, eq(workoutExercises.id, sets.workoutExerciseId))
+      .where(eq(workoutExercises.workoutId, workoutId ?? -1))
+      .all();
+
+  it("snaps a 10 kg dumbbell Target (22.05 lb) to 20 lb on the 5 lb grid, and prefills 20 lb sets", () => {
+    const { routineId, workoutExerciseId } = tenKgDumbbellRoutine();
+    writeUnit(db, "kg");
+    const inKg = startWorkout(routineId, currentJumps());
+    expect(startedTarget(inKg)).toEqual({ weightKg: 10, reps: 8 });
+
+    writeUnit(db, "lb");
+    const inLb = startWorkout(routineId, currentJumps());
+    const target = startedTarget(inLb)!;
+    expect(formatWeight(target.weightKg!, "lb")).toBe("20");
+    expect(target.reps).toBe(8);
+    const prefilled = startedSets(inLb);
+    expect(prefilled).toHaveLength(3);
+    expect(prefilled.map((s) => formatWeight(s.weightKg, "lb"))).toEqual(["20", "20", "20"]);
+
+    // Stored sets never change.
+    const logged = db.select({ weightKg: sets.weightKg }).from(sets).where(eq(sets.workoutExerciseId, workoutExerciseId)).all();
+    expect(logged.map((s) => s.weightKg)).toEqual([10, 10, 10]);
   });
 });
