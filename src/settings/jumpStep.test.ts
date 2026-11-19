@@ -1,6 +1,6 @@
 import { formatWithUnit, toKg } from "@/units";
 
-import { canStepJump, JUMP_LADDER, stepJump } from "./jumpStep";
+import { canStepJump, stepJump } from "./jumpStep";
 
 /** Taps + (or −) `taps` times from `start` (in the unit) and returns each value shown, in the unit. */
 const walk = (start: number, unit: "kg" | "lb", direction: "up" | "down", taps: number) => {
@@ -13,94 +13,110 @@ const walk = (start: number, unit: "kg" | "lb", direction: "up" | "down", taps: 
   return shown;
 };
 
-describe("the Jump ladder", () => {
-  it.each(["kg", "lb"] as const)("+ climbs 0.5, 1, 1.25, 1.5, 2, 2.5, 3, then every 0.5, in %s", (unit) => {
-    expect(walk(0.5, unit, "up", 8)).toEqual(["1", "1.25", "1.5", "2", "2.5", "3", "3.5", "4"].map((v) => `${v} ${unit}`));
+describe("the kg ladder", () => {
+  it("+ climbs 0.5, 1, 1.25, 2, 2.5, 5, 10 kg", () => {
+    expect(walk(0.5, "kg", "up", 6)).toEqual(["1 kg", "1.25 kg", "2 kg", "2.5 kg", "5 kg", "10 kg"]);
   });
 
-  it.each(["kg", "lb"] as const)("− walks the same ladder down to 0.5 %s", (unit) => {
-    expect(walk(3, unit, "down", 6)).toEqual(["2.5", "2", "1.5", "1.25", "1", "0.5"].map((v) => `${v} ${unit}`));
-  });
-
-  it("is the same in kg and lb, ending at 25 kg and 50 lb", () => {
-    expect(JUMP_LADDER.kg.slice(0, 8)).toEqual([0.5, 1, 1.25, 1.5, 2, 2.5, 3, 3.5]);
-    expect(JUMP_LADDER.lb.slice(0, JUMP_LADDER.kg.length)).toEqual(JUMP_LADDER.kg);
-    expect(JUMP_LADDER.kg.at(-1)).toBe(25);
-    expect(JUMP_LADDER.lb.at(-1)).toBe(50);
+  it("− walks the same rungs back down to 0.5 kg", () => {
+    expect(walk(10, "kg", "down", 6)).toEqual(["5 kg", "2.5 kg", "2 kg", "1.25 kg", "1 kg", "0.5 kg"]);
   });
 });
 
-describe("stepJump", () => {
-  it("+ takes 2.5 kg to 3 kg", () => {
-    expect(stepJump(2.5, "kg", "up")).toBe(3);
+describe("the lb ladder", () => {
+  it("+ climbs 1.25, 2.5, 5, 10, 15, 20 lb", () => {
+    expect(walk(1.25, "lb", "up", 5)).toEqual(["2.5 lb", "5 lb", "10 lb", "15 lb", "20 lb"]);
   });
 
-  it("− takes the Dumbbell default of 2 kg to 1 kg in three taps, through 1.5 and 1.25", () => {
-    expect(walk(2, "kg", "down", 3)).toEqual(["1.5 kg", "1.25 kg", "1 kg"]);
+  it("− walks the same rungs back down to 1.25 lb", () => {
+    expect(walk(20, "lb", "down", 5)).toEqual(["15 lb", "10 lb", "5 lb", "2.5 lb", "1.25 lb"]);
   });
 
-  it("+ takes 1 lb to exactly 1.25 lb, saved in kg", () => {
-    expect(stepJump(toKg(1, "lb"), "lb", "up")).toBe(toKg(1.25, "lb"));
+  it("5 lb + gives exactly 10 lb, saved in kg", () => {
+    expect(stepJump(toKg(5, "lb"), "lb", "up")).toBe(toKg(10, "lb"));
   });
 
-  it("+ takes 5 lb to exactly 5.5 lb, saved in kg", () => {
-    expect(stepJump(toKg(5, "lb"), "lb", "up")).toBe(toKg(5.5, "lb"));
+  it("5 lb − gives exactly 2.5 lb, saved in kg", () => {
+    expect(stepJump(toKg(5, "lb"), "lb", "down")).toBe(toKg(2.5, "lb"));
   });
 
-  it("lands an off-ladder Jump on the ladder: 2.5 kg (5.51 lb) goes to 6 lb or 5.5 lb", () => {
-    expect(formatWithUnit(stepJump(2.5, "lb", "up"), "lb")).toBe("6 lb");
-    expect(formatWithUnit(stepJump(2.5, "lb", "down"), "lb")).toBe("5.5 lb");
+  it("never shows 5.5 or 6 lb", () => {
+    expect(walk(1.25, "lb", "up", 5)).not.toContain("5.5 lb");
+    expect(walk(1.25, "lb", "up", 5)).not.toContain("6 lb");
+  });
+});
+
+describe("an off-ladder Jump snaps to the next rung", () => {
+  it("5.51 lb goes up to 10 lb and down to 5 lb", () => {
+    const offLadder = toKg(5.51, "lb");
+    expect(formatWithUnit(stepJump(offLadder, "lb", "up"), "lb")).toBe("10 lb");
+    expect(stepJump(offLadder, "lb", "down")).toBe(toKg(5, "lb"));
   });
 
-  it("lands an off-ladder Jump between 1 and 1.25 on the nearest rung each way", () => {
-    expect(stepJump(1.1, "kg", "up")).toBe(1.25);
-    expect(stepJump(1.1, "kg", "down")).toBe(1);
+  it("1.5 kg goes up to 2 kg and down to 1.25 kg", () => {
+    expect(stepJump(1.5, "kg", "up")).toBe(2);
+    expect(stepJump(1.5, "kg", "down")).toBe(1.25);
   });
 
-  it.each(["kg", "lb"] as const)("ten + then ten − returns exactly to the start in %s", (unit) => {
-    const start = toKg(5, unit);
+  it("3 kg goes up to 5 kg and down to 2.5 kg", () => {
+    expect(stepJump(3, "kg", "up")).toBe(5);
+    expect(stepJump(3, "kg", "down")).toBe(2.5);
+  });
+});
+
+describe("stepJump round trip", () => {
+  it("six + from 0.5 kg then six − returns exactly to 0.5 kg", () => {
+    let kg = 0.5;
+    for (let i = 0; i < 6; i++) kg = stepJump(kg, "kg", "up");
+    expect(kg).toBe(10);
+    for (let i = 0; i < 6; i++) kg = stepJump(kg, "kg", "down");
+    expect(kg).toBe(0.5);
+  });
+
+  it("five + from 1.25 lb then five − returns exactly to 1.25 lb", () => {
+    const start = toKg(1.25, "lb");
     let kg = start;
-    for (let i = 0; i < 10; i++) kg = stepJump(kg, unit, "up");
-    expect(formatWithUnit(kg, unit)).toBe(`10 ${unit}`);
-    for (let i = 0; i < 10; i++) kg = stepJump(kg, unit, "down");
+    for (let i = 0; i < 5; i++) kg = stepJump(kg, "lb", "up");
+    expect(formatWithUnit(kg, "lb")).toBe("20 lb");
+    for (let i = 0; i < 5; i++) kg = stepJump(kg, "lb", "down");
     expect(kg).toBe(start);
   });
 });
 
-describe("Jump display", () => {
-  it("shows a Jump in the lifter's unit", () => {
-    expect(formatWithUnit(2.5, "kg")).toBe("2.5 kg");
-    expect(formatWithUnit(toKg(5, "lb"), "lb")).toBe("5 lb");
-    expect(formatWithUnit(toKg(5, "lb"), "kg")).toBe("2.27 kg");
-  });
-});
-
 describe("bounds of − and +", () => {
-  it.each(["kg", "lb"] as const)("− stops at 0.5 %s and never reaches 0", (unit) => {
-    const min = toKg(0.5, unit);
-    expect(canStepJump(toKg(1, unit), unit, "down")).toBe(true);
-    expect(canStepJump(min, unit, "down")).toBe(false);
-    expect(stepJump(min, unit, "down")).toBe(min);
+  it.each([
+    ["kg", 0.5, 1],
+    ["lb", 1.25, 2.5],
+  ] as const)("− stops at %s %s and never reaches 0", (unit, min, aboveMin) => {
+    expect(canStepJump(toKg(aboveMin, unit), unit, "down")).toBe(true);
+    expect(canStepJump(toKg(min, unit), unit, "down")).toBe(false);
+    expect(stepJump(toKg(min, unit), unit, "down")).toBe(toKg(min, unit));
   });
 
   it.each([
-    ["kg", 25],
-    ["lb", 50],
-  ] as const)("+ stops at %s %s", (unit, max) => {
-    expect(canStepJump(toKg(max - 0.5, unit), unit, "up")).toBe(true);
+    ["kg", 10, 5],
+    ["lb", 20, 15],
+  ] as const)("+ stops at %s %s", (unit, max, belowMax) => {
+    expect(canStepJump(toKg(belowMax, unit), unit, "up")).toBe(true);
     expect(canStepJump(toKg(max, unit), unit, "up")).toBe(false);
     expect(stepJump(toKg(max, unit), unit, "up")).toBe(toKg(max, unit));
   });
 
-  it("an off-ladder Jump just above the minimum can still go down to it", () => {
-    // 0.3 kg is 0.66 lb: − lands on 0.5 lb.
-    expect(canStepJump(0.3, "lb", "down")).toBe(true);
-    expect(formatWithUnit(stepJump(0.3, "lb", "down"), "lb")).toBe("0.5 lb");
+  it("an off-ladder Jump just above the bottom can still go down to it", () => {
+    // 0.7 kg is 1.54 lb: − lands on 1.25 lb.
+    expect(canStepJump(0.7, "lb", "down")).toBe(true);
+    expect(formatWithUnit(stepJump(0.7, "lb", "down"), "lb")).toBe("1.25 lb");
+  });
+
+  it("an off-ladder Jump below the bottom can come up to it, but not go down", () => {
+    // 0.5 lb is below the 1.25 lb bottom rung.
+    expect(canStepJump(toKg(0.5, "lb"), "lb", "down")).toBe(false);
+    expect(formatWithUnit(stepJump(toKg(0.5, "lb"), "lb", "up"), "lb")).toBe("1.25 lb");
   });
 
   it("a Jump above the top of the ladder can come down to it", () => {
-    // 25 kg is 55.12 lb, above the 50 lb top: − lands on 50 lb, + does nothing.
-    expect(canStepJump(25, "lb", "up")).toBe(false);
-    expect(formatWithUnit(stepJump(25, "lb", "down"), "lb")).toBe("50 lb");
+    // 25 kg is above the 10 kg top: − lands on 10 kg, + does nothing.
+    expect(canStepJump(25, "kg", "up")).toBe(false);
+    expect(stepJump(25, "kg", "down")).toBe(10);
   });
 });

@@ -13,7 +13,7 @@ The per-exercise setting that decides how a Target changes once progression is E
 _Avoid_: Plan, algorithm, progression type
 
 **Jump**:
-The smallest amount of weight added in one step of progression. It is set per equipment (for example barbell or dumbbell), in the lifter's unit.
+The smallest amount of weight added in one step of progression. It is set per equipment (for example barbell or dumbbell) and separately for kg and lb.
 _Avoid_: Increment (the app's name), step size, plate
 
 **Rep range**:

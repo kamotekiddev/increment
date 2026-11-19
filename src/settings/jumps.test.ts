@@ -74,11 +74,31 @@ describe("an untouched Jump uses the default of the lifter's unit", () => {
     expect(JUMP_KEYS.map((key) => formatWithUnit(jumps[key], "lb"))).toEqual(["5 lb", "5 lb", "10 lb", "5 lb", "5 lb"]);
   });
 
-  it("a changed Jump keeps its saved kg in either unit", () => {
-    const saved = { ...UNTOUCHED_JUMPS, dumbbell: 1 };
+});
+
+describe("each unit keeps its own Jumps", () => {
+  it("a Jump changed in kg is used only in kg; lb keeps its own default", () => {
+    const saved = { ...UNTOUCHED_JUMPS, kg: { ...UNTOUCHED_JUMPS.kg, dumbbell: 1 } };
     expect(effectiveJumps(saved, "kg").dumbbell).toBe(1);
-    expect(effectiveJumps(saved, "lb").dumbbell).toBe(1);
-    expect(effectiveJumps(saved, "lb").barbell).toBe(toKg(5, "lb"));
+    expect(formatWithUnit(effectiveJumps(saved, "lb").dumbbell, "lb")).toBe("5 lb");
+  });
+
+  it("a Jump changed in lb is used only in lb; kg keeps its own default", () => {
+    const saved = { ...UNTOUCHED_JUMPS, lb: { ...UNTOUCHED_JUMPS.lb, barbell: toKg(10, "lb") } };
+    expect(formatWithUnit(effectiveJumps(saved, "lb").barbell, "lb")).toBe("10 lb");
+    expect(effectiveJumps(saved, "kg").barbell).toBe(2.5);
+  });
+
+  it("an lb lifter at 62.5 kg (137.79 lb) with a 5 lb Barbell Jump steps to 140 lb, not by the 2.5 kg one", () => {
+    const saved = {
+      kg: { ...UNTOUCHED_JUMPS.kg, barbell: 2.5 },
+      lb: { ...UNTOUCHED_JUMPS.lb, barbell: toKg(5, "lb") },
+    };
+    const t = { weightKg: 62.5, reps: 8 };
+    const earned = [session("2026-01-26", t, [8, 8, 8]), session("2026-01-19", t, [8, 8, 8]), session("2026-01-12", t, [8, 8, 8])];
+    expect(formatWeight(62.5, "lb")).toBe("137.79");
+    const r = nextTarget(input(earned, { step: "weight" }, { jumpKg: jumpKgFor("barbell", effectiveJumps(saved, "lb")) }));
+    expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("140");
   });
 });
 

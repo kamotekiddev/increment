@@ -1,11 +1,11 @@
-import { untouchedJumpsNote } from "./jumpsNote";
+import { jumpsNote } from "./jumpsNote";
 
-describe("untouchedJumpsNote", () => {
-  it("tells a kg lifter the lb defaults", () => {
-    expect(untouchedJumpsNote("kg")).toBe("In lb, jumps you haven’t changed are 5, 5, 10, 5 and 5 lb.");
+describe("jumpsNote", () => {
+  it("tells a kg lifter their lb jumps are kept separately", () => {
+    expect(jumpsNote("kg")).toBe("Each unit keeps its own jumps. A change here doesn’t touch your lb jumps.");
   });
 
-  it("tells an lb lifter the kg defaults", () => {
-    expect(untouchedJumpsNote("lb")).toBe("In kg, jumps you haven’t changed are 2.5, 2, 5, 2.5 and 2.5 kg.");
+  it("tells an lb lifter their kg jumps are kept separately", () => {
+    expect(jumpsNote("lb")).toBe("Each unit keeps its own jumps. A change here doesn’t touch your kg jumps.");
   });
 });

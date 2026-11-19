@@ -28,7 +28,7 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 5. As a lifter, I want my choice saved at once and kept after closing the app.
 
 **Units**
-6. As a lifter in pounds, I want a Jump I never changed to be the lb default (5 lb, 5 lb, 10 lb, 5 lb, 5 lb exactly, not 2.5 kg shown as 5.51 lb), and a Jump I changed saved as kg like every other weight, so that every Target is loadable and switching unit never changes stored data.
+6. As a lifter who uses both units, I want kg and lb to keep their own Jumps, so that 2.5 kg stays 2.5 kg and 5 lb stays 5 lb however often I switch (not 2.5 kg shown as 5.51 lb, or 5 lb shown as 2.27 kg). A Jump I never changed is that unit's default (5 lb, 5 lb, 10 lb, 5 lb, 5 lb exactly in lb). Setting a Jump in one unit never changes the other, and switching unit never changes stored data.
 7. As a lifter in pounds, I want 135 lb to step to 140 lb after a 5 lb Jump, so that the Target is loadable.
 
 **Targets**
@@ -43,7 +43,8 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 
 ## Implementation Decisions
 
-- **Storage:** add the Jump columns to the `user_settings` row from feature 1 (one per equipment group, kg, nullable). One Drizzle migration. NULL means the lifter never changed that Jump: its effective Jump is the default in the lifter's current unit (kg 2.5 / 2 / 5 / 2.5 / 2.5, lb 5 / 5 / 10 / 5 / 5), converted to kg for the engine. The first − or + saves the value in kg; switching unit never writes a Jump. Read through one hook, like `useUnit()`, which returns the effective Jumps in kg.
+- **Storage:** each unit keeps its own Jumps on the `user_settings` row from feature 1: five kg Jumps (`jump_barbell_kg` … `jump_bodyweight_kg`, migration 0005) and five lb Jumps (`jump_lb_barbell_kg` … `jump_lb_bodyweight_kg`, migration 0007), one per equipment group, all nullable and all stored in kg (5 lb is stored as 2.26796185 kg). The lifter's current unit picks which five are used, for the engine, the screen and the Settings row; the other unit's are never read or converted. NULL means the lifter never changed that Jump in that unit: its effective Jump is that unit's default (kg 2.5 / 2 / 5 / 2.5 / 2.5, lb 5 / 5 / 10 / 5 / 5), converted to kg for the engine. The first − or + saves the value in kg into the current unit's column only; switching unit never writes a Jump. Read through one hook, like `useUnit()`, which returns the current unit's effective Jumps in kg.
+- **− / + ladder:** one ladder per unit, real plate steps only: kg 0.5, 1, 1.25, 2, 2.5, 5, 10 and lb 1.25, 2.5, 5, 10, 15, 20. − and + move one rung; a saved value off the ladder moves to the next rung up or down. − stops at the bottom rung, + at the top (owner decision 2026-11-19).
 - **Equipment to Jump:** a pure function maps an exercise's equipment to a Jump key: barbell and ez bar to Barbell; dumbbell and kettlebell to Dumbbell; machine to Machine; cable to Cable; a weighted exercise tagged bodyweight to "Bodyweight, added weight". The engine still receives one `jumpKg`; the caller looks it up. `JUMP_KG` is removed.
 - **Rounding:** unchanged (data rule 4). A step up goes to the next multiple of the Jump strictly above the current weight; a drop or deload rounds down. The Jump is stored in kg, so a lb lifter's 5 lb is 2.268 kg, and display rounds to 0.01 (ADR 0001).
 - **Library split:** the six `bodyweight_or_weighted` exercises each become two exercises, one `bodyweight` and one `weighted` (equipment `bodyweight`, which maps to the added-weight Jump). Update `exercises.json` and the seed. Workouts already logged keep their exercise; the old exercise becomes the bodyweight one. The load type `bodyweight_or_weighted` is removed from the type, schema and engine.
@@ -54,8 +55,8 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 
 ## Testing Decisions
 
-- **Pure seams (Jest):** equipment to Jump key; the nextTarget step and rounding with each Jump in kg and in lb values (135 lb + 5 lb = 140 lb); the Jump display in both units; bounds of − and +.
-- **Database test:** save a Jump at 5 lb, switch the unit 10 times, read it back: identical at full precision, and the untouched Jumps still NULL.
+- **Pure seams (Jest):** equipment to Jump key; the nextTarget step and rounding with each Jump in kg and in lb values (135 lb + 5 lb = 140 lb); an lb lifter at 62.5 kg (137.79 lb) with a 5 lb Jump steps to 140 lb; the Jump display in both units; the ladder in each unit (5 lb + gives 10, − gives 2.5; 5.51 lb snaps to 10 or 5) and bounds of − and +.
+- **Database test:** set Barbell to 2.5 kg and to 5 lb, switch the unit 10 times, read both back: kg shows 2.5 and lb shows 5, identical at full precision, and the untouched Jumps in both units still NULL. Setting a Jump in lb never changes the kg Jump.
 - **Seed test:** no exercise has load type `bodyweight_or_weighted`; each split pair exists.
 - **Search check:** `JUMP_KG` no longer appears in `src`.
 - **Owner check on a phone:** set Dumbbell to 1 kg and Barbell to 5 lb, finish a Clean streak, and see a loadable Target; do a Pull-up (no weight box) and a Weighted pull-up.

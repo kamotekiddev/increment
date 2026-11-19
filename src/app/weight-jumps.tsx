@@ -4,7 +4,7 @@ import { ScrollView, View } from "react-native";
 
 import { Card, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
-import { JUMP_KEYS, JumpRow, untouchedJumpsNote, useJumps, useUnit, type JumpKey } from "@/settings";
+import { JUMP_KEYS, JumpRow, jumpsNote, useJumps, useUnit, type JumpKey } from "@/settings";
 import { fontSize, lineHeight, radius, spacing, useColors } from "@/theme";
 
 const ROWS: Record<JumpKey, { name: string; example: string }> = {
@@ -54,7 +54,7 @@ export default function WeightJumpsScreen() {
         >
           <Ionicons name="information-circle-outline" size={17} color={colors.accent} style={{ marginTop: 1 }} />
           <Text tone="soft" style={{ flex: 1, fontSize: fontSize.small, lineHeight: lineHeight.small }}>
-            {untouchedJumpsNote(unit)}
+            {jumpsNote(unit)}
           </Text>
         </View>
       </ScrollView>

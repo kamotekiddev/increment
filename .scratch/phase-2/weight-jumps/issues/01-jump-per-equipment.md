@@ -6,7 +6,7 @@
 
 **Status:** built
 
-- [x] Jump columns on the `user_settings` row, in kg: Barbell 2.5, Dumbbell 2, Machine 5, Cable 2.5, Bodyweight added weight 2.5. One migration
+- [x] Jump columns on the `user_settings` row, in kg: Barbell 2.5, Dumbbell 2, Machine 5, Cable 2.5, Bodyweight added weight 2.5. One migration (0005). These became the kg Jumps when each unit got its own Jumps: the lb Jumps (5, 5, 10, 5, 5 lb, stored in kg) were added in 0007
 - [x] One hook (like `useUnit()`) returns the Jumps and a setter; screens re-render on change
 - [x] A pure function maps equipment to a Jump key: barbell and ez bar → Barbell; dumbbell and kettlebell → Dumbbell; machine → Machine; cable → Cable; bodyweight → Bodyweight added weight
 - [x] Every `nextTarget` caller (Offer, summary, Today preview, live workout) passes the exercise's Jump; `JUMP_KG` and `src/workout/jump.ts` are removed
