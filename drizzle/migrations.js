@@ -6,6 +6,7 @@ import m0001 from './0001_rare_millenium_guard.sql';
 import m0002 from './0002_lively_the_watchers.sql';
 import m0003 from './0003_pretty_ben_urich.sql';
 import m0004 from './0004_tearful_butterfly.sql';
+import m0005 from './0005_third_bullseye.sql';
 
   export default {
     journal,
@@ -14,7 +15,8 @@ import m0004 from './0004_tearful_butterfly.sql';
 m0001,
 m0002,
 m0003,
-m0004
+m0004,
+m0005
     }
   }
   
