@@ -49,6 +49,7 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 - **Library split:** the six `bodyweight_or_weighted` exercises each become two exercises, one `bodyweight` and one `weighted` (equipment `bodyweight`, which maps to the added-weight Jump). Update `exercises.json` and the seed. Workouts already logged keep their exercise; the old exercise becomes the bodyweight one. The load type `bodyweight_or_weighted` is removed from the type, schema and engine.
 - **Live workout:** hide the weight box on `bodyweight` exercises. A bodyweight set stores weight 0.
 - **Settings:** a "Smallest weight jump" row in the Units card, showing the Barbell value, opens `src/app/weight-jumps.tsx`, built from the design tokens and the existing base components.
+- **Accepted Target:** Go up saves the Target the Offer showed on `workout_exercises` (`accepted_target_weight_kg`, `accepted_target_reps`, migration 0006), and the next Start and the summary's next Target use it as is, so only later steps use a changed Jump (story 10). Stay stores null. Accepted rows saved before this have no stored Target and still recompute the step with the current Jump.
 - No ADR. ADR 0001 covers kg storage.
 
 ## Testing Decisions

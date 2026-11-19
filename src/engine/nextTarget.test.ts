@@ -75,6 +75,16 @@ describe("nextTarget: earning progression (free rule, 3 clean in a row)", () => 
     const r = nextTarget(input([accepted, clean("2026-01-19"), clean("2026-01-12")]));
     expect(r).toEqual({ target: { weightKg: 62.5, reps: 8 }, proposal: null, reason: "progressed" });
   });
+  it("an accepted Target that was stored is used as is, not recomputed with today's Jump", () => {
+    const accepted = { ...session("2026-01-26", T, [8, 8, 8], { accepted: true }), acceptedTarget: { weightKg: 62.5, reps: 8 } };
+    const r = nextTarget(input([accepted, clean("2026-01-19"), clean("2026-01-12")], {}, { jumpKg: 5 }));
+    expect(r).toEqual({ target: { weightKg: 62.5, reps: 8 }, proposal: null, reason: "progressed" });
+  });
+  it("an accepted step with no stored Target is recomputed with today's Jump", () => {
+    const accepted = session("2026-01-26", T, [8, 8, 8], { accepted: true });
+    const r = nextTarget(input([accepted, clean("2026-01-19"), clean("2026-01-12")], {}, { jumpKg: 5 }));
+    expect(r.target).toEqual({ weightKg: 65, reps: 8 });
+  });
   it("declining keeps the Target and asks again after the next clean workout", () => {
     const r = nextTarget(
       input([clean("2026-02-02"), clean("2026-01-26"), clean("2026-01-19"), clean("2026-01-12")]),

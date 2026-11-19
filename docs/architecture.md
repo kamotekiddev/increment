@@ -25,7 +25,7 @@
 - **routines**: id, name, days (bitmask), position
 - **routine_exercises**: routine_id, exercise_id, position, sets, rep_min, rep_max, rest_s, rule (JSON)
 - **workouts**: id, routine_id (cascade: deleting a routine deletes its workouts, their exercises and sets, [ADR 0002](adr/0002-deleting-a-routine-deletes-its-workouts.md); workouts with no routine are never touched), started_at, finished_at, date, feeling, notes, in_progress, last_edited_at (last saved set change, for crash resume)
-- **workout_exercises**: id, workout_id, exercise_id, position, target_weight_kg, target_reps, progress_accepted, is_deload (the Target shown at the start, and whether the lifter accepted the offered step)
+- **workout_exercises**: id, workout_id, exercise_id, position, target_weight_kg, target_reps, progress_accepted, accepted_target_weight_kg, accepted_target_reps, is_deload (the Target shown at the start, whether the lifter accepted the offered step, and the stepped-up Target they accepted, which the next Start uses as is; null after Stay and on rows saved before it was stored, which recompute the step)
 - **sets**: id, workout_exercise_id, exercise_id, idx, weight_kg, entered_unit, reps, done, is_warmup, edited (the lifter typed this row, so it stops following earlier rows)
 - **user_settings**: one row (id 1, created on first read) of the lifter's preferences. Today: `unit` (kg or lb, default kg). Later features add jump, rest default, theme, reminders and auto-backup as columns
 - **settings**: key/value, internal flags only (the library seed version)
