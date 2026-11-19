@@ -1,54 +1,84 @@
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { ScrollView, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Pill, Text } from "@/components";
+import { Pill, RoundButton, Text } from "@/components";
+import { ExerciseHero } from "@/library/ExerciseHero";
+import { useExercise, useRoutineCounts } from "@/library/exerciseQueries";
 import { capitalise } from "@/library/muscleGroups";
-import { useExercise } from "@/library/exerciseQueries";
-import { spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, size, spacing, textStyle, useColors } from "@/theme";
 
 export default function ExerciseDetailScreen() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const exercise = useExercise(Number(id));
+  const routineCounts = useRoutineCounts();
+
+  const back = <RoundButton icon="chevron-back" label="Back to library" sunk onPress={() => router.back()} />;
 
   return (
     <>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: "",
-          headerBackTitle: "Library",
-          headerShadowVisible: false,
-          headerStyle: { backgroundColor: colors.bg },
-        }}
-      />
+      <Stack.Screen options={{ headerShown: false }} />
       <ScrollView
         style={{ flex: 1, backgroundColor: colors.bg }}
-        contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg, paddingBottom: spacing.xxl * 2 }}
+        contentContainerStyle={{
+          paddingTop: insets.top + spacing.sm,
+          paddingHorizontal: spacing.xl,
+          paddingBottom: insets.bottom + spacing.xxl,
+          gap: spacing.lg,
+        }}
       >
         {exercise ? (
           <>
-            <Text variant="heading">{exercise.name}</Text>
-            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: spacing.sm }}>
-              {exercise.muscles.map((muscle) => (
-                <Pill key={muscle} label={capitalise(muscle)} />
-              ))}
-              <Pill label={capitalise(exercise.equipment)} tone="neutral" />
+            <ExerciseHero
+              equipment={exercise.equipment}
+              routines={routineCounts.get(exercise.id) ?? 0}
+              back={back}
+            />
+            <View style={{ gap: 10 }}>
+              <Text variant="heading" accessibilityRole="header" style={textStyle.screenTitle}>
+                {exercise.name}
+              </Text>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+                {exercise.muscles.map((muscle, index) => (
+                  <Pill key={muscle} label={capitalise(muscle)} tone={index === 0 ? "progress" : "plain"} />
+                ))}
+                <Pill label={capitalise(exercise.equipment)} tone="plain" />
+              </View>
             </View>
-            <Text variant="title" style={{ marginTop: spacing.md }}>
+            <Text variant="title" style={{ marginTop: spacing.sm }}>
               How to
             </Text>
-            {exercise.instructions.map((step, index) => (
-              <View key={index} style={{ flexDirection: "row", gap: spacing.md }}>
-                <Text tone="accent" variant="label" style={{ minWidth: spacing.xl }}>
-                  {index + 1}.
-                </Text>
-                <Text style={{ flex: 1 }}>{step}</Text>
-              </View>
-            ))}
+            <View style={{ gap: spacing.md, paddingHorizontal: spacing.xs }}>
+              {exercise.instructions.map((step, index) => (
+                <View key={index} style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>
+                  <View
+                    style={{
+                      width: size.stepNumber,
+                      height: size.stepNumber,
+                      borderRadius: size.stepNumber / 2,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: colors.accentTint,
+                    }}
+                  >
+                    <Text variant="caption" tone="accent" style={{ fontFamily: fontFamily.bold }}>
+                      {index + 1}
+                    </Text>
+                  </View>
+                  <Text tone="soft" style={{ flex: 1, fontSize: fontSize.label, lineHeight: 21 }}>
+                    {step}
+                  </Text>
+                </View>
+              ))}
+            </View>
           </>
         ) : exercise === null ? (
-          <Text tone="muted">Exercise not found.</Text>
+          <>
+            {back}
+            <Text tone="muted">Exercise not found.</Text>
+          </>
         ) : null}
       </ScrollView>
     </>

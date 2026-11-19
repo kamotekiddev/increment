@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm";
-import { useEffect, useState } from "react";
+import { count, eq } from "drizzle-orm";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 
 import { db } from "@/db/client";
-import { exercises } from "@/db/schema";
+import { exercises, routineExercises } from "@/db/schema";
 
 import type { ExerciseSummary } from "./filterExercises";
 
@@ -28,6 +29,30 @@ export function useExercises(): LibraryExercise[] {
   }, []);
 
   return rows;
+}
+
+/**
+ * How many routines each exercise is in, by exercise id; exercises in none are absent.
+ * Reloaded each time the screen gains focus, so it is current after editing a routine.
+ */
+export function useRoutineCounts(): ReadonlyMap<number, number> {
+  const [counts, setCounts] = useState<ReadonlyMap<number, number>>(new Map());
+  useFocusEffect(
+    useCallback(() => {
+      let live = true;
+      // One row per routine and exercise (unique index), so the row count is the routine count.
+      db.select({ exerciseId: routineExercises.exerciseId, routines: count() })
+        .from(routineExercises)
+        .groupBy(routineExercises.exerciseId)
+        .then((rows) => {
+          if (live) setCounts(new Map(rows.map((r) => [r.exerciseId, r.routines])));
+        });
+      return () => {
+        live = false;
+      };
+    }, []),
+  );
+  return counts;
 }
 
 /** One exercise by id: undefined while loading, null when no exercise has that id. */

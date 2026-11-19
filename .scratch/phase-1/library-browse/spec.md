@@ -102,6 +102,19 @@ The Library tab shows every exercise in A–Z order. The lifter can type to sear
 
 - Refined after the first build: the equipment chip row was dropped, and the muscle chips became six groups so the list stays simple. The specific muscles and equipment are shown on the detail screen.
 
+- Refined on 2026-11-19 to match the Library frame on the design canvas. These points replace the decisions above:
+  - Rows are white cards with an equipment tile. The muted line is the main group and the equipment, e.g. "Chest · Barbell" (replaces story 16 and "No equipment on the row").
+  - A row ends in an "N routines" pill when the exercise is in a routine, or a chevron when it is in none.
+  - The chips run All, Chest, Back, Legs, Shoulders, Arms, Core (replaces the A–Z order in story 13). All is active when no group is set, and tapping the active chip still clears it.
+  - Chips draw 40 pt tall, with touch padding to 44 pt.
+  - The search box is a white pill with a search icon and an accent ring while focused.
+  - A "6 results" count shows while a search or group is set.
+  - The empty state is a card naming the search, with Clear filters.
+  - Still left out until Phase 3 (custom exercises): the header "+", and the "Create …" card on the empty state.
+  - Still left out because search has no typo forgiveness: the empty state's suggested exercises.
+  - Tiles keep the two icons (weighted, bodyweight) the routine screens use, not one icon per equipment.
+  - Exercise detail drops the native header. A white hero card at the top holds the art (a loaded bar, or a flexed arm for bodyweight), a round back button and the "N routines" pill. Below it come the name in the screen title style and pills: the first muscle in accent, the rest and the equipment in white. The how-to steps sit next to numbered accent circles.
+  - Still left out of Exercise detail until Phase 2: the How to / History switch (feature 4, Exercise history), and the Best set and Est. max tiles (feature 5, Records). Until the switch arrives, a "How to" heading stays. The "Add to routine" button is also left out: no spec yet says which routine it adds to.
 - Library records and Pro limits are not touched, so there is no free-versus-Pro check in this feature.
 - Docs to update in the same change: `docs/screens.md` (the "No search results" row loses its create shortcut until Phase 3) and the Phase 1 map once this feature is built.
 - The glossary has no entry for an exercise itself; no new terms came out of this feature, so none were added.

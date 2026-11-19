@@ -4,20 +4,24 @@ import { View } from "react-native";
 import { equipmentIcon } from "@/library/exerciseMeta";
 import { radius, size, useColors } from "@/theme";
 
-/** The 40 pt rounded tile with the weighted or bodyweight icon, at the start of every exercise row. */
-export function ExerciseTile({ equipment }: { equipment: string }) {
+/**
+ * The rounded tile with the weighted or bodyweight icon, at the start of every exercise row:
+ * 40 pt in the routine screens, 46 pt (`large`) in the Library.
+ */
+export function ExerciseTile({ equipment, large = false }: { equipment: string; large?: boolean }) {
   const colors = useColors();
+  const side = large ? size.tileLg : size.tile;
   return (
     <View
       style={{
-        width: size.tile, height: size.tile,
-        borderRadius: radius.tile,
+        width: side, height: side,
+        borderRadius: large ? radius.tileLg : radius.tile,
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: colors.sunk,
       }}
     >
-      <MaterialCommunityIcons name={equipmentIcon(equipment)} size={22} color={colors.ink} />
+      <MaterialCommunityIcons name={equipmentIcon(equipment)} size={large ? 24 : 22} color={colors.ink} />
     </View>
   );
 }
