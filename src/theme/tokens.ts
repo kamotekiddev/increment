@@ -27,7 +27,7 @@ export type Colors = { [K in keyof typeof lightColors]: string };
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
 
-export const radius = { sm: 10, md: 16, lg: 24, tile: 14, inset: 20, row: 22, card: 26, pill: 999 } as const;
+export const radius = { sm: 10, md: 16, lg: 24, tile: 14, tileLg: 16, inset: 20, row: 22, card: 26, pill: 999 } as const;
 
 /** Sora weights. Names match what useFonts registers. */
 export const fontFamily = {
@@ -70,6 +70,14 @@ export const size = {
   heroIcon: 32,
   bannerCircle: 44,
   smallTile: 32,
+  libraryRow: 70,
+  tileLg: 46,
+  chip: 40,
+  search: 54,
+  searchCompact: 50,
+  emptyIcon: 60,
+  hero: 190,
+  stepNumber: 26,
   /** A Settings list row (Smallest weight jump). */
   settingsRow: 54,
   /** The round − / + of a Weight jumps row; hitSlop takes its touch target to `minTouch`. */

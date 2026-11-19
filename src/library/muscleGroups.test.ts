@@ -3,8 +3,8 @@ import exercises from "@/db/library/exercises.json";
 import { capitalise, MUSCLE_GROUPS, muscleGroupsOf } from "./muscleGroups";
 
 describe("MUSCLE_GROUPS", () => {
-  it("lists the six groups A-Z", () => {
-    expect(MUSCLE_GROUPS).toEqual(["Arms", "Back", "Chest", "Core", "Legs", "Shoulders"]);
+  it("lists the six groups in chip order", () => {
+    expect(MUSCLE_GROUPS).toEqual(["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"]);
   });
 });
 

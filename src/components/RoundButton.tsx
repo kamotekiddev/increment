@@ -11,11 +11,13 @@ export interface RoundButtonProps {
   onPress: () => void;
   /** Accent fill instead of white (the New routine "+"). */
   filled?: boolean;
+  /** Grey fill instead of white, for a button sitting on a white card (the Exercise detail back). */
+  sunk?: boolean;
   disabled?: boolean;
 }
 
 /** The 48 pt round icon button used in screen headers: back, close, more, add. */
-export function RoundButton({ icon, label, onPress, filled = false, disabled = false }: RoundButtonProps) {
+export function RoundButton({ icon, label, onPress, filled = false, sunk = false, disabled = false }: RoundButtonProps) {
   const colors = useColors();
   return (
     <Pressable
@@ -29,7 +31,7 @@ export function RoundButton({ icon, label, onPress, filled = false, disabled = f
         borderRadius: radius.pill,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: filled ? colors.accent : colors.card,
+        backgroundColor: filled ? colors.accent : sunk ? colors.sunk : colors.card,
         opacity: disabled ? opacity.disabled : pressed ? opacity.pressed : 1,
       })}
     >

@@ -1,4 +1,5 @@
-export const MUSCLE_GROUPS = ["Arms", "Back", "Chest", "Core", "Legs", "Shoulders"] as const;
+/** The chips, in the design's order: the big pushing and pulling groups first, then the smaller ones. */
+export const MUSCLE_GROUPS = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"] as const;
 
 export type MuscleGroup = (typeof MUSCLE_GROUPS)[number];
 
