@@ -7,7 +7,10 @@ import library from "./library/exercises.json";
 import { exercises, settings } from "./schema";
 
 const SEED_KEY = "librarySeedVersion";
-/** Bump when exercises.json changes; existing library rows are updated by slug, custom rows are never touched. */
+/**
+ * Bump when exercises.json changes; existing library rows are updated by slug. Custom rows are left alone,
+ * except that version 2 turns any row of the removed load type `bodyweight_or_weighted` into `bodyweight`.
+ */
 const SEED_VERSION = 2;
 // 7 columns per row; stay well under SQLite's variable limit.
 const CHUNK = 50;
