@@ -78,6 +78,12 @@ export const workoutExercises = sqliteTable(
     targetReps: integer("target_reps"),
     /** The lifter accepted the offered step after this workout. */
     progressAccepted: integer("progress_accepted", { mode: "boolean" }).notNull().default(false),
+    /**
+     * The stepped-up Target the lifter accepted (Go up), kept so the next Start shows it even if a Jump changes.
+     * Null after Stay, and on accepted rows saved before it was stored (those recompute the step).
+     */
+    acceptedTargetWeightKg: real("accepted_target_weight_kg"),
+    acceptedTargetReps: integer("accepted_target_reps"),
     isDeload: integer("is_deload", { mode: "boolean" }).notNull().default(false),
   },
   (t) => [uniqueIndex("workout_exercises_unique").on(t.workoutId, t.exerciseId, t.position)],

@@ -7,6 +7,9 @@ export interface PastExercise {
   targetWeightKg: number | null;
   targetReps: number | null;
   progressAccepted: boolean;
+  /** The accepted stepped-up Target; null after Stay and on rows saved before it was stored. */
+  acceptedTargetWeightKg?: number | null;
+  acceptedTargetReps?: number | null;
   isDeload: boolean;
   sets: { idx: number; weightKg: number; reps: number; done: boolean; isWarmup: boolean }[];
 }
@@ -27,6 +30,8 @@ export function toHistory(rows: PastExercise[], plannedSets: number): HistorySes
       date: r.date,
       target: r.targetWeightKg !== null && r.targetReps !== null ? { weightKg: r.targetWeightKg, reps: r.targetReps } : null,
       progressAccepted: r.progressAccepted,
+      acceptedTarget:
+        r.acceptedTargetWeightKg != null && r.acceptedTargetReps != null ? { weightKg: r.acceptedTargetWeightKg, reps: r.acceptedTargetReps } : null,
       isDeload: r.isDeload,
       sets: judgedPastSets(r.sets, plannedSets)
         .sort((a, b) => a.idx - b.idx)

@@ -20,6 +20,7 @@ export function withoutAddedWeight(history: HistorySession[]): HistorySession[] 
   return history.map((s) => ({
     ...s,
     target: s.target ? { ...s.target, weightKg: 0 } : null,
+    acceptedTarget: s.acceptedTarget ? { ...s.acceptedTarget, weightKg: 0 } : s.acceptedTarget,
     sets: s.sets.map((set) => ({ ...set, weightKg: 0 })),
   }));
 }
@@ -109,6 +110,8 @@ function regularTarget(input: NextTargetInput, regular: HistorySession[]): Targe
   const stepped = stepUp(base, input);
 
   if (earned) {
+    // An accepted step keeps the Target the lifter saw, even if the Jump changed since.
+    if (latest.progressAccepted && latest.acceptedTarget) return { target: latest.acceptedTarget, proposal: null, reason: "progressed" };
     if (!stepped) return { target: base, proposal: null, reason: "at-top-of-range" };
     if (latest.progressAccepted) return { target: stepped, proposal: null, reason: "progressed" };
     return { target: base, proposal: stepped, reason: "earned" };

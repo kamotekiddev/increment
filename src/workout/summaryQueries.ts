@@ -5,6 +5,7 @@ import { db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { buildSummary, type OfferItem, type Summary } from "./summary";
 import { toSummaryInput, type SavedExercise } from "./summaryInput";
+import type { Target } from "../engine";
 import type { Jumps } from "@/settings";
 import type { Unit } from "../units";
 import { pastExercises } from "./workoutQueries";
@@ -77,9 +78,19 @@ export function loadSummary(workoutId: number, unit: Unit, jumps: Jumps): Loaded
   return { title: routineName, summary: buildSummary(input) };
 }
 
-/** Saves the lifter's answer to an Offer at once: Accept is true, Decline is false. */
-export function answerOffer(workoutExerciseId: number, accepted: boolean): void {
-  db.update(workoutExercises).set({ progressAccepted: accepted }).where(eq(workoutExercises.id, workoutExerciseId)).run();
+/**
+ * Saves the lifter's answer to an Offer at once: Accept is true, Decline is false. Accept also saves
+ * `stepped`, the Target the Offer showed, so the next Start shows that Target even if a Jump changes.
+ */
+export function answerOffer(workoutExerciseId: number, accepted: boolean, stepped: Target): void {
+  db.update(workoutExercises)
+    .set({
+      progressAccepted: accepted,
+      acceptedTargetWeightKg: accepted ? stepped.weightKg : null,
+      acceptedTargetReps: accepted ? stepped.reps : null,
+    })
+    .where(eq(workoutExercises.id, workoutExerciseId))
+    .run();
 }
 
 /** The Offers of a finished workout, in workout order. Empty when nothing is Earned or the workout is gone. */
