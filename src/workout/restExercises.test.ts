@@ -21,8 +21,7 @@ describe("toRestExercises", () => {
     const flags = toRestExercises([
       ex({ loadType: "bodyweight" }),
       ex({ loadType: "weighted" }),
-      ex({ loadType: "bodyweight_or_weighted" }),
     ]).map((e) => e.bodyweight);
-    expect(flags).toEqual([true, false, false]);
+    expect(flags).toEqual([true, false]);
   });
 });

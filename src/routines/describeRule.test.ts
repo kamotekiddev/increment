@@ -10,10 +10,6 @@ describe("describeRule", () => {
     expect(describeRule(defaultRule("bodyweight"))).toBe("Adds reps after 3 clean workouts");
   });
 
-  it("says reps for a bodyweight-or-weighted exercise's default rule", () => {
-    expect(describeRule(defaultRule("bodyweight_or_weighted"))).toBe("Adds reps after 3 clean workouts");
-  });
-
   it("follows the number of clean workouts", () => {
     expect(describeRule({ ...defaultRule("weighted"), sessionsToEarn: 1 })).toBe(
       "Adds weight after 1 clean workout",

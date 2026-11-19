@@ -1,12 +1,14 @@
 import { eq, sql } from "drizzle-orm";
 
+import type { LoadType } from "@/engine";
+
 import type { Db } from "./client";
 import library from "./library/exercises.json";
 import { exercises, settings } from "./schema";
 
 const SEED_KEY = "librarySeedVersion";
 /** Bump when exercises.json changes; existing library rows are updated by slug, custom rows are never touched. */
-const SEED_VERSION = 1;
+const SEED_VERSION = 2;
 // 7 columns per row; stay well under SQLite's variable limit.
 const CHUNK = 50;
 
@@ -20,6 +22,9 @@ export function seedLibrary(db: Db): void {
   if (done.length > 0 && Number(done[0].value) >= SEED_VERSION) return;
 
   db.transaction((tx) => {
+    // Version 2 split each "bodyweight or weighted" exercise in two. The upsert below turns the library
+    // originals into the bodyweight one (same id, so logged history stays); this catches any other row.
+    tx.run(sql`UPDATE exercises SET load_type = 'bodyweight' WHERE load_type = 'bodyweight_or_weighted'`);
     for (let i = 0; i < library.length; i += CHUNK) {
       const rows = library.slice(i, i + CHUNK).map((e) => ({
         slug: e.slug,
@@ -27,7 +32,7 @@ export function seedLibrary(db: Db): void {
         muscles: e.muscles,
         equipment: e.equipment,
         instructions: e.instructions,
-        loadType: e.loadType as "weighted" | "bodyweight" | "bodyweight_or_weighted",
+        loadType: e.loadType as LoadType,
         isCustom: false,
       }));
       tx.insert(exercises)

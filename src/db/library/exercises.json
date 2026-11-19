@@ -668,7 +668,26 @@
    "After a second on the contracted position, start to inhale and slowly lower your torso back to the starting position when your arms are fully extended and the lats are fully stretched.",
    "Repeat this motion for the prescribed amount of repetitions."
   ],
-  "loadType": "bodyweight_or_weighted"
+  "loadType": "bodyweight"
+ },
+ {
+  "slug": "weighted-pullups",
+  "name": "Weighted Pullups",
+  "muscles": [
+   "lats",
+   "biceps",
+   "middle back"
+  ],
+  "equipment": "bodyweight",
+  "instructions": [
+   "Wear a dip belt or weighted vest with the added weight, or hold a dumbbell between your feet.",
+   "Grab the pull-up bar with the palms facing forward using the prescribed grip. Note on grips: For a wide grip, your hands need to be spaced out at a distance wider than your shoulder width. For a medium grip, your hands need to be spaced out at a distance equal to your shoulder width and for a close grip at a distance smaller than your shoulder width.",
+   "As you have both arms extended in front of you holding the bar at the chosen grip width, bring your torso back around 30 degrees or so while creating a curvature on your lower back and sticking your chest out. This is your starting position.",
+   "Pull your torso up until the bar touches your upper chest by drawing the shoulders and the upper arms down and back. Exhale as you perform this portion of the movement. Tip: Concentrate on squeezing the back muscles once you reach the full contracted position. The upper torso should remain stationary as it moves through space and only the arms should move. The forearms should do no other work other than hold the bar.",
+   "After a second on the contracted position, start to inhale and slowly lower your torso back to the starting position when your arms are fully extended and the lats are fully stretched.",
+   "Repeat this motion for the prescribed amount of repetitions."
+  ],
+  "loadType": "weighted"
  },
  {
   "slug": "chin-up",
@@ -687,7 +706,27 @@
    "After a second of squeezing the biceps in the contracted position, slowly lower your torso back to the starting position; when your arms are fully extended. Breathe in as you perform this portion of the movement.",
    "Repeat this motion for the prescribed amount of repetitions."
   ],
-  "loadType": "bodyweight_or_weighted"
+  "loadType": "bodyweight"
+ },
+ {
+  "slug": "weighted-chin-up",
+  "name": "Weighted Chin-Up",
+  "muscles": [
+   "lats",
+   "biceps",
+   "forearms",
+   "middle back"
+  ],
+  "equipment": "bodyweight",
+  "instructions": [
+   "Wear a dip belt or weighted vest with the added weight, or hold a dumbbell between your feet.",
+   "Grab the pull-up bar with the palms facing your torso and a grip closer than the shoulder width.",
+   "As you have both arms extended in front of you holding the bar at the chosen grip width, keep your torso as straight as possible while creating a curvature on your lower back and sticking your chest out. This is your starting position. Tip: Keeping the torso as straight as possible maximizes biceps stimulation while minimizing back involvement.",
+   "As you breathe out, pull your torso up until your head is around the level of the pull-up bar. Concentrate on using the biceps muscles in order to perform the movement. Keep the elbows close to your body. Tip: The upper torso should remain stationary as it moves through space and only the arms should move. The forearms should do no other work other than hold the bar.",
+   "After a second of squeezing the biceps in the contracted position, slowly lower your torso back to the starting position; when your arms are fully extended. Breathe in as you perform this portion of the movement.",
+   "Repeat this motion for the prescribed amount of repetitions."
+  ],
+  "loadType": "weighted"
  },
  {
   "slug": "wide-grip-lat-pulldown",
@@ -1107,7 +1146,26 @@
    "Slowly raise your torso back to the initial position as you exhale. Tip: Avoid the temptation to arch your back past a straight line. Also, do not swing the torso at any time in order to protect the back from injury.",
    "Repeat for the recommended amount of repetitions."
   ],
-  "loadType": "bodyweight_or_weighted"
+  "loadType": "bodyweight"
+ },
+ {
+  "slug": "weighted-hyperextensions-with-no-hyperextension-bench",
+  "name": "Weighted Hyperextensions With No Hyperextension Bench",
+  "muscles": [
+   "lower back",
+   "glutes",
+   "hamstrings"
+  ],
+  "equipment": "bodyweight",
+  "instructions": [
+   "Hold a weight plate against your chest under your crossed arms for the added weight.",
+   "With someone holding down your legs, slide yourself down to the edge a flat bench until your hips hang off the end of the bench. Tip: Your entire upper body should be hanging down towards the floor. Also, you will be in the same position as if you were on a hyperextension bench but the range of motion will be shorter due to the height of the flat bench vs. that of the hyperextension bench.",
+   "With your body straight, cross your arms in front of you (my preference) or behind your head. This will be your starting position. Tip: You can also hold a weight plate for extra resistance in front of you under your crossed arms.",
+   "Start bending forward slowly at the waist as far as you can while keeping your back flat. Inhale as you perform this movement. Keep moving forward until you almost touch the floor or you feel a nice stretch on the hamstrings (whichever comes first). Tip: Never round the back as you perform this exercise.",
+   "Slowly raise your torso back to the initial position as you exhale. Tip: Avoid the temptation to arch your back past a straight line. Also, do not swing the torso at any time in order to protect the back from injury.",
+   "Repeat for the recommended amount of repetitions."
+  ],
+  "loadType": "weighted"
  },
  {
   "slug": "stiff-leg-barbell-good-morning",
@@ -1686,7 +1744,25 @@
    "Then, exhale and push your torso back up using your triceps to bring your body back to the starting position.",
    "Repeat the movement for the prescribed amount of repetitions."
   ],
-  "loadType": "bodyweight_or_weighted"
+  "loadType": "bodyweight"
+ },
+ {
+  "slug": "weighted-dips-triceps-version",
+  "name": "Weighted Dips - Triceps Version",
+  "muscles": [
+   "triceps",
+   "chest",
+   "shoulders"
+  ],
+  "equipment": "bodyweight",
+  "instructions": [
+   "Wear a dip belt or weighted vest with the added weight, or hold a dumbbell between your feet.",
+   "To get into the starting position, hold your body at arm's length with your arms nearly locked above the bars.",
+   "Now, inhale and slowly lower yourself downward. Your torso should remain upright and your elbows should stay close to your body. This helps to better focus on tricep involvement. Lower yourself until there is a 90 degree angle formed between the upper arm and forearm.",
+   "Then, exhale and push your torso back up using your triceps to bring your body back to the starting position.",
+   "Repeat the movement for the prescribed amount of repetitions."
+  ],
+  "loadType": "weighted"
  },
  {
   "slug": "bench-dips",
@@ -1703,7 +1779,25 @@
    "Using your triceps to bring your torso up again, lift yourself back to the starting position.",
    "Repeat for the recommended amount of repetitions."
   ],
-  "loadType": "bodyweight_or_weighted"
+  "loadType": "bodyweight"
+ },
+ {
+  "slug": "weighted-bench-dips",
+  "name": "Weighted Bench Dips",
+  "muscles": [
+   "triceps",
+   "chest",
+   "shoulders"
+  ],
+  "equipment": "bodyweight",
+  "instructions": [
+   "Have a partner place a weight plate on your lap for the added weight.",
+   "For this exercise you will need to place a bench behind your back. With the bench perpendicular to your body, and while looking away from it, hold on to the bench on its edge with the hands fully extended, separated at shoulder width. The legs will be extended forward, bent at the waist and perpendicular to your torso. This will be your starting position.",
+   "Slowly lower your body as you inhale by bending at the elbows until you lower yourself far enough to where there is an angle slightly smaller than 90 degrees between the upper arm and the forearm. Tip: Keep the elbows as close as possible throughout the movement. Forearms should always be pointing down.",
+   "Using your triceps to bring your torso up again, lift yourself back to the starting position.",
+   "Repeat for the recommended amount of repetitions."
+  ],
+  "loadType": "weighted"
  },
  {
   "slug": "dumbbell-one-arm-triceps-extension",
@@ -2411,13 +2505,30 @@
    "calves",
    "glutes"
   ],
-  "equipment": "machine",
+  "equipment": "bodyweight",
   "instructions": [
    "Begin by adjusting the equipment to fit your body. Place your feet against the footplate in between the rollers as you lie facedown. Your knees should be just behind the pad.",
    "Start from the bottom of the movement. Keep your back arched as you begin the movement by flexing the knees. Drive your toes into the foot plate as you do so. Keep your upper body straight, and continue until your body is upright.",
    "Return to the starting position, keeping your descent under control."
   ],
-  "loadType": "bodyweight_or_weighted"
+  "loadType": "bodyweight"
+ },
+ {
+  "slug": "weighted-glute-ham-raise",
+  "name": "Weighted Glute Ham Raise",
+  "muscles": [
+   "hamstrings",
+   "calves",
+   "glutes"
+  ],
+  "equipment": "bodyweight",
+  "instructions": [
+   "Hold a weight plate against your chest for the added weight.",
+   "Begin by adjusting the equipment to fit your body. Place your feet against the footplate in between the rollers as you lie facedown. Your knees should be just behind the pad.",
+   "Start from the bottom of the movement. Keep your back arched as you begin the movement by flexing the knees. Drive your toes into the foot plate as you do so. Keep your upper body straight, and continue until your body is upright.",
+   "Return to the starting position, keeping your descent under control."
+  ],
+  "loadType": "weighted"
  },
  {
   "slug": "power-clean",
