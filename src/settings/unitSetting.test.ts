@@ -14,12 +14,15 @@ import { readUnit, writeUnit } from "./unitSetting";
 jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
 const appDb: Db = jest.requireMock("@/db/client").db;
 
+/** The settings rows, unit column only (the Jump columns are covered in jumpSetting.test.ts). */
+const unitRows = (db: Db) => db.select({ id: userSettings.id, unit: userSettings.unit }).from(userSettings).all();
+
 describe("unit setting", () => {
   it("starts in kg and creates the single row on first read", () => {
     const db = createTestDb();
     expect(db.select().from(userSettings).all()).toHaveLength(0);
     expect(readUnit(db)).toBe("kg");
-    expect(db.select().from(userSettings).all()).toEqual([{ id: 1, unit: "kg" }]);
+    expect(unitRows(db)).toEqual([{ id: 1, unit: "kg" }]);
     expect(readUnit(db)).toBe("kg");
     expect(db.select().from(userSettings).all()).toHaveLength(1);
   });
@@ -30,7 +33,7 @@ describe("unit setting", () => {
     expect(readUnit(db)).toBe("lb");
     writeUnit(db, "kg");
     writeUnit(db, "lb");
-    expect(db.select().from(userSettings).all()).toEqual([{ id: 1, unit: "lb" }]);
+    expect(unitRows(db)).toEqual([{ id: 1, unit: "lb" }]);
   });
 
   it("changes no stored weight or entered unit when the unit is switched 10 times", () => {
@@ -58,9 +61,9 @@ describe("unit setting", () => {
 
     // Set 1: 135 typed in lb, then checked in lb.
     rows = editSet(rows, 0, { weightKg: weightFromTyped("135", "lb") }, "lb");
-    rows = markSetDone(rows, 0, true, "lb");
+    rows = markSetDone(rows, 0, true, "lb", "weighted");
     // Set 2: checked in kg, then its weight retyped as 225 lb while checked.
-    rows = markSetDone(rows, 1, true, "kg");
+    rows = markSetDone(rows, 1, true, "kg", "weighted");
     editSet(rows, 1, { weightKg: weightFromTyped("225", "lb") }, "lb");
 
     const read = () =>

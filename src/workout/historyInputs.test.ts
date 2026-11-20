@@ -35,6 +35,7 @@ describe("toHistory", () => {
       loadType: "weighted",
       history,
       jumpKg: 2.5,
+      unit: "kg",
     });
     expect(result.target).toEqual({ weightKg: 40, reps: 8 });
   });
@@ -49,6 +50,7 @@ describe("toHistory by plan position", () => {
       loadType: "weighted",
       history,
       jumpKg: 2.5,
+      unit: "kg",
     });
 
   it("keeps a gap: plan 3, sets 1 and 2 done, 3 unchecked is a Miss, not a Clean", () => {
@@ -59,5 +61,30 @@ describe("toHistory by plan position", () => {
     expect(ask(gapHistory).reason).not.toBe("earned");
     const clean = toHistory([past({ ...target, sets: [done(0), done(1), done(2)] })], 3);
     expect(ask(clean).reason).toBe("earned");
+  });
+});
+
+describe("toHistory: the unit a Target was set in", () => {
+  const set = (weightKg: number, enteredUnit: "kg" | "lb") => ({ idx: 0, weightKg, reps: 8, done: true, isWarmup: false, enteredUnit });
+  const target = { targetWeightKg: 10, targetReps: 8 };
+  const unitOf = (row: Partial<PastExercise>) => toHistory([past(row)], 3)[0].targetUnit;
+
+  it("uses the unit stored at Start", () => {
+    expect(unitOf({ ...target, targetUnit: "lb", sets: [set(10, "kg")] })).toBe("lb");
+  });
+  it("falls back to the logged sets' unit on an old row with none stored", () => {
+    expect(unitOf({ ...target, targetUnit: null, sets: [set(10, "lb")] })).toBe("lb");
+  });
+  it("falls back to kg when nothing says otherwise", () => {
+    expect(unitOf({ ...target, targetUnit: null, sets: [] })).toBe("kg");
+  });
+  it("an accepted Target uses the unit of the Go up tap, or the Target's unit on an older row", () => {
+    const accepted = { ...target, acceptedTargetWeightKg: 12, acceptedTargetReps: 8, targetUnit: "kg" as const };
+    expect(toHistory([past({ ...accepted, acceptedTargetUnit: "lb" })], 3)[0].acceptedTargetUnit).toBe("lb");
+    expect(toHistory([past({ ...accepted, acceptedTargetUnit: null })], 3)[0].acceptedTargetUnit).toBe("kg");
+  });
+  it("a first workout with no Target uses the unit its heaviest set was logged in", () => {
+    const sets = [set(10, "kg"), { ...set(20, "lb"), idx: 1 }];
+    expect(unitOf({ targetUnit: "kg", sets })).toBe("lb");
   });
 });

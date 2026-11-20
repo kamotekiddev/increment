@@ -1,6 +1,8 @@
 /** Overload engine types. Weights are kg. No I/O, no React, no database. */
 
-export type LoadType = "weighted" | "bodyweight" | "bodyweight_or_weighted";
+export type LoadType = "weighted" | "bodyweight";
+/** The unit a weight was set or logged in. The engine never converts; it only compares units. */
+export type WeightUnit = "kg" | "lb";
 export type Step = "weight" | "reps" | "both";
 
 export type MissAction = { kind: "keep" } | { kind: "drop"; percent: number };
@@ -45,7 +47,17 @@ export interface HistorySession {
   target: Target | null;
   /** The lifter accepted the offered step after this workout. */
   progressAccepted: boolean;
+  /** The stepped-up Target the lifter accepted, as offered (snapped to the Jump's grid only after a unit switch). Absent or null when not stored (Stay, or saved before it was kept); the step is then recomputed. */
+  acceptedTarget?: Target | null;
   isDeload: boolean;
+  /**
+   * The unit the Target and accepted Target were set in or, for a first workout with no Target, the unit
+   * its sets were logged in. Absent means kg. When it differs from the lifter's current unit, the Target
+   * snaps to the Jump's grid.
+   */
+  targetUnit?: WeightUnit;
+  /** The unit the accepted Target was offered in (the lifter's unit at Go up). Absent means `targetUnit`. */
+  acceptedTargetUnit?: WeightUnit;
   sets: LoggedSet[];
 }
 
@@ -80,4 +92,6 @@ export interface NextTargetInput {
   history: HistorySession[];
   /** The Jump, in kg. */
   jumpKg: number;
+  /** The lifter's current unit, which `jumpKg` belongs to. */
+  unit: WeightUnit;
 }

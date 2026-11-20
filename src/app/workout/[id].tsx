@@ -7,9 +7,8 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
-import { UnitSegmented, useUnit } from "@/settings";
-import { formatWeight } from "@/units";
-import { type SetEdit, finishCheck, lastColumn, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
+import { UnitSegmented, useJumps, useUnit } from "@/settings";
+import { type SetEdit, finishCheck, lastColumn, lastSetText, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
 import { RestPanel } from "@/workout/RestPanel";
@@ -131,6 +130,7 @@ function NumberField({
 
 export default function LiveWorkoutScreen() {
   const { unit, setUnit } = useUnit();
+  const { jumps } = useJumps();
   // Weight text typed after an edit, per set; dropped on a unit switch, a check, or leaving the screen.
   const [drafts, setDrafts] = useState<WeightDrafts>(EMPTY_DRAFTS);
   const colors = useColors();
@@ -266,7 +266,7 @@ export default function LiveWorkoutScreen() {
     finishWorkout(Number(idParam));
     // Replaces the live screen, so the last screen's back lands where the workout started.
     // The first Offer opens when anything was Earned, otherwise the summary.
-    if (loadOffers(Number(idParam), unit).length > 0) {
+    if (loadOffers(Number(idParam), unit, jumps).length > 0) {
       router.replace({ pathname: "/workout/offer/[id]", params: { id: String(idParam), step: "0" } });
     } else {
       router.replace({ pathname: "/workout/summary/[id]", params: { id: String(idParam) } });
@@ -277,6 +277,8 @@ export default function LiveWorkoutScreen() {
   const total = workout?.exercises.length ?? 0;
   const currentSet = exercise ? currentSetIndex(exercise.rows) : null;
   const last = exercise ? lastColumn(lastExercises[exercise.id] ?? null, exercise.rows.length) : [];
+  // A bodyweight exercise has no weight box: its sets are reps only and save weight 0.
+  const bodyweight = exercise?.loadType === "bodyweight";
 
   function edit(index: number, change: SetEdit) {
     if (!workout || !exercise) return;
@@ -290,7 +292,7 @@ export default function LiveWorkoutScreen() {
   function toggle(index: number) {
     if (!workout || !exercise) return;
     const row = exercise.rows[index];
-    const rows = markSetDone(exercise.rows, index, !row.done, unit);
+    const rows = markSetDone(exercise.rows, index, !row.done, unit, exercise.loadType);
     if (rows === exercise.rows) return;
     setDrafts((d) => clearDraft(d, row.setId));
     const exercises = workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e));
@@ -437,7 +439,7 @@ export default function LiveWorkoutScreen() {
                   lineHeight: 19,
                 }}
               >
-                {bannerText(exercise.target, exercise.range, unit)}
+                {bannerText(exercise.target, exercise.range, unit, exercise.loadType)}
               </Text>
             </View>
             <View style={{ gap: spacing.sm }}>
@@ -450,16 +452,18 @@ export default function LiveWorkoutScreen() {
                 <Text variant="caption" tone="muted" style={{ flex: 1, fontFamily: fontFamily.medium }}>
                   Last
                 </Text>
-                <Text variant="caption" tone="muted" style={{ width: col.weight, textAlign: "center", fontFamily: fontFamily.medium }}>
-                  {unit}
-                </Text>
+                {bodyweight ? null : (
+                  <Text variant="caption" tone="muted" style={{ width: col.weight, textAlign: "center", fontFamily: fontFamily.medium }}>
+                    {unit}
+                  </Text>
+                )}
                 <Text variant="caption" tone="muted" style={{ width: col.reps, textAlign: "center", fontFamily: fontFamily.medium }}>
                   Reps
                 </Text>
                 <View style={{ width: minTouch }} />
               </View>
               {exercise.rows.map((row, index) => {
-                const blocked = !row.done && !canMarkDone(row);
+                const blocked = !row.done && !canMarkDone(row, exercise.loadType);
                 return (
                   <View
                     key={row.setId}
@@ -480,23 +484,25 @@ export default function LiveWorkoutScreen() {
                         {index + 1}
                       </Text>
                       <Text variant="caption" tone="muted" numberOfLines={1} style={{ flex: 1, fontSize: fontSize.meta }}>
-                        {last[index] ? `${formatWeight(last[index].weightKg, unit)} × ${last[index].reps}` : "–"}
+                        {lastSetText(last[index], unit, exercise.loadType)}
                       </Text>
-                      <View style={{ width: col.weight, height: minTouch, flexDirection: "row" }}>
-                        <NumberField
-                          label={`Set ${index + 1} weight`}
-                          keyboardType="decimal-pad"
-                          parse={parseWeight}
-                          value={weightFieldText(drafts, row, unit)}
-                          flat={index !== currentSet}
-                          onText={(t) => {
-                            const w = weightFromTyped(t, unit);
-                            if (w === undefined) return;
-                            setDrafts((d) => typeDraft(d, row.setId, t, unit));
-                            edit(index, { weightKg: w });
-                          }}
-                        />
-                      </View>
+                      {bodyweight ? null : (
+                        <View style={{ width: col.weight, height: minTouch, flexDirection: "row" }}>
+                          <NumberField
+                            label={`Set ${index + 1} weight`}
+                            keyboardType="decimal-pad"
+                            parse={parseWeight}
+                            value={weightFieldText(drafts, row, unit)}
+                            flat={index !== currentSet}
+                            onText={(t) => {
+                              const w = weightFromTyped(t, unit);
+                              if (w === undefined) return;
+                              setDrafts((d) => typeDraft(d, row.setId, t, unit));
+                              edit(index, { weightKg: w });
+                            }}
+                          />
+                        </View>
+                      )}
                       <View style={{ width: col.reps, height: minTouch, flexDirection: "row" }}>
                         <NumberField
                           label={`Set ${index + 1} reps`}

@@ -1,6 +1,8 @@
 import { router } from "expo-router";
 import { useState } from "react";
 
+import { useJumps, useUnit } from "@/settings";
+
 import { findInProgressWorkout } from "./inProgressQueries";
 import { ResumeOrDiscardSheet } from "./ResumeOrDiscardSheet";
 import { startDecision } from "./startDecision";
@@ -22,10 +24,12 @@ export function useStartWorkout() {
     routineId: number;
     startingName: string;
   } | null>(null);
+  const { jumps } = useJumps();
+  const { unit } = useUnit();
 
   function start(routineId: number, routineName: string) {
     const decision = startDecision(findInProgressWorkout());
-    if (decision.kind === "start") openWorkout(startWorkout(routineId));
+    if (decision.kind === "start") openWorkout(startWorkout(routineId, jumps, unit));
     else setPrompt({ workoutId: decision.workoutId, runningName: decision.routineName, routineId, startingName: routineName });
   }
 
@@ -42,7 +46,7 @@ export function useStartWorkout() {
       onDiscardAndStart={() => {
         if (!prompt) return;
         setPrompt(null);
-        openWorkout(discardAndStartWorkout(prompt.workoutId, prompt.routineId));
+        openWorkout(discardAndStartWorkout(prompt.workoutId, prompt.routineId, jumps, unit));
       }}
       onDismiss={() => setPrompt(null)}
     />

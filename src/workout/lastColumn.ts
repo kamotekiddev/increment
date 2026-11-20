@@ -1,4 +1,7 @@
+import type { LoadType } from "../engine";
+import { formatWeight, type Unit } from "../units";
 import type { PastExercise } from "./historyInputs";
+import { repsText } from "./repsText";
 
 export interface LastSet {
   weightKg: number;
@@ -15,4 +18,14 @@ export function lastColumn(last: PastExercise | null, rowCount: number): (LastSe
     const set = working.find((s) => s.idx === i);
     return set && set.done ? { weightKg: set.weightKg, reps: set.reps } : null;
   });
+}
+
+/**
+ * One cell of the Last column: "60 × 8" in the unit on screen, or "–". A bodyweight exercise has no
+ * weight, so it shows reps only, even for a set logged with added weight before the split.
+ */
+export function lastSetText(set: LastSet | null, unit: Unit, loadType: LoadType): string {
+  if (!set) return "–";
+  if (loadType === "bodyweight") return repsText(set.reps);
+  return `${formatWeight(set.weightKg, unit)} × ${set.reps}`;
 }

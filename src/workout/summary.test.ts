@@ -48,7 +48,7 @@ describe("buildSummary header", () => {
   });
 
   it("counts a weighted bodyweight set at its added load and a bodyweight set as 0", () => {
-    const weighted = exercise([session("2026-11-17", null, [8], { weightKg: 10 })], {}, { loadType: "bodyweight_or_weighted", sets: sets([8], 10) });
+    const weighted = exercise([session("2026-11-17", null, [8], { weightKg: 10 })], {}, { name: "Weighted pull-up", loadType: "weighted", sets: sets([8], 10) });
     const bare = exercise([session("2026-11-17", null, [12], { weightKg: 0 })], {}, { id: 2, name: "Pull-up", loadType: "bodyweight", sets: sets([12], 0) });
     expect(build([weighted, bare]).header).toMatchObject({ sets: 2, volumeKg: 80, showTotalReps: false });
   });
@@ -209,5 +209,31 @@ describe("buildSummary in lb", () => {
     const summary = build([ex], 45, "lb");
     expect(summary.cards[0].line).toBe("2 more at 132.28 lb × 10 to earn 137.79 lb × 10.");
     expect(summary.header.volumeKg).toBe(1800);
+  });
+
+  it("offers one Jump above the snapped Target when the Target was set in kg: Stay 140 lb, Go up 145 lb", () => {
+    const LB = 0.45359237;
+    const t = { weightKg: 62.5, reps: 10 };
+    const history = ["2026-11-17", "2026-11-10", "2026-11-03"].map((d) => session(d, t, [10, 10, 10], { unit: "kg" }));
+    const summary = build([exercise(history, {}, { jumpKg: 5 * LB })], 45, "lb");
+    const inLb = (kg: number) => Number((kg / LB).toFixed(2));
+    expect(inLb(summary.cards[0].next!.weightKg)).toBe(140);
+    const offer = summary.offers[0];
+    expect([inLb(offer.current.weightKg), inLb(offer.stepped.weightKg)]).toEqual([140, 145]);
+  });
+});
+
+describe("buildSummary on a bodyweight exercise logged with added weight before the split", () => {
+  const bw = (target: { weightKg: number; reps: number }, date: string) => session(date, target, [8, 8, 8]);
+  const pullup = exercise(
+    [bw({ weightKg: 0, reps: 8 }, "2026-11-17"), bw({ weightKg: 0, reps: 8 }, "2026-11-10"), bw({ weightKg: 20, reps: 8 }, "2026-11-03")],
+    defaultRule("bodyweight"),
+    { name: "Pullups", loadType: "bodyweight" },
+  );
+
+  it("counts the Streak across the old weighted Target and offers reps, never a weight", () => {
+    const summary = build([pullup]);
+    expect(summary.cards[0]).toMatchObject({ outcome: "clean", streak: 3, next: { weightKg: 0, reps: 8 } });
+    expect(summary.offers[0]).toMatchObject({ current: { weightKg: 0, reps: 8 }, stepped: { weightKg: 0, reps: 9 } });
   });
 });

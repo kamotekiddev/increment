@@ -14,7 +14,7 @@ export const exercises = sqliteTable("exercises", {
   equipment: text("equipment").notNull(),
   /** JSON array of how-to steps. */
   instructions: text("instructions", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
-  loadType: text("load_type", { enum: ["weighted", "bodyweight", "bodyweight_or_weighted"] }).notNull(),
+  loadType: text("load_type", { enum: ["weighted", "bodyweight"] }).notNull(),
   isCustom: integer("is_custom", { mode: "boolean" }).notNull().default(false),
 });
 
@@ -76,8 +76,24 @@ export const workoutExercises = sqliteTable(
     /** The Target shown at the start; null when none existed (first workout). */
     targetWeightKg: real("target_weight_kg"),
     targetReps: integer("target_reps"),
+    /**
+     * The lifter's unit when Start set the Target. The next Target snaps to the Jump's grid only when the unit
+     * differs. Null on rows saved before it was stored: those fall back to their sets' entered_unit, then kg.
+     */
+    targetUnit: text("target_unit", { enum: ["kg", "lb"] }),
     /** The lifter accepted the offered step after this workout. */
     progressAccepted: integer("progress_accepted", { mode: "boolean" }).notNull().default(false),
+    /**
+     * The stepped-up Target the lifter accepted (Go up), kept so the next Start shows it even if a Jump changes.
+     * Null after Stay, and on accepted rows saved before it was stored (those recompute the step).
+     */
+    acceptedTargetWeightKg: real("accepted_target_weight_kg"),
+    acceptedTargetReps: integer("accepted_target_reps"),
+    /**
+     * The lifter's unit when they tapped Go up, which the accepted Target was offered in. Null after Stay and on
+     * rows saved before it was stored: those use target_unit's fallbacks.
+     */
+    acceptedTargetUnit: text("accepted_target_unit", { enum: ["kg", "lb"] }),
     isDeload: integer("is_deload", { mode: "boolean" }).notNull().default(false),
   },
   (t) => [uniqueIndex("workout_exercises_unique").on(t.workoutId, t.exerciseId, t.position)],
@@ -118,6 +134,18 @@ export const userSettings = sqliteTable("user_settings", {
   id: integer("id").primaryKey(),
   /** The unit every weight is shown and typed in. Stored weights stay kg. */
   unit: text("unit", { enum: ["kg", "lb"] }).notNull().default("kg"),
+  /**
+   * The Jumps: the smallest weight the lifter can add, one per equipment group, stored in kg whichever unit
+   * set it (15 lb is 6.80388555). In the other unit it shows as the nearest rung of that unit's ladder
+   * (`effectiveJumps`): 5 kg is 10 lb. NULL until the lifter changes that Jump: an untouched Jump is the
+   * current unit's default (2.5 kg, 5 lb for Barbell).
+   */
+  jumpBarbellKg: real("jump_barbell_kg"),
+  jumpDumbbellKg: real("jump_dumbbell_kg"),
+  jumpMachineKg: real("jump_machine_kg"),
+  jumpCableKg: real("jump_cable_kg"),
+  /** Added weight (belt, vest) on a weighted bodyweight exercise. */
+  jumpBodyweightKg: real("jump_bodyweight_kg"),
 });
 
 /**

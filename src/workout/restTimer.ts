@@ -1,4 +1,5 @@
 import { formatWithUnit, type Unit } from "../units";
+import { repsText } from "./repsText";
 import type { SetRow } from "./types";
 
 /** One set in the workout: which exercise (position in the screen's list) and which row. */
@@ -83,8 +84,7 @@ export function nextUp(exercises: RestExercise[], exerciseIndex: number, unit: U
     if (i >= 0) {
       const row = current.rows[i];
       const load = loadText(current, row, unit);
-      const reps = `${row.reps} ${row.reps === 1 ? "rep" : "reps"}`;
-      return `Set ${i + 1} · ${load ? `${load} × ${row.reps}` : reps}`;
+      return `Set ${i + 1} · ${load ? `${load} × ${row.reps}` : repsText(row.reps)}`;
     }
   }
   const n = nextOpenExercise(exercises, exerciseIndex);

@@ -1,7 +1,7 @@
 import { classify } from "./outcome";
-import { floorToMultiple, nextMultipleAbove, sameWeight } from "./rounding";
+import { floorToMultiple, nearestMultiple, nextMultipleAbove, sameWeight } from "./rounding";
 import { effectiveStep } from "./rule";
-import type { HistorySession, NextTargetInput, Planned, Target, TargetResult } from "./types";
+import type { HistorySession, NextTargetInput, Planned, Target, TargetResult, WeightUnit } from "./types";
 
 const sameTarget = (a: Target, b: Target) => sameWeight(a.weightKg, b.weightKg) && a.reps === b.reps;
 
@@ -12,9 +12,23 @@ export function weekIndex(date: string): number {
   return Math.floor((day + 3) / 7); // 1970-01-01 was a Thursday
 }
 
+/**
+ * A bodyweight exercise has no weight. Sets and Targets logged with added weight before the exercise
+ * was split (Pull-up and Weighted pull-up) read as 0, so nothing hidden is carried forward.
+ */
+export function withoutAddedWeight(history: HistorySession[]): HistorySession[] {
+  return history.map((s) => ({
+    ...s,
+    target: s.target ? { ...s.target, weightKg: 0 } : null,
+    acceptedTarget: s.acceptedTarget ? { ...s.acceptedTarget, weightKg: 0 } : s.acceptedTarget,
+    sets: s.sets.map((set) => ({ ...set, weightKg: 0 })),
+  }));
+}
+
 /** The next step up from `base`: what to offer, or null when no step is possible. */
-export function stepUp(base: Target, input: NextTargetInput): Target | null {
+export function stepUp(target: Target, input: NextTargetInput): Target | null {
   const { rule, planned, loadType, jumpKg } = input;
+  const base = loadType === "bodyweight" ? { ...target, weightKg: 0 } : target;
   const step = effectiveStep(rule.step, loadType);
   const reps = Math.min(base.reps + rule.repStep, planned.repMax);
   const canAddReps = base.reps < planned.repMax;
@@ -66,7 +80,19 @@ function deloadDue(history: HistorySession[], everyWeeks: number): boolean {
   return weeks.size >= everyWeeks;
 }
 
-export function nextTarget(input: NextTargetInput): TargetResult {
+/**
+ * A past Target as the lifter can load it now. One set in another unit than the current one snaps to the
+ * nearest multiple of the Jump (a tie rounds up): 10 kg is 22.05 lb, which a 5 lb grid shows as 20 lb. One
+ * set in the current unit is kept as is, even if the Jump changed since. A Target already on the grid, and
+ * a bodyweight 0, are unchanged.
+ */
+export function inCurrentUnit(target: Target, setIn: WeightUnit | undefined, input: Pick<NextTargetInput, "unit" | "jumpKg">): Target {
+  if ((setIn ?? "kg") === input.unit) return target;
+  return { ...target, weightKg: nearestMultiple(target.weightKg, input.jumpKg) };
+}
+
+export function nextTarget(given: NextTargetInput): TargetResult {
+  const input = given.loadType === "bodyweight" ? { ...given, history: withoutAddedWeight(given.history) } : given;
   const { rule, jumpKg } = input;
   const regular = input.history.filter((s) => !s.isDeload);
   const latest = regular[0];
@@ -88,13 +114,20 @@ function regularTarget(input: NextTargetInput, regular: HistorySession[]): Targe
   const { rule, planned, jumpKg } = input;
   const latest = regular[0];
   if (!latest.target) {
-    return { target: baselineTarget(latest, planned), proposal: null, reason: "baseline" };
+    const baseline = baselineTarget(latest, planned);
+    return { target: baseline && inCurrentUnit(baseline, latest.targetUnit, input), proposal: null, reason: "baseline" };
   }
-  const base = latest.target;
+  // A Target set in the other unit snaps first, so a step goes one Jump above what Stay would show.
+  const base = inCurrentUnit(latest.target, latest.targetUnit, input);
   const earned = streakLength(regular, planned) >= rule.sessionsToEarn;
   const stepped = stepUp(base, input);
 
   if (earned) {
+    // An accepted step keeps the Target the lifter saw, even if the Jump changed since (it snaps only after a unit switch).
+    if (latest.progressAccepted && latest.acceptedTarget) {
+      const setIn = latest.acceptedTargetUnit ?? latest.targetUnit;
+      return { target: inCurrentUnit(latest.acceptedTarget, setIn, input), proposal: null, reason: "progressed" };
+    }
     if (!stepped) return { target: base, proposal: null, reason: "at-top-of-range" };
     if (latest.progressAccepted) return { target: stepped, proposal: null, reason: "progressed" };
     return { target: base, proposal: stepped, reason: "earned" };

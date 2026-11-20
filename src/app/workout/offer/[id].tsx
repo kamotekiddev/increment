@@ -6,9 +6,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Text } from "@/components";
 import { fontFamily, fontSize, radius, spacing, useColors } from "@/theme";
-import { useUnit } from "@/settings";
-import { formatWithUnit } from "@/units";
-import { targetText } from "@/workout";
+import { useJumps, useUnit } from "@/settings";
+import { loadText, offerHeading, targetText } from "@/workout";
 import { answerOffer, loadOffers } from "@/workout/summaryQueries";
 
 /**
@@ -21,9 +20,10 @@ export default function OfferScreen() {
   const insets = useSafeAreaInsets();
   const { id, step } = useLocalSearchParams<{ id: string; step: string }>();
   const { unit } = useUnit();
+  const { jumps } = useJumps();
   const workoutId = Number(id);
   const index = Number(step ?? 0);
-  const offers = useMemo(() => loadOffers(workoutId, unit), [workoutId, unit]);
+  const offers = useMemo(() => loadOffers(workoutId, unit, jumps), [workoutId, unit, jumps]);
   const offer = offers[index];
   const answered = useRef(false);
 
@@ -40,7 +40,7 @@ export default function OfferScreen() {
   function answer(accepted: boolean) {
     if (answered.current) return;
     answered.current = true;
-    answerOffer(offer.workoutExerciseId, accepted);
+    answerOffer(offer.workoutExerciseId, accepted, offer.stepped, unit);
     if (index + 1 < offers.length) {
       router.replace({ pathname: "/workout/offer/[id]", params: { id: String(workoutId), step: String(index + 1) } });
     } else {
@@ -74,7 +74,7 @@ export default function OfferScreen() {
         </View>
         <View style={{ gap: 2 }}>
           <Text tone="muted" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.label }}>
-            You earned a heavier weight
+            {offerHeading(offer.current, offer.stepped)}
           </Text>
           <Text tone="accent" style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.small }}>
             {index + 1} of {offers.length}
@@ -116,13 +116,13 @@ export default function OfferScreen() {
           </Text>
         </View>
         <Text tone="muted" style={{ fontSize: fontSize.small, paddingHorizontal: spacing.xs }}>
-          Stay keeps {formatWithUnit(offer.current.weightKg, unit)}. The offer comes back after your next clean workout.
+          Stay keeps {loadText(offer.current, unit)}. The offer comes back after your next clean workout.
         </Text>
       </View>
 
       <View style={{ gap: spacing.sm + 2 }}>
-        <Button label={`Go up to ${formatWithUnit(offer.stepped.weightKg, unit)}`} large onPress={() => answer(true)} />
-        <Button label={`Stay at ${formatWithUnit(offer.current.weightKg, unit)}`} variant="outlined" large onPress={() => answer(false)} />
+        <Button label={`Go up to ${loadText(offer.stepped, unit)}`} large onPress={() => answer(true)} />
+        <Button label={`Stay at ${loadText(offer.current, unit)}`} variant="outlined" large onPress={() => answer(false)} />
       </View>
     </View>
   );

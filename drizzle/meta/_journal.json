@@ -36,6 +36,27 @@
       "when": 1794992464589,
       "tag": "0004_tearful_butterfly",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1795079219019,
+      "tag": "0005_blushing_chimera",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1795079749302,
+      "tag": "0006_yellow_rictor",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1795084288393,
+      "tag": "0007_round_loki",
+      "breakpoints": true
     }
   ]
 }

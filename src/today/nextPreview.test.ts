@@ -16,8 +16,11 @@ describe("previewTargetText", () => {
 
   it("shows reps for bodyweight", () => {
     expect(previewTargetText("bodyweight", { weightKg: 0, reps: 12 }, "kg")).toBe("12 reps");
-    expect(previewTargetText("bodyweight_or_weighted", { weightKg: 0, reps: 1 }, "kg")).toBe("1 rep");
-    expect(previewTargetText("bodyweight_or_weighted", { weightKg: 10, reps: 8 }, "kg")).toBe("10 kg");
+    expect(previewTargetText("bodyweight", { weightKg: 0, reps: 1 }, "kg")).toBe("1 rep");
+  });
+
+  it("shows the added weight for a weighted bodyweight exercise", () => {
+    expect(previewTargetText("weighted", { weightKg: 10, reps: 8 }, "kg")).toBe("10 kg");
   });
 
   it("converts to lb", () => {

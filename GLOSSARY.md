@@ -13,7 +13,7 @@ The per-exercise setting that decides how a Target changes once progression is E
 _Avoid_: Plan, algorithm, progression type
 
 **Jump**:
-The smallest amount of weight added in one step of progression. It is one value, in the lifter's unit.
+The smallest amount of weight added in one step of progression. It is set per equipment (for example barbell or dumbbell). In the other unit it shows as the nearest real step.
 _Avoid_: Increment (the app's name), step size, plate
 
 **Rep range**:
@@ -69,7 +69,7 @@ A deliberately lighter workout, scheduled every N weeks when the lifter turns it
 _Avoid_: Recovery week, reset
 
 **Load type**:
-Whether an exercise can progress by weight, by reps only, or both: weighted, bodyweight, or bodyweight or weighted.
+Whether an exercise progresses by weight or by reps only: weighted or bodyweight. An exercise done both with and without added weight is two exercises (for example Pull-up and Weighted pull-up).
 _Avoid_: Exercise type, category
 
 **Workout exercise**:

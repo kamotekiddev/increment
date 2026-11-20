@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
-import { nextTarget, type Target } from "@/engine";
+import { nextTarget, type LoadType, type Target } from "@/engine";
+import { jumpKgFor, type Jumps } from "@/settings";
 import type { Unit } from "@/units";
 
 import { toHistory, type PastExercise } from "./historyInputs";
 import { applyEdit, type SetEdit } from "./applyEdit";
 import { initialSetRows } from "./initialSetRows";
-import { JUMP_KG } from "./jump";
-import { setDone } from "./markDone";
+import { doneFields, setDone } from "./markDone";
 import { rowFromStored, weightToStore } from "./setStorage";
 import type { SetRow } from "./types";
 
@@ -35,7 +35,11 @@ export function pastExercises(q: Queryable, routineId: number, exerciseId: numbe
       date: workouts.date,
       targetWeightKg: workoutExercises.targetWeightKg,
       targetReps: workoutExercises.targetReps,
+      targetUnit: workoutExercises.targetUnit,
       progressAccepted: workoutExercises.progressAccepted,
+      acceptedTargetWeightKg: workoutExercises.acceptedTargetWeightKg,
+      acceptedTargetReps: workoutExercises.acceptedTargetReps,
+      acceptedTargetUnit: workoutExercises.acceptedTargetUnit,
       isDeload: workoutExercises.isDeload,
     })
     .from(workoutExercises)
@@ -65,10 +69,12 @@ function deleteWorkoutExercise(q: Queryable, workoutExerciseId: number): void {
 
 /**
  * Starts a workout from a routine as it is now, in one synchronous transaction. Each exercise's
- * Target comes from the engine, reading only finished workouts of this routine (ADR 0002). Returns
- * the new workout id, or null when the routine has no exercises.
+ * Target comes from the engine, reading only finished workouts of this routine (ADR 0002) and
+ * stepping by the Jump of the exercise's equipment in the lifter's current `unit`. Each Target records
+ * that unit, so a Target set in the other unit snaps to the Jump's grid next time. Returns the new
+ * workout id, or null when the routine has no exercises.
  */
-export function startWorkout(routineId: number, now: Date = new Date()): number | null {
+export function startWorkout(routineId: number, jumps: Jumps, unit: Unit, now: Date = new Date()): number | null {
   return db.transaction((tx) => {
     const planned = tx
       .select({
@@ -78,6 +84,7 @@ export function startWorkout(routineId: number, now: Date = new Date()): number 
         repMax: routineExercises.repMax,
         rule: routineExercises.rule,
         loadType: exercises.loadType,
+        equipment: exercises.equipment,
       })
       .from(routineExercises)
       .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
@@ -99,7 +106,8 @@ export function startWorkout(routineId: number, now: Date = new Date()): number 
         planned: { sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax },
         loadType: ex.loadType,
         history: toHistory(rows, ex.sets),
-        jumpKg: JUMP_KG,
+        jumpKg: jumpKgFor(ex.equipment, jumps),
+        unit,
       }).target;
 
       const workoutExercise = tx
@@ -110,6 +118,7 @@ export function startWorkout(routineId: number, now: Date = new Date()): number 
           position,
           targetWeightKg: target?.weightKg ?? null,
           targetReps: target?.reps ?? null,
+          targetUnit: unit,
         })
         .returning({ id: workoutExercises.id })
         .get();
@@ -146,7 +155,7 @@ export interface LiveExercise {
   range: { repMin: number; repMax: number } | null;
   /** The Routine exercise's Rest length in seconds; the default when the routine exercise is gone. */
   restSeconds: number;
-  loadType: "weighted" | "bodyweight" | "bodyweight_or_weighted";
+  loadType: LoadType;
   rows: LiveSet[];
 }
 
@@ -222,16 +231,17 @@ export function useWorkout(id: number): [LiveWorkout | null | undefined, (w: Liv
 }
 
 /**
- * Marks a set done or not done and writes it at once. A set with a blank weight is not marked
- * (the write is skipped). Returns the updated rows of that exercise.
+ * Marks a set done or not done and writes it at once. A weighted set with a blank weight is not
+ * marked (the write is skipped); a bodyweight set is saved at weight 0. Returns the updated rows of that exercise.
  */
-export function markSetDone(rows: LiveSet[], index: number, done: boolean, unit: Unit): LiveSet[] {
-  const next = setDone(rows, index, done) as LiveSet[];
+export function markSetDone(rows: LiveSet[], index: number, done: boolean, unit: Unit, loadType: LoadType): LiveSet[] {
+  const next = setDone(rows, index, done, loadType) as LiveSet[];
   if (next === rows) return rows;
+  const changed = doneFields(done, loadType);
   db.transaction((tx) => {
     // `entered_unit` is the unit on screen when the set is checked. Unchecking leaves it as it was.
     tx.update(sets)
-      .set(done ? { done, enteredUnit: unit } : { done })
+      .set(done ? { ...changed, enteredUnit: unit } : changed)
       .where(eq(sets.id, rows[index].setId))
       .run();
     touchWorkout(tx, rows[index].setId);
@@ -282,9 +292,9 @@ export function finishWorkout(id: number, now: Date = new Date()): void {
 }
 
 /** Discards the workout in progress, then starts the routine. Returns the new workout id (null when the routine is empty). */
-export function discardAndStartWorkout(inProgressId: number, routineId: number): number | null {
+export function discardAndStartWorkout(inProgressId: number, routineId: number, jumps: Jumps, unit: Unit): number | null {
   discardWorkout(inProgressId);
-  return startWorkout(routineId);
+  return startWorkout(routineId, jumps, unit);
 }
 
 /** Applies a typed or stepped edit to one row, following the rule, and writes every row it changed. */
