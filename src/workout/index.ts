@@ -8,7 +8,7 @@ export type { SetRow } from "./types";
 export { bannerText } from "./bannerText";
 export { canMarkDone, setDone } from "./markDone";
 export { rowFromStored, weightToStore } from "./setStorage";
-export { lastColumn, lastSetText } from "./lastColumn";
+export { lastColumn, lastSetText, setRowColumns } from "./lastColumn";
 export type { LastSet } from "./lastColumn";
 export { parseWeight, parseReps } from "./parseInput";
 export { weightFromTyped, weightText } from "./typedWeight";

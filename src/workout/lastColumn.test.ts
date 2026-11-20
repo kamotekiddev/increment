@@ -1,4 +1,4 @@
-import { lastColumn, lastSetText } from "./lastColumn";
+import { lastColumn, lastSetText, setRowColumns } from "./lastColumn";
 import type { PastExercise } from "./historyInputs";
 
 const past = (sets: PastExercise["sets"]): PastExercise => ({
@@ -43,5 +43,20 @@ describe("lastSetText", () => {
   it("writes reps only on a bodyweight exercise, hiding weight logged before the split", () => {
     expect(lastSetText({ weightKg: 0, reps: 8 }, "kg", "bodyweight")).toBe("8 reps");
     expect(lastSetText({ weightKg: 20, reps: 1 }, "lb", "bodyweight")).toBe("1 rep");
+  });
+});
+
+describe("setRowColumns", () => {
+  it("shows the Last column between Set and the inputs when on, for a weighted exercise", () => {
+    expect(setRowColumns("weighted", true)).toEqual(["set", "last", "weight", "reps", "check"]);
+  });
+  it("drops only the Last column when off, for a weighted exercise", () => {
+    expect(setRowColumns("weighted", false)).toEqual(["set", "weight", "reps", "check"]);
+  });
+  it("has no weight box for a bodyweight exercise, with Last on", () => {
+    expect(setRowColumns("bodyweight", true)).toEqual(["set", "last", "reps", "check"]);
+  });
+  it("drops only the Last column when off, for a bodyweight exercise", () => {
+    expect(setRowColumns("bodyweight", false)).toEqual(["set", "reps", "check"]);
   });
 });
