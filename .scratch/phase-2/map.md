@@ -22,7 +22,7 @@ The Settings screen (gear on Today) with an interactive kg/lb preference, also s
 ### 2 · Weight jumps
 The Weight jumps screen: one Jump per equipment (Barbell, Dumbbell, Machine, Cable, Bodyweight added weight), set with − / + through real plate steps and shown in the lifter's unit as the nearest step. Replaces the fixed 2.5 kg constant. Targets round to a multiple of the Jump, and a Target set in the other unit snaps to the new unit's grid. The six "bodyweight or weighted" exercises split into twins. This is the second half of the gate: a Target the lifter can load. Spec and tickets: `weight-jumps/`.
 
-### 3 · Workout settings
+### 3 · Workout settings (built)
 Default rest, show previous set and keep screen awake. Each one is wired to the screen it changes (the starting Rest length of a newly added Routine exercise, the live workout Last column, the live workout wake lock). Light/dark theme is not in this feature (see Decisions so far).
 
 ### 4 · Exercise history
