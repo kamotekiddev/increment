@@ -4,6 +4,7 @@ import { ScrollView, View } from "react-native";
 import { RoundButton } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { UnitCard } from "@/settings/UnitCard";
+import { WorkoutCard } from "@/settings/WorkoutCard";
 import { spacing, useColors } from "@/theme";
 
 export default function SettingsScreen() {
@@ -13,6 +14,7 @@ export default function SettingsScreen() {
       <ScreenHeader left={<RoundButton icon="chevron-back" label="Back" onPress={() => router.back()} />} title="Settings" />
       <ScrollView contentContainerStyle={{ padding: spacing.xl, gap: spacing.lg }}>
         <UnitCard />
+        <WorkoutCard />
       </ScrollView>
     </View>
   );

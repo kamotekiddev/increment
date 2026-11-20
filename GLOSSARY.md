@@ -84,6 +84,10 @@ _Avoid_: Plan, program, split, template
 One exercise within a Routine, holding its planned sets, Rep range, rest length and Overload rule. A Streak and a Target belong to a Routine exercise, so the same exercise in two Routines progresses separately.
 _Avoid_: Slot, entry
 
+**Default rest**:
+The Rest length a Routine exercise starts with when it is added to a Routine. The lifter sets it in Settings. Changing it never changes an exercise already in a Routine.
+_Avoid_: Global rest, rest setting
+
 **Rest length**:
 The seconds the lifter plans to rest between sets of a Routine exercise.
 _Avoid_: Rest timer (that counts down during a workout)

@@ -5,3 +5,11 @@ export type { JumpKey, Jumps, SavedJumps } from "./jumps";
 export { jumpsNote } from "./jumpsNote";
 export { JumpRow } from "./JumpRow";
 export { UnitSegmented } from "./UnitSegmented";
+export {
+  loadWorkoutSettingsOnce,
+  useDefaultRest,
+  useKeepScreenAwake,
+  useShowPreviousSet,
+  workoutStore,
+} from "./useWorkoutSettings";
+export { WorkoutCard } from "./WorkoutCard";

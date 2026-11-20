@@ -35,3 +35,13 @@ export function clampRest(restS: number): number {
   const snapped = Math.round(restS / SETUP_LIMITS.restStepS) * SETUP_LIMITS.restStepS;
   return clamp(snapped, SETUP_LIMITS.restMinS, SETUP_LIMITS.restMaxS);
 }
+
+/** What a Routine exercise gets when first added: the default sets and rep range, at the lifter's Default rest. */
+export function newExerciseSetup(defaultRestS: number): ExerciseSetup {
+  return { ...DEFAULT_SETUP, restS: clampRest(defaultRestS) };
+}
+
+/** One tap of − (-1) or + (+1) on the Default rest, in 15 s steps from 15 s to 10 min. */
+export function stepDefaultRest(restS: number, direction: 1 | -1): number {
+  return clampRest(restS + direction * SETUP_LIMITS.restStepS);
+}
