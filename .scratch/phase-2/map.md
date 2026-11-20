@@ -22,8 +22,8 @@ The Settings screen (gear on Today) with an interactive kg/lb preference, also s
 ### 2 · Weight jumps
 The Weight jumps screen: one Jump per equipment (Barbell, Dumbbell, Machine, Cable, Bodyweight added weight), set with − / + through real plate steps and shown in the lifter's unit as the nearest step. Replaces the fixed 2.5 kg constant. Targets round to a multiple of the Jump, and a Target set in the other unit snaps to the new unit's grid. The six "bodyweight or weighted" exercises split into twins. This is the second half of the gate: a Target the lifter can load. Spec and tickets: `weight-jumps/`.
 
-### 3 · Workout settings
-Default rest, show previous set, keep screen awake, and light/dark theme. Each one is wired to the screen it changes (routine rest default, the live workout Last column, the live workout wake lock, the app theme).
+### 3 · Workout settings (built)
+Default rest, show previous set and keep screen awake. Each one is wired to the screen it changes (the starting Rest length of a newly added Routine exercise, the live workout Last column, the live workout wake lock). Light/dark theme is not in this feature (see Decisions so far).
 
 ### 4 · Exercise history
 The History tab on Exercise detail opens Exercise history: past sessions for one exercise, newest first, with sets in the lifter's unit. No record tags yet.
@@ -44,7 +44,8 @@ Workout reminders in Settings, with the notification permission asked there. Reu
 - Charts, All records and the plate calculator stay in Phase 3, as in the roadmap.
 
 - Feature 2 (2026-11-19): free for everyone; plates and a per-exercise Jump override wait for Phase 3; pull-ups and similar split into bodyweight and weighted twins instead of one exercise with an optional belt.
+- Feature 3 (2026-11-20): Default rest only sets the starting Rest length of exercises added afterwards, never existing ones, and is a − / + stepper reusing `clampRest` (15 s steps, 15 s to 10 min, default 90 s). Show previous set off hides the whole Last column (weighted and bodyweight), the Target banner and prefilled values stay, default on. Keep screen awake defaults on and applies only on the live workout screen. Light/dark theme is deferred out of feature 3: there is no dark token set yet, so it needs its own feature or Phase 4 polish.
 
 ## Open
 - Resolved 2026-11-19: "Your gym's plates" moves to Phase 3 with the plate calculator; feature 2 covers the Jump only.
-- Light/dark theme is in the Settings list in `docs/product.md` but not named in the roadmap's Phase 2 line. Proposed: keep it in feature 3.
+- Resolved 2026-11-20: light/dark theme leaves feature 3 (no dark tokens yet). Where it lands instead (own feature or Phase 4 polish) is still open.
