@@ -146,6 +146,12 @@ export const userSettings = sqliteTable("user_settings", {
   jumpCableKg: real("jump_cable_kg"),
   /** Added weight (belt, vest) on a weighted bodyweight exercise. */
   jumpBodyweightKg: real("jump_bodyweight_kg"),
+  /** Default rest: the Rest length (seconds) an exercise gets when added to a Routine. Read through the rest clamp. */
+  defaultRestS: integer("default_rest_s").notNull().default(90),
+  /** Show previous set: whether the live workout draws the Last column. */
+  showPreviousSet: integer("show_previous_set", { mode: "boolean" }).notNull().default(true),
+  /** Keep screen awake: whether the live workout holds the screen lit. */
+  keepScreenAwake: integer("keep_screen_awake", { mode: "boolean" }).notNull().default(true),
 });
 
 /**

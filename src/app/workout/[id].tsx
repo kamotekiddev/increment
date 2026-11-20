@@ -7,7 +7,7 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
-import { UnitSegmented, useJumps, useUnit } from "@/settings";
+import { useJumps, useKeepScreenAwake, useShowPreviousSet, useUnit } from "@/settings";
 import { type SetEdit, finishCheck, lastColumn, lastSetText, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
@@ -23,6 +23,7 @@ import { allDonePrompt, finishPrompt, type FinishPrompt } from "@/workout/workou
 import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWorkoutSheet";
 import { elapsedText } from "@/workout/elapsedText";
 import { findInProgressWorkout, useNow } from "@/workout/inProgressQueries";
+import { useWorkoutWakeLock } from "@/workout/useWorkoutWakeLock";
 import { canMarkDone } from "@/workout/markDone";
 import { firstOpenExercise } from "@/workout/resume";
 import { loadOffers } from "@/workout/summaryQueries";
@@ -129,8 +130,10 @@ function NumberField({
 }
 
 export default function LiveWorkoutScreen() {
-  const { unit, setUnit } = useUnit();
+  const { unit } = useUnit();
   const { jumps } = useJumps();
+  const { showPreviousSet } = useShowPreviousSet();
+  useWorkoutWakeLock(useKeepScreenAwake().keepScreenAwake);
   // Weight text typed after an edit, per set; dropped on a unit switch, a check, or leaving the screen.
   const [drafts, setDrafts] = useState<WeightDrafts>(EMPTY_DRAFTS);
   const colors = useColors();
@@ -279,6 +282,8 @@ export default function LiveWorkoutScreen() {
   const last = exercise ? lastColumn(lastExercises[exercise.id] ?? null, exercise.rows.length) : [];
   // A bodyweight exercise has no weight box: its sets are reps only and save weight 0.
   const bodyweight = exercise?.loadType === "bodyweight";
+  // With the Last column hidden, the weight and reps boxes share its freed width.
+  const cellWidth = (width: number) => (showPreviousSet ? { width } : { flex: 1 });
 
   function edit(index: number, change: SetEdit) {
     if (!workout || !exercise) return;
@@ -367,7 +372,7 @@ export default function LiveWorkoutScreen() {
             }}
           >
             <View style={{ gap: spacing.sm }}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <ChevronButton
                     icon="chevron-back"
@@ -385,7 +390,6 @@ export default function LiveWorkoutScreen() {
                     onPress={() => setCurrent(current + 1)}
                   />
                 </View>
-                <UnitSegmented unit={unit} onChange={setUnit} size="compact" track="card" />
               </View>
               <Text
                 accessibilityRole="header"
@@ -449,15 +453,17 @@ export default function LiveWorkoutScreen() {
                 <Text variant="caption" tone="muted" style={{ width: col.set, fontFamily: fontFamily.medium }}>
                   Set
                 </Text>
-                <Text variant="caption" tone="muted" style={{ flex: 1, fontFamily: fontFamily.medium }}>
-                  Last
-                </Text>
+                {showPreviousSet ? (
+                  <Text variant="caption" tone="muted" style={{ flex: 1, fontFamily: fontFamily.medium }}>
+                    Last
+                  </Text>
+                ) : null}
                 {bodyweight ? null : (
-                  <Text variant="caption" tone="muted" style={{ width: col.weight, textAlign: "center", fontFamily: fontFamily.medium }}>
+                  <Text variant="caption" tone="muted" style={{ ...cellWidth(col.weight), textAlign: "center", fontFamily: fontFamily.medium }}>
                     {unit}
                   </Text>
                 )}
-                <Text variant="caption" tone="muted" style={{ width: col.reps, textAlign: "center", fontFamily: fontFamily.medium }}>
+                <Text variant="caption" tone="muted" style={{ ...cellWidth(col.reps), textAlign: "center", fontFamily: fontFamily.medium }}>
                   Reps
                 </Text>
                 <View style={{ width: minTouch }} />
@@ -483,11 +489,13 @@ export default function LiveWorkoutScreen() {
                       <Text variant="label" tone={row.done ? "muted" : "ink"} style={{ width: col.set }}>
                         {index + 1}
                       </Text>
-                      <Text variant="caption" tone="muted" numberOfLines={1} style={{ flex: 1, fontSize: fontSize.meta }}>
-                        {lastSetText(last[index], unit, exercise.loadType)}
-                      </Text>
+                      {showPreviousSet ? (
+                        <Text variant="caption" tone="muted" numberOfLines={1} style={{ flex: 1, fontSize: fontSize.meta }}>
+                          {lastSetText(last[index], unit, exercise.loadType)}
+                        </Text>
+                      ) : null}
                       {bodyweight ? null : (
-                        <View style={{ width: col.weight, height: minTouch, flexDirection: "row" }}>
+                        <View style={{ ...cellWidth(col.weight), height: minTouch, flexDirection: "row" }}>
                           <NumberField
                             label={`Set ${index + 1} weight`}
                             keyboardType="decimal-pad"
@@ -503,7 +511,7 @@ export default function LiveWorkoutScreen() {
                           />
                         </View>
                       )}
-                      <View style={{ width: col.reps, height: minTouch, flexDirection: "row" }}>
+                      <View style={{ ...cellWidth(col.reps), height: minTouch, flexDirection: "row" }}>
                         <NumberField
                           label={`Set ${index + 1} reps`}
                           keyboardType="number-pad"

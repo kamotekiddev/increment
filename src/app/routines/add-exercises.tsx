@@ -10,7 +10,8 @@ import { useExercises, type LibraryExercise } from "@/library/exerciseQueries";
 import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { ExerciseSetupSheet } from "@/routines/ExerciseSetupSheet";
 import { addRoutineExercise, loadRoutineExercises } from "@/routines/routineQueries";
-import { DEFAULT_SETUP, type ExerciseSetup } from "@/routines/routineSetup";
+import { newExerciseSetup, type ExerciseSetup } from "@/routines/routineSetup";
+import { useDefaultRest } from "@/settings";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { spacing, useColors } from "@/theme";
 
@@ -19,6 +20,7 @@ export default function AddExercisesScreen() {
   const { routineId: param } = useLocalSearchParams<{ routineId: string }>();
   const routineId = Number(param);
   const exercises = useExercises();
+  const { defaultRestS } = useDefaultRest();
   const [addedIds, setAddedIds] = useState<ReadonlySet<number>>(new Set());
   const [picked, setPicked] = useState<LibraryExercise | null>(null);
   const [open, setOpen] = useState(false);
@@ -75,7 +77,7 @@ export default function AddExercisesScreen() {
         visible={open}
         exerciseName={picked?.name ?? ""}
         subtitle={picked ? exerciseMeta(picked) : ""}
-        initial={DEFAULT_SETUP}
+        initial={newExerciseSetup(defaultRestS)}
         rule={rule}
         primaryLabel="Add to routine"
         busy={adding}

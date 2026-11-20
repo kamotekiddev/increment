@@ -57,6 +57,13 @@
       "when": 1795084288393,
       "tag": "0007_round_loki",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1795169249746,
+      "tag": "0008_sharp_starfox",
+      "breakpoints": true
     }
   ]
 }
