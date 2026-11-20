@@ -4,21 +4,17 @@ import { Pressable, View } from "react-native";
 
 import { Card, Text } from "@/components";
 import { fontFamily, fontSize, opacity, radius, size, spacing, useColors } from "@/theme";
-import { formatWithUnit } from "@/units";
 
 import { UnitSegmented } from "./UnitSegmented";
-import { useJumps } from "./useJumps";
 import { useUnit } from "./useUnit";
 
 /**
- * The Units card of Settings: a Kilograms / Pounds control, a note, and the "Smallest weight jump" row
- * (the Barbell Jump) that opens Weight jumps. Choosing a unit saves at once.
+ * The Units card of Settings: a Kilograms / Pounds control, a note, and the "Weight jumps" row that opens
+ * Weight jumps. The row shows no number, because the screen holds one Jump per equipment. Choosing a unit saves at once.
  */
 export function UnitCard() {
   const colors = useColors();
   const { unit, setUnit } = useUnit();
-  const { jumps } = useJumps();
-  const barbell = formatWithUnit(jumps.barbell, unit);
   return (
     <View style={{ gap: spacing.sm }}>
       <Text variant="caption" tone="muted" style={{ fontSize: fontSize.small, fontFamily: fontFamily.medium, paddingHorizontal: 6 }}>
@@ -34,7 +30,7 @@ export function UnitCard() {
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={`Smallest weight jump, ${barbell}`}
+          accessibilityLabel="Weight jumps"
           onPress={() => router.push("/weight-jumps")}
           style={({ pressed }) => ({
             height: size.settingsRow,
@@ -47,13 +43,8 @@ export function UnitCard() {
             opacity: pressed ? opacity.pressed : 1,
           })}
         >
-          <Text style={{ fontSize: fontSize.body, fontFamily: fontFamily.medium }}>Smallest weight jump</Text>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Text tone="muted" style={{ fontSize: fontSize.label }}>
-              {barbell}
-            </Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.iconFaint} />
-          </View>
+          <Text style={{ fontSize: fontSize.body, fontFamily: fontFamily.medium }}>Weight jumps</Text>
+          <Ionicons name="chevron-forward" size={16} color={colors.iconFaint} />
         </Pressable>
       </Card>
     </View>

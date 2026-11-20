@@ -78,7 +78,7 @@ export const size = {
   emptyIcon: 60,
   hero: 190,
   stepNumber: 26,
-  /** A Settings list row (Smallest weight jump). */
+  /** A Settings list row (Weight jumps). */
   settingsRow: 54,
   /** The round − / + of a Weight jumps row; hitSlop takes its touch target to `minTouch`. */
   stepper: 36,

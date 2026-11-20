@@ -12,7 +12,7 @@ Pull-ups, dips and the other "bodyweight or weighted" exercises also confuse lif
 
 ## Solution
 
-A Weight jumps screen, opened from a "Smallest weight jump" row in Settings, with one row per equipment and a − / + control on each, in the lifter's unit. Each exercise steps by the Jump of its equipment, and Targets round to a multiple of it. The screen is free for everyone (Pro's rule panel in Phase 3 sets how and when progression happens, and still uses these Jumps).
+A Weight jumps screen, opened from a "Weight jumps" row in Settings, with one row per equipment and a − / + control on each, in the lifter's unit. Each exercise steps by the Jump of its equipment, and Targets round to a multiple of it. The screen is free for everyone (Pro's rule panel in Phase 3 sets how and when progression happens, and still uses these Jumps).
 
 Exercises done both with and without added weight become two exercises, so the weighted one steps by weight and the bodyweight one by reps.
 
@@ -21,7 +21,7 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 ## User Stories
 
 **Setting the Jump**
-1. As a lifter, I want a "Smallest weight jump" row in Settings that opens a Weight jumps screen, so that I can find it.
+1. As a lifter, I want a "Weight jumps" row in Settings that opens a Weight jumps screen, so that I can find it.
 2. As a lifter, I want one row each for Barbell, Dumbbell, Machine, Cable and "Bodyweight, added weight", with a short example line under each, so that I know which exercises use it.
 3. As a lifter, I want − and + on each row, shown in my unit, so that I can set the smallest weight I can add.
 4. As a lifter, I want the defaults 2.5, 2, 5, 2.5 and 2.5 kg, so that the screen works before I touch it.
@@ -51,7 +51,7 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 - **Snap after a unit switch** (story 11, owner decisions 2026-11-19): a past Target (Hold, Stay, on track, baseline, an accepted stored Target) set in another unit than the lifter's current one snaps to the nearest multiple of the current Jump, an exact tie rounding up; a small tolerance leaves one already on the grid untouched. A Target set in the current unit never snaps, whatever the Jump: an accepted 62.5 kg stays 62.5 kg after the Barbell Jump changes to 5 kg. Start stores the current unit in `workout_exercises.target_unit` (nullable, migration 0007); `toHistory` falls back to the logged sets' `entered_unit` for older rows, then to kg, and a baseline uses the unit of the sets it comes from. The engine takes the current `unit` and each session's `targetUnit` as plain inputs and snaps with `inCurrentUnit` (`nearestMultiple` in `src/engine/rounding.ts`) before stepping, so a step up goes one Jump above the snapped Target (Stay 140 lb, Go up 145 lb). Start, the Today preview, the Offer and the summary all use it, so they agree. Bodyweight Targets (0) are untouched, stored sets never change, and a snapped Target is a changed Target, so the Streak restarts. Examples: 10 kg with a 5 lb Jump is 20 lb, 62.5 kg is 140 lb, 50 kg with a 10 lb Jump is 110 lb, 135 lb with a 2.5 kg Jump is 60 kg.
 - **Library split:** the six `bodyweight_or_weighted` exercises each become two exercises, one `bodyweight` and one `weighted` (equipment `bodyweight`, which maps to the added-weight Jump). Update `exercises.json` and the seed. Workouts already logged keep their exercise; the old exercise becomes the bodyweight one. The load type `bodyweight_or_weighted` is removed from the type, schema and engine.
 - **Live workout:** hide the weight box on `bodyweight` exercises. A bodyweight set stores weight 0.
-- **Settings:** a "Smallest weight jump" row in the Units card, showing the Barbell value, opens `src/app/weight-jumps.tsx`, built from the design tokens and the existing base components.
+- **Settings:** a "Weight jumps" row in the Units card, with no value (the screen holds one Jump per equipment, so no single number fits), opens `src/app/weight-jumps.tsx`, built from the design tokens and the existing base components.
 - **Accepted Target:** Go up saves the Target the Offer showed on `workout_exercises` (`accepted_target_weight_kg`, `accepted_target_reps`, migration 0006), and the next Start and the summary's next Target use it as is, so only later steps use a changed Jump (story 10). Go up also stores the lifter's unit at that moment (`accepted_target_unit`, migration 0007), and the accepted Target snaps only when that unit differs from the current one (story 11): 62.5 kg started in kg, finished in lb and accepted as 145 lb starts back in kg at 65 kg, never 65.77 kg. A row with no stored unit uses its Target's unit (`target_unit` and its fallbacks). Stay stores null. Accepted rows saved before this have no stored Target and still recompute the step with the current Jump.
 - No ADR. ADR 0001 covers kg storage.
 

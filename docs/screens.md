@@ -69,7 +69,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 ## 6 · Settings and data
 | Screen | Notes |
 |---|---|
-| Settings | Interactive kg/lb |
+| Settings | Interactive kg/lb, and a "Weight jumps" row (no value shown, one Jump per equipment) that opens Weight jumps |
 | Weight jumps | Smallest jump for each equipment (Barbell, Dumbbell, Machine, Cable, Bodyweight added weight), with − / + stepping through real plate sizes. Each jump shows in the lifter's unit as the nearest plate step (5 kg is 10 lb), and the note under the card says so. No plates: "Plates at your gym" moves to Phase 3 |
 | Your data | Free state: backup locked → Paywall |
 | Backup ready | Share sheet for the backup file |
