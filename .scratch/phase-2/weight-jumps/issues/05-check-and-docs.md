@@ -13,5 +13,5 @@
 - [ ] Start in kg a workout that will earn an Offer at a 62.5 kg Barbell Target, switch to lb during it and Finish: the Offer reads 140 lb to 145 lb, and the summary's next Target on Stay is 140 lb
 - [ ] Do Pull-up (no weight box) and Weighted pull-up (steps by weight) in one workout
 - [ ] `docs/decisions.md` Phase 1 Jump line, `docs/architecture.md` (`user_settings`, load types), `docs/product.md` and `docs/screens.md` (Weight jumps without plates) updated
-- [ ] Mockup `WeightJump.dc.html`: plates section and sentence removed, fifth row added
+- [x] Mockup `WeightJump.dc.html` and `Settings.dc.html`: plates section and sentence removed, fifth row added, Settings row relabelled "Weight jumps" with no value (done 2026-11-20)
 - [ ] `.scratch/phase-2/map.md` marks feature 2 built
