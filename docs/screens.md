@@ -51,8 +51,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 |---|---|
 | Library | Search and filters |
 | No search results | Message naming what was searched, with a Clear filters button (create shortcut arrives with custom exercises in Phase 3) |
-| Exercise detail | How-to; History tab → Exercise history |
-| Exercise history | Past sessions and record tags |
+| Exercise detail | How-to only (no History tab; history is per Workout, see Workout history) |
 | Create custom exercise (Pro) | |
 | Edit custom exercise (Pro) | |
 | Delete custom exercise (Pro) | Removed from routines, history kept |
@@ -61,6 +60,8 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Screen | Notes |
 |---|---|
 | Progress | Exercise picker, top set, records; chart preview for free users |
+| Workout history | From the History button on Progress: finished Workouts, newest first, across all Routines |
+| Past workout | One finished Workout: its exercises and their done sets |
 | All records (Pro) | |
 | Paywall | 10-row Free/Pro table; Unlock → Pro unlocked |
 | Pro unlocked | Confirmation |

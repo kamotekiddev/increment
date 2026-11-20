@@ -116,6 +116,10 @@ _Avoid_: Missed exercise, dropped exercise
 A day of the week on which no Routine is planned. Today shows a rest-day message instead of Routine cards.
 _Avoid_: Off day, day off
 
+**Workout history**:
+The list of the lifter's finished Workouts, newest first. Each one opens to its Workout exercises and their done Working sets in the lifter's Unit. A Workout in progress is not in it.
+_Avoid_: Log, session history, Exercise history
+
 **Unit**:
 The weight system the lifter has chosen to see and type weights in, kg or lb. One global choice. It changes only what is shown and read; every weight is stored in kg.
 _Avoid_: Measurement system, weight mode
