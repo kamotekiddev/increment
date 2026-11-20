@@ -30,7 +30,7 @@ Both screens are drawn in the design canvas (`Settings.dc.html`, `Workout.dc.htm
 7. As a lifter, I want a weight I type to be read in the unit on screen, so that typing 135 in lb means 135 lb.
 8. As a lifter, I want it saved as kg (converted with `toKg`), with `entered_unit` set to the unit on screen when I check the set, so that the database holds one unit and still remembers what I typed.
 
-**Switching in the middle of a workout**
+**Switching in the middle of a workout** (superseded 2026-11-20: the live workout has no unit switch, the unit changes only in Settings; stories 9–12 no longer apply to the live screen, and story 12 still holds for Settings)
 9. As a lifter, I want a `kg | lb` pill in the live workout header, so that I can switch at a gym with different plates. It writes the same global preference as Settings.
 10. As a lifter, I want everything on screen to convert when I switch: checked sets, typed-but-unchecked weights and prefilled Targets, so that nothing reads in the old unit.
 11. As a lifter, I want an unchecked weight I have not edited to keep its exact kg value through a switch, so that 135 lb, shown as 61.23 kg, still saves as 135 lb. A weight I edit afterwards is read in the unit on screen.

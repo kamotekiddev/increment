@@ -7,7 +7,7 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
-import { UnitSegmented, useJumps, useKeepScreenAwake, useShowPreviousSet, useUnit } from "@/settings";
+import { useJumps, useKeepScreenAwake, useShowPreviousSet, useUnit } from "@/settings";
 import { type SetEdit, finishCheck, lastColumn, lastSetText, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
@@ -130,7 +130,7 @@ function NumberField({
 }
 
 export default function LiveWorkoutScreen() {
-  const { unit, setUnit } = useUnit();
+  const { unit } = useUnit();
   const { jumps } = useJumps();
   const { showPreviousSet } = useShowPreviousSet();
   useWorkoutWakeLock(useKeepScreenAwake().keepScreenAwake);
@@ -372,7 +372,7 @@ export default function LiveWorkoutScreen() {
             }}
           >
             <View style={{ gap: spacing.sm }}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <ChevronButton
                     icon="chevron-back"
@@ -390,7 +390,6 @@ export default function LiveWorkoutScreen() {
                     onPress={() => setCurrent(current + 1)}
                   />
                 </View>
-                <UnitSegmented unit={unit} onChange={setUnit} size="compact" track="card" />
               </View>
               <Text
                 accessibilityRole="header"
