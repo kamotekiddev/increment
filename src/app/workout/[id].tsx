@@ -7,7 +7,7 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
-import { UnitSegmented, useJumps, useUnit } from "@/settings";
+import { UnitSegmented, useJumps, useKeepScreenAwake, useUnit } from "@/settings";
 import { type SetEdit, finishCheck, lastColumn, lastSetText, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
@@ -23,6 +23,7 @@ import { allDonePrompt, finishPrompt, type FinishPrompt } from "@/workout/workou
 import { DiscardWorkoutSheet, type DiscardSheetStep } from "@/workout/DiscardWorkoutSheet";
 import { elapsedText } from "@/workout/elapsedText";
 import { findInProgressWorkout, useNow } from "@/workout/inProgressQueries";
+import { useWorkoutWakeLock } from "@/workout/useWorkoutWakeLock";
 import { canMarkDone } from "@/workout/markDone";
 import { firstOpenExercise } from "@/workout/resume";
 import { loadOffers } from "@/workout/summaryQueries";
@@ -131,6 +132,7 @@ function NumberField({
 export default function LiveWorkoutScreen() {
   const { unit, setUnit } = useUnit();
   const { jumps } = useJumps();
+  useWorkoutWakeLock(useKeepScreenAwake().keepScreenAwake);
   // Weight text typed after an edit, per set; dropped on a unit switch, a check, or leaving the screen.
   const [drafts, setDrafts] = useState<WeightDrafts>(EMPTY_DRAFTS);
   const colors = useColors();

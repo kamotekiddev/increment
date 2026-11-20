@@ -1,10 +1,10 @@
-import { Pressable, View } from "react-native";
+import { Pressable, Switch, View } from "react-native";
 
 import { Card, Text } from "@/components";
 import { restLabel, stepDefaultRest } from "@/routines";
 import { fontFamily, fontSize, letterSpacing, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
 
-import { useDefaultRest } from "./useWorkoutSettings";
+import { useDefaultRest, useKeepScreenAwake } from "./useWorkoutSettings";
 
 /** The − / + buttons are drawn at `size.stepper`; hitSlop takes the touch target to `minTouch`. */
 const STEPPER_SLOP = (minTouch - size.stepper) / 2;
@@ -19,6 +19,7 @@ const WORDS = { "-1": "Decrease", "1": "Increase" } as const;
 export function WorkoutCard() {
   const colors = useColors();
   const { defaultRestS, setDefaultRest } = useDefaultRest();
+  const { keepScreenAwake, setKeepScreenAwake } = useKeepScreenAwake();
 
   const stepper = (direction: 1 | -1) => {
     const next = stepDefaultRest(defaultRestS, direction);
@@ -65,6 +66,15 @@ export function WorkoutCard() {
             {restLabel(defaultRestS)}
           </Text>
           {stepper(1)}
+        </View>
+        <View style={{ height: size.settingsRow, flexDirection: "row", alignItems: "center", gap: spacing.md - 2 }}>
+          <Text style={{ flex: 1, fontSize: fontSize.body, fontFamily: fontFamily.medium }}>Keep screen awake</Text>
+          <Switch
+            accessibilityLabel="Keep screen awake"
+            value={keepScreenAwake}
+            onValueChange={setKeepScreenAwake}
+            trackColor={{ true: colors.accent }}
+          />
         </View>
       </Card>
     </View>
