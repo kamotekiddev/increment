@@ -11,7 +11,7 @@ Phase 2 is split into seven features, the same way as Phase 1. Each feature ends
 | 1 | Settings and units | Phase 1 |
 | 2 | Weight jumps | 1 |
 | 3 | Workout settings | 1 |
-| 4 | Exercise history | 1 |
+| 4 | Workout history | 1 |
 | 5 | Records | 4 |
 | 6 | Progress tab | 5 |
 | 7 | Reminders | 1 |
@@ -25,11 +25,11 @@ The Weight jumps screen: one Jump per equipment (Barbell, Dumbbell, Machine, Cab
 ### 3 · Workout settings
 Default rest, show previous set, keep screen awake, and light/dark theme. Each one is wired to the screen it changes (routine rest default, the live workout Last column, the live workout wake lock, the app theme).
 
-### 4 · Exercise history
-The History tab on Exercise detail opens Exercise history: past workouts of one exercise, newest first, with sets in the lifter's unit. No record tags yet, and no summary tiles (Best set, Est. max): those arrive with Records in feature 5. The mockup's "See your chart with Pro" card is left out too; it arrives in Phase 3 with the charts and the Paywall it opens.
+### 4 · Workout history
+A list of the lifter's finished Workouts, newest first (date, Routine name). Opening one shows each of its exercises with the done Working sets in the lifter's unit. No record tags yet. A History button on the Progress tab opens it (owner decision 2026-11-20), one list across all Routines. Each row: date, Routine name, number of exercises and duration (`Thu, 12 Nov · Push day A`, `5 exercises · 48 min`), under month headers. A row opens Past workout: Routine name, date and duration, then one card per exercise with its name, the Target it had (`Target 62.5 × 8`, none on a first workout), a grey Deload pill when it was one, and the done Working sets as chips (`62.5 × 8`, or `9 reps` with no weight). No Clean / Hold / Miss label. The History button is always on Progress; with no finished Workout the list shows a "No workouts yet" card. Exercise detail has no History tab: it shows How to only.
 
 ### 5 · Records
-Heaviest set, estimated 1-rep max and most volume, worked out from logged sets and never stored (data rule 2). Shown as record pills on Exercise history and as records on the workout summary.
+Heaviest set, estimated 1-rep max and most volume, worked out from logged sets and never stored (data rule 2). Shown as record pills on Workout history and as records on the workout summary.
 
 ### 6 · Progress tab
 Exercise picker, top set and a records list. Free users see a chart preview only; charts and All records arrive with Pro in Phase 3.
@@ -44,7 +44,7 @@ Workout reminders in Settings, with the notification permission asked there. Reu
 - Charts, All records and the plate calculator stay in Phase 3, as in the roadmap.
 
 - Feature 2 (2026-11-19): free for everyone; plates and a per-exercise Jump override wait for Phase 3; pull-ups and similar split into bodyweight and weighted twins instead of one exercise with an optional belt.
-- Feature 4 (2026-11-20): no summary tile row and no Pro chart card on Exercise history. The tiles come with Records (feature 5); the chart card comes in Phase 3 with the Paywall it links to.
+- Feature 4 (2026-11-20): history is per Workout, not per exercise. Exercise history (a History tab on Exercise detail) was built on PR #19, then dropped: the engine's Target, the live workout's Last column and the Progress tab's exercise picker already answer "what did I lift on this exercise", while nothing showed what was done in a past Workout. Its spec stays in `exercise-history/` as `wontfix`.
 
 ## Open
 - Resolved 2026-11-19: "Your gym's plates" moves to Phase 3 with the plate calculator; feature 2 covers the Jump only.

@@ -1,4 +1,6 @@
-Status: built, waiting for the phone check
+Status: wontfix
+
+> Superseded 2026-11-20: history is per Workout, not per exercise (see `.scratch/phase-2/map.md`, feature 4). Built on PR #19 and not to be merged as is.
 
 # Phase 2 · Feature 4 · Exercise history
 

@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** built
+**Status:** wontfix (superseded by Workout history, 2026-11-20)
 
 - [x] `exercise/[id].tsx` becomes `exercise/[id]/index.tsx` with the tab switch; `history.tsx` is the new screen; the switch uses `router.replace`, Back goes to the Library
 - [x] One `FlatList`: header (back, title, tabs), session rows (date, routine, Deload pill, chips), "No workouts yet" card when empty

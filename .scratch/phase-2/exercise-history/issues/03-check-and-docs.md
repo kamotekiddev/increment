@@ -4,7 +4,7 @@
 
 **Blocked by:** 01, 02
 
-**Status:** ready-for-human
+**Status:** wontfix (superseded by Workout history, 2026-11-20)
 
 - [ ] Finish a bench workout, open Library, Bench press, History: it is the top row, in your unit; switch unit: chips change, stored data does not
 - [ ] An exercise never trained shows "No workouts yet"; History then How to then Back leaves for the Library in one press
