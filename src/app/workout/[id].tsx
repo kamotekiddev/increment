@@ -8,7 +8,7 @@ import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { UnitSegmented, useJumps, useKeepScreenAwake, useShowPreviousSet, useUnit } from "@/settings";
-import { type SetEdit, finishCheck, lastColumn, lastSetText, setRowColumns, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
+import { type SetEdit, finishCheck, lastColumn, lastSetText, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
 import { RestPanel } from "@/workout/RestPanel";
@@ -282,7 +282,6 @@ export default function LiveWorkoutScreen() {
   const last = exercise ? lastColumn(lastExercises[exercise.id] ?? null, exercise.rows.length) : [];
   // A bodyweight exercise has no weight box: its sets are reps only and save weight 0.
   const bodyweight = exercise?.loadType === "bodyweight";
-  const columns = setRowColumns(exercise?.loadType ?? "weighted", showPreviousSet);
   // With the Last column hidden, the weight and reps boxes share its freed width.
   const cellWidth = (width: number) => (showPreviousSet ? { width } : { flex: 1 });
 
@@ -455,7 +454,7 @@ export default function LiveWorkoutScreen() {
                 <Text variant="caption" tone="muted" style={{ width: col.set, fontFamily: fontFamily.medium }}>
                   Set
                 </Text>
-                {columns.includes("last") ? (
+                {showPreviousSet ? (
                   <Text variant="caption" tone="muted" style={{ flex: 1, fontFamily: fontFamily.medium }}>
                     Last
                   </Text>
@@ -491,7 +490,7 @@ export default function LiveWorkoutScreen() {
                       <Text variant="label" tone={row.done ? "muted" : "ink"} style={{ width: col.set }}>
                         {index + 1}
                       </Text>
-                      {columns.includes("last") ? (
+                      {showPreviousSet ? (
                         <Text variant="caption" tone="muted" numberOfLines={1} style={{ flex: 1, fontSize: fontSize.meta }}>
                           {lastSetText(last[index], unit, exercise.loadType)}
                         </Text>

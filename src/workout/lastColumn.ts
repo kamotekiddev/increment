@@ -20,20 +20,6 @@ export function lastColumn(last: PastExercise | null, rowCount: number): (LastSe
   });
 }
 
-export type SetRowColumn = "set" | "last" | "weight" | "reps" | "check";
-
-/**
- * The columns of a live-workout set row, left to right. The Last column is dropped when Show previous set is off;
- * a bodyweight exercise has no weight box.
- */
-export function setRowColumns(loadType: LoadType, showPreviousSet: boolean): SetRowColumn[] {
-  const columns: SetRowColumn[] = ["set"];
-  if (showPreviousSet) columns.push("last");
-  if (loadType !== "bodyweight") columns.push("weight");
-  columns.push("reps", "check");
-  return columns;
-}
-
 /**
  * One cell of the Last column: "60 × 8" in the unit on screen, or "–". A bodyweight exercise has no
  * weight, so it shows reps only, even for a set logged with added weight before the split.
