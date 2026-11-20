@@ -75,5 +75,6 @@ The screen is drawn in the design canvas (`WeightJump.dc.html`, `Settings.dc.htm
 ## Further Notes
 
 - Update `docs/decisions.md` (Phase 1 Jump line), `docs/architecture.md` (`user_settings`, load types), `docs/product.md` and `docs/screens.md` (Weight jumps note: no plates) in the same change.
-- Update the mockup: remove the plates section and the plates sentence, add the fifth row.
+- Update the mockup: remove the plates section and the plates sentence, add the fifth row, and relabel the Settings row "Weight jumps" with no value.
+- Follow-ups for the Pro rule panel (Phase 3): a per-exercise Jump override, and whether a Pro lifter can pick "add weight" on a bodyweight exercise (the engine still blocks it for `bodyweight`, so only the weighted twin steps by weight).
 - Glossary: **Jump** is per equipment, and **Load type** has two values (done).
