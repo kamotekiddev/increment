@@ -52,7 +52,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Library | Search and filters |
 | No search results | Message naming what was searched, with a Clear filters button (create shortcut arrives with custom exercises in Phase 3) |
 | Exercise detail | How-to; History tab → Exercise history |
-| Exercise history | Past sessions and record tags |
+| Exercise history | Past workouts and record tags. Summary tiles arrive with Records (Phase 2, feature 5); a "See your chart with Pro" card arrives in Phase 3 with the Paywall |
 | Create custom exercise (Pro) | |
 | Edit custom exercise (Pro) | |
 | Delete custom exercise (Pro) | Removed from routines, history kept |

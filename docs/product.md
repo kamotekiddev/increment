@@ -14,7 +14,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 
 ### Exercise library
 - Searchable list with filters for muscle group and equipment.
-- Exercise detail: how-to steps, target muscles, equipment, and a History tab with past sessions and record tags.
+- Exercise detail: how-to steps, target muscles, equipment, and a History tab with past workouts (record tags arrive with Records).
 - An empty state when a search finds nothing, with a shortcut to create a custom exercise (Pro).
 - Library content must come from a source whose license allows commercial use, or be written in-house.
 

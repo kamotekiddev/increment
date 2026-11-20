@@ -26,7 +26,7 @@ The Weight jumps screen: one Jump per equipment (Barbell, Dumbbell, Machine, Cab
 Default rest, show previous set, keep screen awake, and light/dark theme. Each one is wired to the screen it changes (routine rest default, the live workout Last column, the live workout wake lock, the app theme).
 
 ### 4 · Exercise history
-The History tab on Exercise detail opens Exercise history: past sessions for one exercise, newest first, with sets in the lifter's unit. No record tags yet.
+The History tab on Exercise detail opens Exercise history: past workouts of one exercise, newest first, with sets in the lifter's unit. No record tags yet, and no summary tiles (Best set, Est. max): those arrive with Records in feature 5. The mockup's "See your chart with Pro" card is left out too; it arrives in Phase 3 with the charts and the Paywall it opens.
 
 ### 5 · Records
 Heaviest set, estimated 1-rep max and most volume, worked out from logged sets and never stored (data rule 2). Shown as record pills on Exercise history and as records on the workout summary.
@@ -44,6 +44,7 @@ Workout reminders in Settings, with the notification permission asked there. Reu
 - Charts, All records and the plate calculator stay in Phase 3, as in the roadmap.
 
 - Feature 2 (2026-11-19): free for everyone; plates and a per-exercise Jump override wait for Phase 3; pull-ups and similar split into bodyweight and weighted twins instead of one exercise with an optional belt.
+- Feature 4 (2026-11-20): no summary tile row and no Pro chart card on Exercise history. The tiles come with Records (feature 5); the chart card comes in Phase 3 with the Paywall it links to.
 
 ## Open
 - Resolved 2026-11-19: "Your gym's plates" moves to Phase 3 with the plate calculator; feature 2 covers the Jump only.

@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Pill, RoundButton, Text } from "@/components";
 import { ExerciseHero } from "@/library/ExerciseHero";
+import { ExerciseTabs } from "@/library/ExerciseTabs";
 import { useExercise, useRoutineCounts } from "@/library/exerciseQueries";
 import { capitalise } from "@/library/muscleGroups";
 import { fontFamily, fontSize, size, spacing, textStyle, useColors } from "@/theme";
@@ -47,9 +48,7 @@ export default function ExerciseDetailScreen() {
                 <Pill label={capitalise(exercise.equipment)} tone="plain" />
               </View>
             </View>
-            <Text variant="title" style={{ marginTop: spacing.sm }}>
-              How to
-            </Text>
+            <ExerciseTabs active="how-to" exerciseId={exercise.id} />
             <View style={{ gap: spacing.md, paddingHorizontal: spacing.xs }}>
               {exercise.instructions.map((step, index) => (
                 <View key={index} style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>
