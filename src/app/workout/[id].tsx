@@ -281,9 +281,9 @@ export default function LiveWorkoutScreen() {
   const currentSet = exercise ? currentSetIndex(exercise.rows) : null;
   const last = exercise ? lastColumn(lastExercises[exercise.id] ?? null, exercise.rows.length) : [];
   const jumpKg = exercise ? jumpKgFor(exercise.equipment, jumps) : 0;
-  // Rows the lifter has not typed or checked follow the unit, rounded to the Jump. Display only: nothing is written until a check or an edit.
+  // Rows the lifter has not typed or checked follow the unit, rounded down to the Jump. Display only: nothing is written until a check or an edit.
   const shownRows = exercise ? followUnitRows(exercise.rows, unit, jumpKg) : [];
-  // A Target set in the other unit (Settings changed mid-workout) shows on the current unit's Jump grid, as the rows do.
+  // A Target set in the other unit (Settings changed mid-workout) shows rounded down to the current unit's Jump grid, as the rows do.
   const shownTarget = exercise?.target ? inCurrentUnit(exercise.target, exercise.targetUnit ?? unit, { unit, jumpKg }) : null;
   // A bodyweight exercise has no weight box: its sets are reps only and save weight 0.
   const bodyweight = exercise?.loadType === "bodyweight";

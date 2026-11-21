@@ -47,19 +47,22 @@ export function kgIn(kg: number, unit: Unit): number {
   return clean(fromKg(kg, unit));
 }
 
-/** The nearest loadable weight, an exact tie rounding up: 132.28 lb with a 5 lb step is 130. */
-export function roundToLoadable(value: number, step: number): number {
-  return clean(Math.round(clean(value / step, 9)) * step);
+/**
+ * The largest loadable weight at or below `value`: 137.79 lb with a 5 lb step is 135. The quotient is cleaned to 6
+ * decimals first, so a conversion that lands a hair below a step (134.99999999999997 lb) stays on it.
+ */
+export function roundDownToLoadable(value: number, step: number): number {
+  return clean(Math.max(0, Math.floor(clean(value / step)) * step));
 }
 
 /**
  * A weight about to be lifted, in `unit`. One saved in `unit` comes back exactly; one saved in the other unit is
- * converted and rounded to the Jump (`jumpKg`, the Jump's kg value) so it can be loaded: 100 kg with a 5 lb
- * Jump is 220 lb, 135 lb with a 2.5 kg Jump is 60 kg.
+ * converted and rounded down to the Jump (`jumpKg`, the Jump's kg value) so it can be loaded: 62.5 kg with a
+ * 5 lb Jump is 135 lb (not 140), 135 lb with a 2.5 kg Jump is 60 kg.
  */
 export function loadableIn(w: Weight, unit: Unit, jumpKg: number): number {
   if (w.unit === unit) return w.value;
-  return roundToLoadable(convert(w.value, w.unit, unit), clean(fromKg(jumpKg, unit)));
+  return roundDownToLoadable(convert(w.value, w.unit, unit), clean(fromKg(jumpKg, unit)));
 }
 
 /** A number for display: up to `decimals` places, trailing zeros dropped (60, 62.5, 61.25). */

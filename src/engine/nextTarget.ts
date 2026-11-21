@@ -1,5 +1,5 @@
 import { classify, type JudgeIn } from "./outcome";
-import { floorToMultiple, nearestMultiple, nextMultipleAbove, sameWeight } from "./rounding";
+import { floorToMultiple, nextMultipleAbove, sameWeight, snapDown } from "./rounding";
 import { effectiveStep } from "./rule";
 import type { HistorySession, NextTargetInput, Planned, Target, TargetResult, WeightUnit } from "./types";
 
@@ -81,14 +81,14 @@ function deloadDue(history: HistorySession[], everyWeeks: number): boolean {
 }
 
 /**
- * A past Target as the lifter can load it now. One set in another unit than the current one snaps to the
- * nearest multiple of the Jump (a tie rounds up): 10 kg is 22.05 lb, which a 5 lb grid shows as 20 lb. One
+ * A past Target as the lifter can load it now. One set in another unit than the current one rounds down to a
+ * multiple of the Jump: 62.5 kg is 137.79 lb, which a 5 lb grid shows as 135 lb (not 140). One
  * set in the current unit is kept as is, even if the Jump changed since. A Target already on the grid, and
  * a bodyweight 0, are unchanged.
  */
 export function inCurrentUnit(target: Target, setIn: WeightUnit | undefined, input: Pick<NextTargetInput, "unit" | "jumpKg">): Target {
   if ((setIn ?? "kg") === input.unit) return target;
-  return { ...target, weightKg: nearestMultiple(target.weightKg, input.jumpKg) };
+  return { ...target, weightKg: snapDown(target.weightKg, input.jumpKg) };
 }
 
 export function nextTarget(given: NextTargetInput): TargetResult {

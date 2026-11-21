@@ -121,12 +121,12 @@ describe("one Jump per equipment, shown in either unit as the nearest rung", () 
     expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("150");
   });
 
-  it("an lb lifter at 62.5 kg (137.79 lb, set in kg) with the untouched 5 lb Barbell Jump stays at 140 lb or goes up to 145 lb", () => {
+  it("an lb lifter at 62.5 kg (137.79 lb, set in kg) with the untouched 5 lb Barbell Jump stays at 135 lb or goes up to 140 lb", () => {
     const t = { weightKg: 62.5, reps: 8 };
     const earned = [session("2026-01-26", t, [8, 8, 8]), session("2026-01-19", t, [8, 8, 8]), session("2026-01-12", t, [8, 8, 8])];
     expect(formatWeight(62.5, "lb")).toBe("137.79");
     const r = nextTarget(input(earned, { step: "weight" }, { unit: "lb", jumpKg: jumpKgFor("barbell", effectiveJumps(UNTOUCHED_JUMPS, "lb")) }));
-    expect(formatWeight(r.target!.weightKg, "lb")).toBe("140");
-    expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("145");
+    expect(formatWeight(r.target!.weightKg, "lb")).toBe("135");
+    expect(formatWeight(r.proposal!.weightKg, "lb")).toBe("140");
   });
 });

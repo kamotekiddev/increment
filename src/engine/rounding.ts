@@ -16,13 +16,15 @@ export function nextMultipleAbove(w: number, jump: number): number {
 }
 
 /**
- * The nearest multiple of `jump` to `w`; an exact tie rounds up. A weight already on the grid comes
- * back unchanged (not re-derived), so a stored Target keeps comparing equal to itself.
+ * A weight from the other unit put on `jump`'s grid: the largest multiple of `jump` at or below `w` (62.5 kg on a
+ * 5 lb grid is 135 lb, not 140). A weight already on the grid comes back unchanged (not re-derived), so a stored
+ * Target keeps comparing equal to itself, and one a float hair below a multiple (135 lb is 26.999999999999996 steps
+ * of 5 lb in kg) stays on it rather than dropping a whole step.
  */
-export function nearestMultiple(w: number, jump: number): number {
+export function snapDown(w: number, jump: number): number {
   const q = w / jump;
   if (Math.abs(q - Math.round(q)) < EPS) return w;
-  return clean(Math.floor(q + 0.5 + EPS) * jump);
+  return floorToMultiple(w, jump);
 }
 
 /** The largest multiple of `jump` at or below `w`. Never negative. */

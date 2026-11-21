@@ -88,23 +88,23 @@ describe("an accepted Offer answered in lb", () => {
     return routine.id;
   }
 
-  it("Go up at 145 lb after a mid-workout switch to lb starts back in kg on the kg grid at 65 kg, never 65.77 kg", () => {
+  it("Go up at 140 lb after a mid-workout switch to lb starts back in kg rounded down to the kg grid at 62.5 kg, never 63.5 kg", () => {
     const routineId = twoCleanAt62();
     const workoutId = startWorkout(routineId, DEFAULT_JUMPS_KG, "kg", new Date(2026, 10, 17))!;
     expect(startedTarget(workoutId)).toEqual({ weightKg: 62.5, reps: 8 });
 
-    // Switch to lb during the workout: every untouched 62.5 kg row shows as 140 lb on the 5 lb grid and is checked as that, then Finish.
+    // Switch to lb during the workout: every untouched 62.5 kg row shows as 135 lb, rounded down to the 5 lb grid, and is checked as that, then Finish.
     const started = db.select({ id: workoutExercises.id }).from(workoutExercises).where(eq(workoutExercises.workoutId, workoutId)).get()!;
-    db.update(sets).set({ done: true, weight: 140, weightUnit: "lb" }).where(eq(sets.workoutExerciseId, started.id)).run();
+    db.update(sets).set({ done: true, weight: 135, weightUnit: "lb" }).where(eq(sets.workoutExerciseId, started.id)).run();
     finishWorkout(workoutId, new Date(2026, 10, 17, 1));
 
     const lbJumps = effectiveJumps(UNTOUCHED_JUMPS, "lb");
     const [offer] = loadOffers(workoutId, "lb", lbJumps);
-    expect([inLb(offer.current.weightKg), inLb(offer.stepped.weightKg)]).toEqual([140, 145]);
+    expect([inLb(offer.current.weightKg), inLb(offer.stepped.weightKg)]).toEqual([135, 140]);
     answerOffer(offer.workoutExerciseId, true, offer.stepped, "lb");
 
     const next = startedTarget(startWorkout(routineId, DEFAULT_JUMPS_KG, "kg", new Date(2026, 10, 24)));
-    expect(next).toEqual({ weightKg: 65, reps: 8 });
+    expect(next).toEqual({ weightKg: 62.5, reps: 8 });
   });
 });
 

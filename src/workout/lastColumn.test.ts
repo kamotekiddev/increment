@@ -43,9 +43,11 @@ describe("lastSetText", () => {
   it("never rounds a set saved in the unit on screen: 61.25 kg stays 61.25 with a 2.5 kg Jump", () => {
     expect(lastSetText({ weight: 61.25, unit: "kg", reps: 8 }, "kg", "weighted", kgJump)).toBe("61.25 × 8");
   });
-  it("converts a set saved in the other unit and rounds it to the Jump", () => {
+  it("converts a set saved in the other unit and rounds it down to the Jump", () => {
     expect(lastSetText({ weight: 100, unit: "kg", reps: 8 }, "lb", "weighted", lbJump)).toBe("220 × 8");
     expect(lastSetText({ weight: 135, unit: "lb", reps: 8 }, "kg", "weighted", kgJump)).toBe("60 × 8");
+    // 62.5 kg is 137.79 lb, nearer 140 but rounded down.
+    expect(lastSetText({ weight: 62.5, unit: "kg", reps: 8 }, "lb", "weighted", lbJump)).toBe("135 × 8");
   });
   it("writes a dash when there is no past set", () => {
     expect(lastSetText(null, "kg", "weighted", kgJump)).toBe("–");

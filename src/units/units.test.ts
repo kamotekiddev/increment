@@ -9,7 +9,7 @@ import {
   loadableIn,
   loggedWeightText,
   loggedWeightWithUnit,
-  roundToLoadable,
+  roundDownToLoadable,
   toKg,
   weightKg,
 } from "./index";
@@ -91,26 +91,42 @@ describe("convert", () => {
   });
 });
 
-describe("roundToLoadable", () => {
-  it("goes to the nearest step, a tie rounding up", () => {
-    expect(roundToLoadable(132.28, 5)).toBe(130);
-    expect(roundToLoadable(220.46, 5)).toBe(220);
-    expect(roundToLoadable(61.23, 2.5)).toBe(60);
-    expect(roundToLoadable(132.5, 5)).toBe(135);
-    expect(roundToLoadable(26.25, 2.5)).toBe(27.5);
+describe("roundDownToLoadable", () => {
+  it("goes to the largest step at or below the weight", () => {
+    expect(roundDownToLoadable(137.79, 5)).toBe(135);
+    expect(roundDownToLoadable(220.46, 5)).toBe(220);
+    expect(roundDownToLoadable(132.28, 5)).toBe(130);
+    expect(roundDownToLoadable(61.23, 2.5)).toBe(60);
+    expect(roundDownToLoadable(26.25, 2.5)).toBe(25);
+  });
+  it("keeps a weight on the step when conversion noise puts it a hair below", () => {
+    expect(roundDownToLoadable(134.99999999999997, 5)).toBe(135);
+    expect(roundDownToLoadable(convert(convert(135, "lb", "kg"), "kg", "lb"), 5)).toBe(135);
+  });
+  it("leaves 0 at 0", () => {
+    expect(roundDownToLoadable(0, 5)).toBe(0);
   });
 });
 
 describe("loadableIn", () => {
   const lb5 = toKg(5, "lb");
-  it("converts a weight saved in the other unit and rounds it to the Jump", () => {
+  it("converts a weight saved in the other unit and rounds it down to the Jump", () => {
+    expect(loadableIn({ value: 62.5, unit: "kg" }, "lb", lb5)).toBe(135);
+    expect(loadableIn({ value: 24, unit: "kg" }, "lb", lb5)).toBe(50);
     expect(loadableIn({ value: 100, unit: "kg" }, "lb", lb5)).toBe(220);
     expect(loadableIn({ value: 60, unit: "kg" }, "lb", lb5)).toBe(130);
     expect(loadableIn({ value: 135, unit: "lb" }, "kg", 2.5)).toBe(60);
   });
+  it("lands on the grid point when the conversion is exact: 61.23496995 kg (135 lb) is 135 lb", () => {
+    expect(loadableIn({ value: toKg(135, "lb"), unit: "kg" }, "lb", lb5)).toBe(135);
+    expect(loadableIn({ value: toKg(45, "lb"), unit: "kg" }, "lb", lb5)).toBe(45);
+  });
   it("returns a weight saved in the same unit exactly, off the Jump's grid or not", () => {
     expect(loadableIn({ value: 61.25, unit: "kg" }, "kg", 2.5)).toBe(61.25);
     expect(loadableIn({ value: 137, unit: "lb" }, "lb", lb5)).toBe(137);
+  });
+  it("leaves bodyweight 0 at 0", () => {
+    expect(loadableIn({ value: 0, unit: "kg" }, "lb", lb5)).toBe(0);
   });
 });
 

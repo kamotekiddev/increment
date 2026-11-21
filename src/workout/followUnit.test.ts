@@ -11,6 +11,11 @@ describe("followUnit", () => {
     expect(followUnit(row({ weight: 135, unit: "lb" }), "kg", DEFAULT_JUMPS_KG.barbell)).toEqual(row({ weight: 60, unit: "kg" }));
   });
 
+  it("rounds down, never to the nearest: 62.5 kg (137.79 lb) shows 135 lb, 24 kg (52.91 lb) shows 50 lb", () => {
+    expect(followUnit(row({ weight: 62.5 }), "lb", lbJump)).toEqual(row({ weight: 135, unit: "lb" }));
+    expect(followUnit(row({ weight: 24 }), "lb", lbJump)).toEqual(row({ weight: 50, unit: "lb" }));
+  });
+
   it("a done row keeps its saved number and unit", () => {
     const done = row({ done: true });
     expect(followUnit(done, "lb", lbJump)).toBe(done);

@@ -21,6 +21,12 @@ describe("classify: a set logged in another unit than its Target", () => {
     expect(classify(session({ sets: sets(220 * LB, "lb") }), planned, { unit: "lb", jumpKg: lbJumpKg })).toBe("clean");
   });
 
+  it("meets a 62.5 kg Target at the 135 lb it was rounded down to (137.79 lb is nearer 140); 130 lb is a Hold", () => {
+    const target = { weightKg: 62.5, reps: 8 };
+    expect(classify(session({ target, sets: sets(135 * LB, "lb") }), planned, { unit: "lb", jumpKg: lbJumpKg })).toBe("clean");
+    expect(classify(session({ target, sets: sets(130 * LB, "lb") }), planned, { unit: "lb", jumpKg: lbJumpKg })).toBe("hold");
+  });
+
   it("is still short of it below the shown weight: 215 lb is a Hold", () => {
     expect(classify(session({ sets: sets(215 * LB, "lb") }), planned, { unit: "lb", jumpKg: lbJumpKg })).toBe("hold");
   });

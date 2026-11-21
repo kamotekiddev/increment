@@ -136,10 +136,24 @@ describe("startWorkout after a unit switch", () => {
     ]);
   });
 
-  it("an old row with no stored unit falls back to its sets' unit: 135 lb (61.23 kg) started in kg is 62 kg on the 2 kg Dumbbell grid", () => {
+  it("a 62.5 kg Target set in kg, started in lb, pre-fills 135 lb (137.79 rounds down, not up to 140)", () => {
+    const { routineId } = dumbbellRoutine(62.5, "kg");
+    writeUnit(db, "kg");
+    doAllAndFinish(start(routineId)!);
+    writeUnit(db, "lb");
+    const inLb = start(routineId);
+    expect(formatWeight(startedTarget(inLb)!.weightKg!, "lb")).toBe("135");
+    expect(startedSets(inLb).map((s) => [s.weight, s.weightUnit])).toEqual([
+      [135, "lb"],
+      [135, "lb"],
+      [135, "lb"],
+    ]);
+  });
+
+  it("an old row with no stored unit falls back to its sets' unit: 135 lb (61.23 kg) started in kg rounds down to 60 kg on the 2 kg Dumbbell grid", () => {
     const { routineId } = dumbbellRoutine(135 * LB, "lb");
     writeUnit(db, "kg");
-    expect(startedTarget(start(routineId))).toEqual({ weightKg: 62, reps: 8 });
+    expect(startedTarget(start(routineId))).toEqual({ weightKg: 60, reps: 8 });
   });
 
   it("never snaps because a Jump changed in the same unit: 10 kg stays 10 kg with a 4 kg Dumbbell Jump", () => {
@@ -181,11 +195,15 @@ describe("startWorkout pre-fills a weight that can be loaded in the lifter's uni
     expect(prefill(firstWorkout(100, "kg"), "lb")).toEqual({ weight: 220, weightUnit: "lb" });
   });
 
-  it("last set 60 kg, lifter in lb: pre-fill is 130 lb (132.28 rounds to 130)", () => {
+  it("last set 62.5 kg, lifter in lb: pre-fill is 135 lb (137.79 rounds down, not up to 140)", () => {
+    expect(prefill(firstWorkout(62.5, "kg"), "lb")).toEqual({ weight: 135, weightUnit: "lb" });
+  });
+
+  it("last set 60 kg, lifter in lb: pre-fill is 130 lb (132.28 rounds down to 130)", () => {
     expect(prefill(firstWorkout(60, "kg"), "lb")).toEqual({ weight: 130, weightUnit: "lb" });
   });
 
-  it("last set 135 lb, lifter in kg, 2.5 kg Jump: pre-fill is 60 kg (61.23 rounds to 60)", () => {
+  it("last set 135 lb, lifter in kg, 2.5 kg Jump: pre-fill is 60 kg (61.23 rounds down to 60)", () => {
     expect(prefill(firstWorkout(135, "lb"), "kg")).toEqual({ weight: 60, weightUnit: "kg" });
   });
 
