@@ -2,8 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { ScrollView, View } from "react-native";
 
-import { Card, RoundButton, Text } from "@/components";
-import { ScreenHeader } from "@/routines/ScreenHeader";
+import { Card, RoundButton, ScreenHeader, Text } from "@/components";
 import { JUMP_KEYS, JumpRow, jumpsNote, useJumps, useUnit, type JumpKey } from "@/settings";
 import { fontSize, lineHeight, radius, spacing, useColors } from "@/theme";
 

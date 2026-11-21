@@ -8,6 +8,7 @@ import { fontFamily, fontSize, radius, spacing, useColors } from "@/theme";
 import { formatWeight } from "@/units";
 import type { SummaryCard, SummaryHeader } from "@/workout";
 import { targetText } from "@/workout";
+import { routineLabel } from "@/workout/routineLabel";
 import { useSummary } from "@/workout/summaryQueries";
 
 const outcomeLabel: Record<SummaryCard["outcome"], string> = {
@@ -115,7 +116,7 @@ export default function WorkoutSummaryScreen() {
             gap: spacing.md,
           }}
         >
-          <HeaderCard title={loaded.title ?? "Workout"} header={loaded.summary.header} />
+          <HeaderCard title={routineLabel(loaded.title)} header={loaded.summary.header} />
           {loaded.summary.cards.map((card) => (
             <ExerciseCard key={card.workoutExerciseId} card={card} />
           ))}

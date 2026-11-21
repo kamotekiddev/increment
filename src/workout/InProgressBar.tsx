@@ -5,6 +5,7 @@ import { minTouch, opacity, radius, spacing, useColors } from "@/theme";
 
 import { barText } from "./elapsedText";
 import type { InProgressWorkout } from "./inProgressQueries";
+import { routineLabel } from "./routineLabel";
 
 export interface InProgressBarProps {
   workout: InProgressWorkout;
@@ -38,7 +39,7 @@ export function InProgressBar({ workout, now, onPress }: InProgressBarProps) {
           Workout in progress
         </Text>
         <Text variant="label" tone="onAccent" numberOfLines={1}>
-          {barText(workout.routineName ?? "Workout",workout.startedAt, now)}
+          {barText(routineLabel(workout.routineName), workout.startedAt, now)}
         </Text>
       </View>
       <View

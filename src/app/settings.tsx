@@ -1,8 +1,7 @@
 import { router } from "expo-router";
 import { ScrollView, View } from "react-native";
 
-import { RoundButton } from "@/components";
-import { ScreenHeader } from "@/routines/ScreenHeader";
+import { RoundButton, ScreenHeader } from "@/components";
 import { UnitCard } from "@/settings/UnitCard";
 import { WorkoutCard } from "@/settings/WorkoutCard";
 import { spacing, useColors } from "@/theme";
