@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately). Needs the set-units branch merged into `main` first.
 
-**Status:** ready-for-agent
+**Status:** built
 
 - [ ] Rounding a converted weight goes down to the step: 62.5 kg is 135 lb, 24 kg is 50 lb, 100 kg is 220 lb, 60 kg is 130 lb, 135 lb is 60 kg (5 lb and 2.5 kg steps)
 - [ ] The engine's snap of a Target set in the other unit rounds down, for every kind of Target (hold, on track, Stay, baseline, accepted); a step up still goes one step above the snapped Target (Stay 135 lb, Go up 140 lb) and a drop or deload still rounds down
