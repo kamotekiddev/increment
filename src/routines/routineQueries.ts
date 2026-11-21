@@ -4,11 +4,10 @@ import { useCallback, useState } from "react";
 
 import { db } from "@/db/client";
 import { defaultRule, type LoadType, type OverloadRule } from "@/engine";
-import type { Steps } from "@/units";
+import type { Jumps } from "@/units";
 import { exercises, routineExercises, routines, workouts } from "@/db/schema";
 
-import type { PastExercise } from "@/workout/historyInputs";
-import { pastExercises } from "@/workout/workoutQueries";
+import { jumpColumns } from "@/workout/workoutQueries";
 
 import type { ExerciseSetup } from "./routineSetup";
 
@@ -119,7 +118,8 @@ export function deleteRoutine(id: number): void {
   });
 }
 
-export interface RoutineExerciseItem extends ExerciseSetup {
+/** A routine exercise with its saved Jumps ("Add each time", `Jumps`: null until the lifter sets one, 2.5 kg / 5 lb). */
+export interface RoutineExerciseItem extends ExerciseSetup, Jumps {
   id: number;
   exerciseId: number;
   name: string;
@@ -128,9 +128,6 @@ export interface RoutineExerciseItem extends ExerciseSetup {
   position: number;
   loadType: LoadType;
   rule: OverloadRule;
-  /** "Add each time", one per unit, each in its own unit; null until the lifter sets it (2.5 kg / 5 lb). */
-  stepKg: number | null;
-  stepLb: number | null;
 }
 
 /** A routine's exercises in order, with names. */
@@ -149,8 +146,7 @@ export async function loadRoutineExercises(routineId: number): Promise<RoutineEx
       restS: routineExercises.restS,
       loadType: exercises.loadType,
       rule: routineExercises.rule,
-      stepKg: routineExercises.stepKg,
-      stepLb: routineExercises.stepLb,
+      ...jumpColumns,
     })
     .from(routineExercises)
     .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
@@ -179,8 +175,8 @@ export function useRoutineExercises(routineId: number, version = 0): RoutineExer
 /**
  * Adds an exercise at the end of a routine with the default rule for its load type. One row per
  * exercise per routine (a unique index enforces it): returns false and changes nothing when it is
- * already there. Position and insert run in one synchronous transaction. `steps` holds only the step the lifter
- * saved in the Overload rule panel (`stepPatch`); a step never set stays null. `rule` is the rule saved there,
+ * already there. Position and insert run in one synchronous transaction. `jumps` holds only the Jump the lifter
+ * saved in the Overload rule panel (`jumpToSave`); a Jump never set stays null. `rule` is the rule saved there,
  * else the default rule for the load type.
  */
 export function addRoutineExercise(
@@ -188,7 +184,7 @@ export function addRoutineExercise(
   exerciseId: number,
   loadType: typeof exercises.$inferSelect.loadType,
   setup: ExerciseSetup,
-  steps: Partial<Steps> = {},
+  jumps: Partial<Jumps> = {},
   rule: OverloadRule = defaultRule(loadType),
 ): boolean {
   return db.transaction((tx) => {
@@ -199,7 +195,7 @@ export function addRoutineExercise(
       .all();
     const inserted = tx
       .insert(routineExercises)
-      .values({ routineId, exerciseId, position: n, ...setup, ...steps, rule })
+      .values({ routineId, exerciseId, position: n, ...setup, ...jumps, rule })
       .onConflictDoNothing()
       .returning({ id: routineExercises.id })
       .all();
@@ -208,25 +204,20 @@ export function addRoutineExercise(
 }
 
 /**
- * Saves new sets, rep range and rest on this routine exercise row only, and the step saved in the Overload rule
- * panel (`stepPatch`: only that unit's column, so the other unit's step is untouched), and the rule saved there
+ * Saves new sets, rep range and rest on this routine exercise row only, and the Jump saved in the Overload rule
+ * panel (`jumpToSave`: only that unit's column, so the other unit's Jump is untouched), and the rule saved there
  * (none: the saved rule stays).
  */
 export async function updateRoutineExercise(
   routineExerciseId: number,
   setup: ExerciseSetup,
-  steps: Partial<Steps> = {},
+  jumps: Partial<Jumps> = {},
   rule?: OverloadRule,
 ): Promise<void> {
   await db
     .update(routineExercises)
-    .set({ ...setup, ...steps, ...(rule ? { rule } : {}) })
+    .set({ ...setup, ...jumps, ...(rule ? { rule } : {}) })
     .where(eq(routineExercises.id, routineExerciseId));
-}
-
-/** This routine exercise's finished workouts, newest first: the history Start reads, for the rule panel's preview. */
-export function loadPastExercises(routineId: number, exerciseId: number): PastExercise[] {
-  return pastExercises(db, routineId, exerciseId);
 }
 
 /**

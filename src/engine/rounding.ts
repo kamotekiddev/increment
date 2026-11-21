@@ -1,10 +1,8 @@
-/** Rounding to multiples of the Jump. A small epsilon on the quotient absorbs float error from lb-derived jumps (5 lb = 2.26796185 kg); realistic weights stay far below the point where it would matter. */
+/** Rounding to multiples of the Jump. The tolerance and the round-down are shared with `src/units` (`src/grid`). */
 
-const EPS = 1e-9;
+import { cleanGrid, floorToMultiple, GRID_EPS } from "../grid";
 
-function clean(n: number): number {
-  return Number(n.toFixed(10));
-}
+export { floorToMultiple };
 
 export function sameWeight(a: number, b: number): boolean {
   return Math.abs(a - b) < 1e-6;
@@ -12,7 +10,7 @@ export function sameWeight(a: number, b: number): boolean {
 
 /** The first multiple of `jump` strictly above `w`, so a step up is never a no-op. */
 export function nextMultipleAbove(w: number, jump: number): number {
-  return clean((Math.floor(w / jump + EPS) + 1) * jump);
+  return cleanGrid((Math.floor(w / jump + GRID_EPS) + 1) * jump);
 }
 
 /**
@@ -23,11 +21,6 @@ export function nextMultipleAbove(w: number, jump: number): number {
  */
 export function snapDown(w: number, jump: number): number {
   const q = w / jump;
-  if (Math.abs(q - Math.round(q)) < EPS) return w;
+  if (Math.abs(q - Math.round(q)) < GRID_EPS) return w;
   return floorToMultiple(w, jump);
-}
-
-/** The largest multiple of `jump` at or below `w`. Never negative. */
-export function floorToMultiple(w: number, jump: number): number {
-  return clean(Math.max(0, Math.floor(w / jump + EPS) * jump));
 }

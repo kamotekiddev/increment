@@ -76,7 +76,6 @@ Welcome → Goal → Experience → Schedule → Equipment → Units → Your pl
 | Exercise library | ✓ | ✓ |
 | Log workouts | Unlimited | Unlimited |
 | Routines | 2 | Unlimited |
-| Overload rules | Your own | Your own |
 | Charts and records | – | ✓ |
 | Custom exercises | – | ✓ |
 | Move to a new phone | – | ✓ |

@@ -11,7 +11,7 @@ import { finishWorkout, startWorkout } from "./workoutQueries";
 jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
 const db: Db = jest.requireMock("@/db/client").db;
 
-/** The lifter changes the routine exercise's kg step (ticket 03's panel; written directly here). */
+/** The lifter changes the routine exercise's kg Jump (ticket 03's panel; written directly here). */
 function setKgStep(routineExerciseId: number, stepKg: number) {
   db.update(routineExercises).set({ stepKg }).where(eq(routineExercises.id, routineExerciseId)).run();
 }
@@ -112,7 +112,7 @@ describe("an accepted Offer answered in lb", () => {
 });
 
 describe("an accepted Offer keeps the Target it showed", () => {
-  it("starts the next workout at the accepted 62.5 kg after the routine exercise's step changes to 5 kg", () => {
+  it("starts the next workout at the accepted 62.5 kg after the routine exercise's Jump changes to 5 kg", () => {
     const { routineId, routineExerciseId, workoutId } = earnedBarbellRoutine();
     goUp(workoutId);
     setKgStep(routineExerciseId, 5);

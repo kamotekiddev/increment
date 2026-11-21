@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { defaultRule } from "@/engine";
-import { stepKgFor } from "@/units";
+import { jumpKgFor } from "@/units";
 import { writeUnit } from "@/settings/unitSetting";
 
 import { loadSummary } from "./summaryQueries";
@@ -25,7 +25,7 @@ function benchRoutine(): number {
 
 describe("a unit change in Settings during a workout", () => {
   it("writes nothing on the switch; an untouched row is saved in the new unit, rounded, only when checked", async () => {
-    const [kgJump, lbJump] = [stepKgFor(null, "kg"), stepKgFor(null, "lb")];
+    const [kgJump, lbJump] = [jumpKgFor(null, "kg"), jumpKgFor(null, "lb")];
     writeUnit(db, "kg");
     const workoutId = startWorkout(benchRoutine(), "kg", new Date(2026, 10, 21))!;
     let rows = (await loadWorkout(workoutId))!.exercises[0].rows;
@@ -84,7 +84,7 @@ describe("judging a workout after a unit change in Settings", () => {
   }
 
   it("a 100 kg Target lifted as the 220 lb shown (99.79 kg) is Clean, not Held", async () => {
-    const lbJump = stepKgFor(null, "lb");
+    const lbJump = jumpKgFor(null, "lb");
     writeUnit(db, "kg");
     const workoutId = startWorkout(benchAt100(), "kg", new Date(2026, 10, 21))!;
     const exercise = (await loadWorkout(workoutId))!.exercises[0];
@@ -107,7 +107,7 @@ describe("judging a workout after a unit change in Settings", () => {
   });
 
   it("a 62.5 kg Target lifted as the 135 lb shown (rounded down from 137.79) is Clean; 130 lb is a Hold", async () => {
-    const lbJump = stepKgFor(null, "lb");
+    const lbJump = jumpKgFor(null, "lb");
     /** Starts in kg at a 62.5 kg Target, switches to lb, checks every row (set 1 typed as `firstLb` when given), finishes. */
     async function liftInLb(day: number, firstLb?: number) {
       writeUnit(db, "kg");
@@ -133,7 +133,7 @@ describe("judging a workout after a unit change in Settings", () => {
   });
 
   it("a set lighter than the Target as shown in its unit is still Held", async () => {
-    const lbJump = stepKgFor(null, "lb");
+    const lbJump = jumpKgFor(null, "lb");
     writeUnit(db, "kg");
     const workoutId = startWorkout(benchAt100(), "kg", new Date(2026, 10, 21))!;
     let rows = (await loadWorkout(workoutId))!.exercises[0].rows;

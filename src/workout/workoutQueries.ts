@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
 import { nextTarget, type LoadType, type Target, type WeightUnit } from "@/engine";
-import { stepKgFor, type Steps, type Unit } from "@/units";
+import { jumpKgFor, type Jumps, type Unit } from "@/units";
 
 import { toHistory, type PastExercise } from "./historyInputs";
 import { applyEdit, type SetEdit } from "./applyEdit";
@@ -22,6 +22,14 @@ function localDate(now: Date): string {
 
 /** A database or a transaction on it: what the shared queries below run against. */
 type Queryable = Pick<Db, "select" | "delete">;
+
+/** The routine exercise's saved Jumps (`step_kg`, `step_lb`), to spread into a select that joins `routine_exercises`. */
+export const jumpColumns = { stepKg: routineExercises.stepKg, stepLb: routineExercises.stepLb };
+
+/** The Jumps of a row selected with `jumpColumns`, on their own. */
+export function jumpsOf({ stepKg, stepLb }: Jumps): Jumps {
+  return { stepKg, stepLb };
+}
 
 /**
  * Every finished workout's record of one routine exercise (this routine, this exercise), newest
@@ -70,7 +78,7 @@ function deleteWorkoutExercise(q: Queryable, workoutExerciseId: number): void {
 /**
  * Starts a workout from a routine as it is now, in one synchronous transaction. Each exercise's
  * Target comes from the engine, reading only finished workouts of this routine (ADR 0002) and
- * stepping by the routine exercise's step for the lifter's current `unit` (2.5 kg / 5 lb until set). Each
+ * stepping by the routine exercise's Jump for the lifter's current `unit` (2.5 kg / 5 lb until set). Each
  * Target records that unit, so a Target set in the other unit snaps to the Jump's grid next time. Returns the
  * new workout id, or null when the routine has no exercises.
  */
@@ -83,8 +91,7 @@ export function startWorkout(routineId: number, unit: Unit, now: Date = new Date
         repMin: routineExercises.repMin,
         repMax: routineExercises.repMax,
         rule: routineExercises.rule,
-        stepKg: routineExercises.stepKg,
-        stepLb: routineExercises.stepLb,
+        ...jumpColumns,
         loadType: exercises.loadType,
       })
       .from(routineExercises)
@@ -107,7 +114,7 @@ export function startWorkout(routineId: number, unit: Unit, now: Date = new Date
         planned: { sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax },
         loadType: ex.loadType,
         history: toHistory(rows, ex.sets),
-        jumpKg: stepKgFor(ex, unit),
+        jumpKg: jumpKgFor(ex, unit),
         unit,
       });
 
@@ -155,10 +162,10 @@ export interface LiveExercise {
   id: number;
   name: string;
   /**
-   * The routine exercise's saved steps, read with the unit on screen (`stepKgFor`) since the unit can change
+   * The routine exercise's saved Jumps, read with the unit on screen (`jumpKgFor`) since the unit can change
    * mid-workout. Both null when the routine exercise is gone, which is the 2.5 kg / 5 lb default.
    */
-  steps: Steps;
+  jumps: Jumps;
   target: Target | null;
   /** The lifter's unit when Start set the Target; null on rows saved before it was stored. */
   targetUnit: WeightUnit | null;
@@ -186,8 +193,7 @@ export async function loadWorkout(id: number): Promise<LiveWorkout | null> {
       targetWeightKg: workoutExercises.targetWeightKg,
       targetReps: workoutExercises.targetReps,
       targetUnit: workoutExercises.targetUnit,
-      stepKg: routineExercises.stepKg,
-      stepLb: routineExercises.stepLb,
+      ...jumpColumns,
       repMin: routineExercises.repMin,
       repMax: routineExercises.repMax,
       restS: routineExercises.restS,
@@ -219,7 +225,7 @@ export async function loadWorkout(id: number): Promise<LiveWorkout | null> {
     exercises: exRows.map((e) => ({
       id: e.id,
       name: e.name,
-      steps: { stepKg: e.stepKg, stepLb: e.stepLb },
+      jumps: jumpsOf(e),
       target: e.targetWeightKg !== null && e.targetReps !== null ? { weightKg: e.targetWeightKg, reps: e.targetReps } : null,
       targetUnit: e.targetUnit,
       range: e.repMin !== null && e.repMax !== null ? { repMin: e.repMin, repMax: e.repMax } : null,

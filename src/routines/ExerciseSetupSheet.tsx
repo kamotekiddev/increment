@@ -5,8 +5,8 @@ import { Pressable, View } from "react-native";
 import { BottomSheet, RoundButton, Button, Text } from "@/components";
 import type { LoadType, OverloadRule } from "@/engine";
 import { useUnit } from "@/settings";
-import { fontSize, minTouch, opacity, radius, useColors, spacing } from "@/theme";
-import { stepIn, stepPatch, type Steps } from "@/units";
+import { fontSize, minTouch, opacity, radius, spacing, textStyle, useColors } from "@/theme";
+import { jumpIn, type Jumps } from "@/units";
 import { toHistory, type PastExercise } from "@/workout/historyInputs";
 
 import { adjustSetup, canAdjust, type SetupField } from "./adjustSetup";
@@ -16,7 +16,7 @@ import type { ExerciseSetup } from "./routineSetup";
 import { SetupStepper } from "./SetupStepper";
 import { restLabel } from "./setupText";
 
-const NO_STEPS: Steps = { stepKg: null, stepLb: null };
+const NO_JUMPS: Jumps = { stepKg: null, stepLb: null };
 
 export interface ExerciseSetupSheetProps {
   visible: boolean;
@@ -29,19 +29,20 @@ export interface ExerciseSetupSheetProps {
   /** Described on the Progression row and used by the rule panel's preview. */
   rule: OverloadRule;
   loadType: LoadType;
-  /** The routine exercise's saved steps ("Add each time"); none when adding. */
-  steps?: Steps;
-  /** This routine exercise's finished workouts, newest first (`loadPastExercises`), for the rule panel's preview. */
+  /** The routine exercise's saved Jumps ("Add each time"); none when adding. */
+  jumps?: Jumps;
+  /** This routine exercise's finished workouts, newest first (`pastExercises`), for the rule panel's preview. */
   past?: PastExercise[];
   /** The primary button, for example "Add to routine" or "Save". */
   primaryLabel: string;
   /** Disables the primary button while a save is in flight. */
   busy?: boolean;
   /**
-   * The setup, the step saved in the rule panel as only that unit's column (`stepPatch`; empty when the lifter did
-   * not save a step, so an unset step stays null), and the rule saved there (undefined when the panel was not saved).
+   * The setup, the Jump saved in the rule panel as only that unit's column (`jumpToSave`; empty when the lifter did
+   * not save a Jump or the exercise is bodyweight, so an unset Jump stays null), and the rule saved there (undefined
+   * when the panel was not saved).
    */
-  onSubmit: (setup: ExerciseSetup, steps: Partial<Steps>, rule?: OverloadRule) => void;
+  onSubmit: (setup: ExerciseSetup, jumps: Partial<Jumps>, rule?: OverloadRule) => void;
   onDismiss: () => void;
   /** Editing only: shows a red Remove from routine action that calls this. */
   onRemove?: () => void;
@@ -59,7 +60,7 @@ export function ExerciseSetupSheet({
   initial,
   rule,
   loadType,
-  steps = NO_STEPS,
+  jumps = NO_JUMPS,
   past,
   primaryLabel,
   busy = false,
@@ -71,7 +72,7 @@ export function ExerciseSetupSheet({
   const { unit } = useUnit();
   const [setup, setSetup] = useState<ExerciseSetup>(initial);
   const [editingRule, setEditingRule] = useState(false);
-  const [stepChange, setStepChange] = useState<Partial<Steps>>({});
+  const [jumpChange, setJumpChange] = useState<Partial<Jumps>>({});
   const [ruleChange, setRuleChange] = useState<OverloadRule | undefined>(undefined);
   const shownRule = ruleChange ?? rule;
 
@@ -82,7 +83,7 @@ export function ExerciseSetupSheet({
     if (visible) {
       setSetup(initial);
       setEditingRule(false);
-      setStepChange({});
+      setJumpChange({});
       setRuleChange(undefined);
     }
   }
@@ -110,9 +111,9 @@ export function ExerciseSetupSheet({
           loadType={loadType}
           history={history}
           unit={unit}
-          initialStep={stepIn({ ...steps, ...stepChange }, unit)}
-          onSave={(step, saved) => {
-            setStepChange((change) => ({ ...change, ...stepPatch(unit, step) }));
+          initialJump={jumpIn({ ...jumps, ...jumpChange }, unit)}
+          onSave={(savedJumps, saved) => {
+            setJumpChange((change) => ({ ...change, ...savedJumps }));
             setRuleChange(saved);
             setEditingRule(false);
           }}
@@ -126,7 +127,7 @@ export function ExerciseSetupSheet({
     <BottomSheet visible={visible} onDismiss={onDismiss}>
       <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
         <View style={{ flex: 1 }}>
-          <Text variant="title" style={{ lineHeight: 26, letterSpacing: -0.4 }} numberOfLines={2}>
+          <Text variant="title" style={textStyle.sheetTitle} numberOfLines={2}>
             {exerciseName}
           </Text>
           <Text variant="caption" tone="muted" style={{ fontSize: fontSize.small }}>
@@ -185,7 +186,7 @@ export function ExerciseSetupSheet({
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.iconFaint} />
       </Pressable>
-      <Button label={primaryLabel} large disabled={busy} onPress={() => onSubmit(setup, stepChange, ruleChange)} />
+      <Button label={primaryLabel} large disabled={busy} onPress={() => onSubmit(setup, jumpChange, ruleChange)} />
       {onRemove ? (
         <Pressable
           accessibilityRole="button"

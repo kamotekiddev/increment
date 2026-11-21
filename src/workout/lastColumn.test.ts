@@ -1,4 +1,4 @@
-import { stepKgFor } from "../units";
+import { jumpKgFor } from "../units";
 import { lastColumn, lastSetText } from "./lastColumn";
 import type { PastExercise } from "./historyInputs";
 
@@ -6,8 +6,8 @@ const past = (sets: PastExercise["sets"]): PastExercise => ({
   startedAt: 1, date: "2026-01-01", targetWeightKg: null, targetReps: null, progressAccepted: false, isDeload: false, sets,
 });
 const s = (idx: number, weight: number, reps: number, done = true) => ({ idx, weight, weightUnit: "kg" as const, reps, done, isWarmup: false });
-const kgJump = stepKgFor(null, "kg");
-const lbJump = stepKgFor(null, "lb");
+const kgJump = jumpKgFor(null, "kg");
+const lbJump = jumpKgFor(null, "lb");
 
 describe("lastColumn", () => {
   it("gives dashes for every row when there is no past workout", () => {

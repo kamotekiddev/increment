@@ -44,3 +44,14 @@ A Target or pre-fill can land on a weight the lifter can't load. The Jump is one
 - One default (2.5 kg / 5 lb) for every exercise stays: the step is per exercise so a lifter tunes the ones that differ.
 - The old Jumps are dropped, not copied.
 - A round trip can lose an earned step, accepted for now (owner, 2026-11-21): 62.5 kg shows as 135 lb, Go up is 140 lb (63.5 kg), and back in kg that rounds down to 62.5 kg.
+
+## Built as
+
+The panel sets the rule type, "Add each time", the miss rule on or off and Deload on or off. Everything else is fixed, and the owner accepted these values on 2026-11-21:
+
+- Rep step: 1 rep.
+- Clean workouts to earn a step: 3 in a row.
+- Miss rule: 2 misses in a row drop the Target 10%.
+- Deload: every 6 weeks, one workout at 60% (40% lighter).
+
+Start writes `is_deload` on a workout exercise when the engine returns a due Deload, so a due Deload happens once and does not repeat at the next Start. A bodyweight exercise has no "Add each time", so Save rule writes no Jump for it: `step_kg` and `step_lb` stay null until set.

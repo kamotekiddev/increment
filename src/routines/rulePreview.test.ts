@@ -1,34 +1,36 @@
 import { defaultRule } from "../engine";
 import { session } from "../engine/testing";
 import type { HistorySession } from "../engine";
-import { rulePreview, rulePreviewParts, type RulePreviewInput } from "./rulePreview";
+import { rulePreviewParts, type RulePreviewInput } from "./rulePreview";
 
 const benchPlan = { sets: 3, repMin: 6, repMax: 8 };
 
 /** Last bench press: 62.5 kg × 8, 8, 8 against a 62.5 kg × 8 Target (one clean workout). */
 const benchHistory: HistorySession[] = [session("2026-11-16", { weightKg: 62.5, reps: 8 }, [8, 8, 8])];
 
+/** The preview as one line: its lead, strong and rest parts joined, as the panel shows them. */
 function preview(overrides: Partial<RulePreviewInput> = {}): string {
-  return rulePreview({
+  const { lead, strong, rest } = rulePreviewParts({
     rule: { ...defaultRule("weighted"), sessionsToEarn: 1 },
     planned: benchPlan,
     loadType: "weighted",
     history: benchHistory,
     unit: "kg",
-    step: 2.5,
+    jump: 2.5,
     ...overrides,
   });
+  return lead + strong + rest;
 }
 
-describe("rulePreview", () => {
-  it("reads the next Target and the stepped-up one with the chosen step, as the mockup does", () => {
+describe("rulePreviewParts", () => {
+  it("reads the next Target and the stepped-up one with the chosen Jump, as the mockup does", () => {
     const fresh = [session("2026-11-16", { weightKg: 62.5, reps: 8 }, [8, 7, 7])];
     expect(preview({ history: fresh })).toBe("Next session: 62.5 kg × 6–8. Hit 8 on every set and it becomes 65 kg.");
   });
 
-  it("steps to the next multiple of the chosen step above the Target: 62.5 kg with 2 kg becomes 64 kg", () => {
+  it("steps to the next multiple of the chosen Jump above the Target: 62.5 kg with 2 kg becomes 64 kg", () => {
     const fresh = [session("2026-11-16", { weightKg: 62.5, reps: 8 }, [8, 7, 7])];
-    expect(preview({ history: fresh, step: 2 })).toBe("Next session: 62.5 kg × 6–8. Hit 8 on every set and it becomes 64 kg.");
+    expect(preview({ history: fresh, jump: 2 })).toBe("Next session: 62.5 kg × 6–8. Hit 8 on every set and it becomes 64 kg.");
   });
 
   it("says how many clean workouts in a row earn the step when it is more than one", () => {
@@ -38,23 +40,23 @@ describe("rulePreview", () => {
     );
   });
 
-  it("shows the Target in lb with the lb step after a unit switch: 62.5 kg is 135 lb, then 140 lb", () => {
+  it("shows the Target in lb with the lb Jump after a unit switch: 62.5 kg is 135 lb, then 140 lb", () => {
     const fresh = [session("2026-11-16", { weightKg: 62.5, reps: 8 }, [8, 7, 7])];
-    expect(preview({ history: fresh, unit: "lb", step: 5 })).toBe(
+    expect(preview({ history: fresh, unit: "lb", jump: 5 })).toBe(
       "Next session: 135 lb × 6–8. Hit 8 on every set and it becomes 140 lb.",
     );
   });
 
   it("writes a single rep count when the rep range is one number", () => {
     const fresh = [session("2026-11-16", { weightKg: 100, reps: 5 }, [5, 4, 4])];
-    expect(preview({ planned: { sets: 3, repMin: 5, repMax: 5 }, history: fresh, step: 5 })).toBe(
+    expect(preview({ planned: { sets: 3, repMin: 5, repMax: 5 }, history: fresh, jump: 5 })).toBe(
       "Next session: 100 kg × 5. Hit 5 on every set and it becomes 105 kg.",
     );
   });
 
   it("with no past workout, says the first session sets the weight and what each step adds", () => {
-    expect(preview({ history: [], step: 2 })).toBe("Your first session sets the starting weight. Each step adds 2 kg.");
-    expect(preview({ history: [], unit: "lb", step: 5 })).toBe("Your first session sets the starting weight. Each step adds 5 lb.");
+    expect(preview({ history: [], jump: 2 })).toBe("Your first session sets the starting weight. Each step adds 2 kg.");
+    expect(preview({ history: [], unit: "lb", jump: 5 })).toBe("Your first session sets the starting weight. Each step adds 5 lb.");
   });
 
   it("for a bodyweight exercise, previews reps", () => {
@@ -164,7 +166,7 @@ describe("rulePreview", () => {
       loadType: "weighted",
       history: fresh,
       unit: "kg",
-      step: 2.5,
+      jump: 2.5,
     };
     expect(rulePreviewParts(input)).toEqual({
       lead: "Next session: ",

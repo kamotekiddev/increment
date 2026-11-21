@@ -22,7 +22,7 @@ const past = (startedAt: number, date: string, reps: number[], extra: Partial<Pa
 const saved = (extra: Partial<SavedExercise> = {}): SavedExercise => ({
   id: 7,
   name: "Bench Press",
-  steps: { stepKg: null, stepLb: null },
+  jumps: { stepKg: null, stepLb: null },
   loadType: "weighted",
   plan: { planned, rule },
   sets: [set(0, 10), set(1, 10), set(2, 10)],
@@ -40,11 +40,11 @@ describe("toSummaryInput", () => {
     expect(ex.planned).toEqual(planned);
   });
 
-  it("gives each exercise its routine exercise's step for the unit, or the 2.5 kg / 5 lb default", () => {
+  it("gives each exercise its routine exercise's Jump for the unit, or the 2.5 kg / 5 lb default", () => {
     const exercises = [
-      saved({ id: 1, steps: { stepKg: 5, stepLb: 10 } }),
-      saved({ id: 2, steps: { stepKg: 1, stepLb: null } }),
-      saved({ id: 3, steps: { stepKg: null, stepLb: null } }),
+      saved({ id: 1, jumps: { stepKg: 5, stepLb: 10 } }),
+      saved({ id: 2, jumps: { stepKg: 1, stepLb: null } }),
+      saved({ id: 3, jumps: { stepKg: null, stepLb: null } }),
     ];
     expect(toSummaryInput({ startedAt: 1, finishedAt: 2, exercises }, "kg").exercises.map((e) => e.jumpKg)).toEqual([5, 1, 2.5]);
     expect(toSummaryInput({ startedAt: 1, finishedAt: 2, exercises }, "lb").exercises.map((e) => e.jumpKg)).toEqual([

@@ -2,7 +2,7 @@ import type { Db } from "@/db/client";
 import { exercises, routines } from "@/db/schema";
 import { defaultRule, nextTarget, type HistorySession } from "@/engine";
 import { session } from "@/engine/testing";
-import { KG_PER_LB, stepIn, stepKgFor, stepPatch } from "@/units";
+import { KG_PER_LB, jumpIn, jumpKgFor, jumpPatch } from "@/units";
 
 import { addRoutineExercise, loadRoutineExercises, updateRoutineExercise } from "./routineQueries";
 import { withChoices } from "./ruleChoices";
@@ -26,15 +26,15 @@ const earnedAt12: HistorySession[] = ["2026-11-18", "2026-11-16", "2026-11-14"].
 describe("saving Add each time on a routine exercise", () => {
   it("adds a curl with a 2 kg step in kg: kg steps by 2 kg, lb keeps its own 5 lb default", async () => {
     const { routineId, exerciseId } = curlRoutine();
-    addRoutineExercise(routineId, exerciseId, "weighted", curlSetup, stepPatch("kg", 2));
+    addRoutineExercise(routineId, exerciseId, "weighted", curlSetup, jumpPatch("kg", 2));
     const [curl] = await loadRoutineExercises(routineId);
     expect([curl.stepKg, curl.stepLb]).toEqual([2, null]);
 
     const planned = { sets: 3, repMin: 10, repMax: 12 };
-    const inKg = nextTarget({ rule: curl.rule, planned, loadType: "weighted", history: earnedAt12, jumpKg: stepKgFor(curl, "kg"), unit: "kg" });
+    const inKg = nextTarget({ rule: curl.rule, planned, loadType: "weighted", history: earnedAt12, jumpKg: jumpKgFor(curl, "kg"), unit: "kg" });
     expect(inKg.proposal).toEqual({ weightKg: 14, reps: 12 });
-    expect(stepIn(curl, "lb")).toBe(5);
-    expect(stepIn(curl, "kg")).toBe(2);
+    expect(jumpIn(curl, "lb")).toBe(5);
+    expect(jumpIn(curl, "kg")).toBe(2);
   });
 
   it("adds with no step saved when the panel was not used: both steps stay null (2.5 kg / 5 lb)", async () => {
@@ -46,12 +46,12 @@ describe("saving Add each time on a routine exercise", () => {
 
   it("saving in lb writes only the lb step; the kg step is untouched", async () => {
     const { routineId, exerciseId } = curlRoutine();
-    addRoutineExercise(routineId, exerciseId, "weighted", curlSetup, stepPatch("kg", 2));
+    addRoutineExercise(routineId, exerciseId, "weighted", curlSetup, jumpPatch("kg", 2));
     const [before] = await loadRoutineExercises(routineId);
-    await updateRoutineExercise(before.id, curlSetup, stepPatch("lb", 2.5));
+    await updateRoutineExercise(before.id, curlSetup, jumpPatch("lb", 2.5));
     const [after] = await loadRoutineExercises(routineId);
     expect([after.stepKg, after.stepLb]).toEqual([2, 2.5]);
-    expect(stepKgFor(after, "lb")).toBe(2.5 * KG_PER_LB);
+    expect(jumpKgFor(after, "lb")).toBe(2.5 * KG_PER_LB);
   });
 
   it("adds with the rule saved in the panel, and loads it back with its version", async () => {
@@ -97,7 +97,7 @@ describe("saving Add each time on a routine exercise", () => {
 
   it("saving the setup without a step leaves both steps as they were", async () => {
     const { routineId, exerciseId } = curlRoutine();
-    addRoutineExercise(routineId, exerciseId, "weighted", curlSetup, stepPatch("kg", 1));
+    addRoutineExercise(routineId, exerciseId, "weighted", curlSetup, jumpPatch("kg", 1));
     const [before] = await loadRoutineExercises(routineId);
     await updateRoutineExercise(before.id, { ...curlSetup, sets: 4 });
     const [after] = await loadRoutineExercises(routineId);

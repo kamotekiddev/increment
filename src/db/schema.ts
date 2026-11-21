@@ -4,7 +4,7 @@ import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-or
 
 /**
  * A set stores the number the lifter typed and the unit they typed it in (ADR 0003): `weight` + `weight_unit`.
- * Targets are kg (full-precision REAL); a routine exercise's step is saved per unit, each in its own unit.
+ * Targets are kg (full-precision REAL); a routine exercise's Jump is saved per unit, each in its own unit.
  * Conversion happens in memory only, in `src/units`.
  */
 
@@ -45,7 +45,7 @@ export const routineExercises = sqliteTable(
     rule: text("rule", { mode: "json" }).$type<OverloadRule>().notNull(),
     /**
      * The Jump ("Add each time"), one per unit, each in its own unit: `step_kg` in kg (2.5), `step_lb` in lb (5),
-     * never converted. NULL until the lifter sets that unit's step: an empty step is 2.5 kg / 5 lb (`stepIn`).
+     * never converted. NULL until the lifter sets that unit's Jump: an empty one is 2.5 kg / 5 lb (`jumpIn`).
      * The engine steps by the one for the lifter's current unit; switching unit never writes either.
      */
     stepKg: real("step_kg"),

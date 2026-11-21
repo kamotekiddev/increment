@@ -7,10 +7,10 @@ import { exercises, routineExercises, workouts } from "@/db/schema";
 import { nextTarget } from "@/engine";
 import { useRoutines } from "@/routines/routineQueries";
 import { useUnit } from "@/settings";
-import { stepKgFor, type Unit } from "@/units";
+import { jumpKgFor, type Unit } from "@/units";
 import { useInProgressOnFocus } from "@/workout/inProgressQueries";
 import { toHistory } from "@/workout/historyInputs";
-import { pastExercises } from "@/workout/workoutQueries";
+import { jumpColumns, pastExercises } from "@/workout/workoutQueries";
 
 import { toTodayInput } from "./todayInput";
 import { PREVIEW_LIMIT, toNextPreview, type NextPreview } from "./nextPreview";
@@ -56,7 +56,7 @@ export function useTodayData(refreshKey = 0): TodayInput | undefined {
 
 /**
  * The first exercises of a Routine with the Target each would get if started now: the same history
- * and engine call Start uses (finished workouts of this Routine only, each routine exercise's step for
+ * and engine call Start uses (finished workouts of this Routine only, each routine exercise's Jump for
  * `unit`), without writing anything.
  */
 export function loadNextPreview(routineId: number, unit: Unit): NextPreview {
@@ -70,8 +70,7 @@ export function loadNextPreview(routineId: number, unit: Unit): NextPreview {
       repMin: routineExercises.repMin,
       repMax: routineExercises.repMax,
       rule: routineExercises.rule,
-      stepKg: routineExercises.stepKg,
-      stepLb: routineExercises.stepLb,
+      ...jumpColumns,
     })
     .from(routineExercises)
     .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
@@ -87,7 +86,7 @@ export function loadNextPreview(routineId: number, unit: Unit): NextPreview {
       planned: { sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax },
       loadType: ex.loadType,
       history: toHistory(pastExercises(db, routineId, ex.exerciseId), ex.sets),
-      jumpKg: stepKgFor(ex, unit),
+      jumpKg: jumpKgFor(ex, unit),
       unit,
     }).target,
   }));

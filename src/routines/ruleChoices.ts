@@ -1,4 +1,5 @@
-import type { OverloadRule, Step } from "../engine";
+import type { LoadType, OverloadRule, Step } from "../engine";
+import { jumpPatch, type Jumps, type Unit } from "../units";
 
 /** How it progresses, as the Overload rule panel names it. */
 export type RuleType = "weight-first" | "double" | "reps-only";
@@ -36,4 +37,12 @@ export function withChoices(rule: OverloadRule, choices: RuleChoices): OverloadR
   if (choices.missDrop) next.miss = miss?.action.kind === "drop" ? miss : MISS_DROP;
   if (choices.deload) next.deload = deload ?? DELOAD;
   return next;
+}
+
+/**
+ * Pure: the Jump columns Save rule writes. A weighted exercise saves the Jump chosen in "Add each time" as only that
+ * unit's column (`jumpPatch`). A bodyweight exercise shows no "Add each time", so it saves none: both stay null.
+ */
+export function jumpToSave(loadType: LoadType, unit: Unit, jump: number): Partial<Jumps> {
+  return loadType === "bodyweight" ? {} : jumpPatch(unit, jump);
 }

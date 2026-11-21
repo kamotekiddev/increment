@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 
 import type { Db } from "@/db/client";
 import { exercises, sets, userSettings, workoutExercises, workouts } from "@/db/schema";
-import { DEFAULT_STEP, loggedWeightWithUnit } from "@/units";
+import { DEFAULT_JUMP, loggedWeightWithUnit } from "@/units";
 import { parseWeight } from "@/workout";
 import { editSet, markSetDone, type LiveSet } from "@/workout/workoutQueries";
 
@@ -57,7 +57,7 @@ describe("unit setting", () => {
           .returning({ id: sets.id })
           .get().id,
     );
-    const jump = DEFAULT_STEP.kg;
+    const jump = DEFAULT_JUMP.kg;
     let rows: LiveSet[] = setIds.map((setId) => ({ setId, weight: 100, unit: "kg", reps: 5, done: false, edited: false }));
 
     // Set 1 stays untouched and open: shown as 220 lb in lb, but switching never writes it.
@@ -99,7 +99,7 @@ describe("unit setting", () => {
       .values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx: 0, weight: 0, weightUnit: "lb", reps: 10 })
       .returning()
       .get().id;
-    const jump = DEFAULT_STEP.kg;
+    const jump = DEFAULT_JUMP.kg;
     let rows: LiveSet[] = [{ setId, weight: null, unit: "lb", reps: 10, done: false, edited: false }];
     rows = editSet(rows, 0, { weight: parseWeight("45"), unit: "lb" }, "lb", jump);
     markSetDone(rows, 0, true, "lb", "weighted", jump);

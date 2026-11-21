@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackHandler, Pressable, ScrollView, View } from "react-native";
 
 import { Button, RoundButton, ScreenHeader, Text } from "@/components";
+import { db } from "@/db/client";
 import { exerciseMeta } from "@/library/exerciseMeta";
 import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { DayPicker } from "@/routines/DayPicker";
@@ -22,7 +23,6 @@ import { routineNameMessage } from "@/routines/routineNameMessage";
 import {
   countRoutineWorkouts,
   deleteRoutine,
-  loadPastExercises,
   loadRoutine,
   loadRoutines,
   removeRoutineExercise,
@@ -36,10 +36,11 @@ import type { ExerciseSetup } from "@/routines/routineSetup";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontFamily, fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
 import type { OverloadRule } from "@/engine";
-import type { Steps } from "@/units";
+import type { Jumps } from "@/units";
 import { useInProgressOnFocus } from "@/workout/inProgressQueries";
 import { isRoutineLocked, LOCK_MESSAGE } from "@/workout/routineLock";
 import { openWorkout, useStartWorkout } from "@/workout/useStartWorkout";
+import { pastExercises } from "@/workout/workoutQueries";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
 
@@ -139,11 +140,11 @@ export default function EditRoutineScreen() {
   }
 
   // The edited exercise's finished workouts in this routine, for the rule panel's preview.
-  const editingPast = useMemo(() => (editing ? loadPastExercises(id, editing.exerciseId) : []), [editing, id]);
+  const editingPast = useMemo(() => (editing ? pastExercises(db, id, editing.exerciseId) : []), [editing, id]);
 
-  async function saveExercise(setup: ExerciseSetup, steps: Partial<Steps>, rule?: OverloadRule) {
+  async function saveExercise(setup: ExerciseSetup, jumps: Partial<Jumps>, rule?: OverloadRule) {
     if (!editing) return;
-    await updateRoutineExercise(editing.id, setup, steps, rule);
+    await updateRoutineExercise(editing.id, setup, jumps, rule);
     setEditing(null);
     setExerciseVersion((v) => v + 1);
   }
@@ -370,7 +371,7 @@ export default function EditRoutineScreen() {
             initial={editing}
             rule={editing.rule}
             loadType={editing.loadType}
-            steps={editing}
+            jumps={editing}
             past={editingPast}
             primaryLabel="Save"
             onSubmit={saveExercise}

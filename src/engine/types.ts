@@ -95,7 +95,7 @@ export interface NextTargetInput {
   loadType: LoadType;
   /** Newest first. */
   history: HistorySession[];
-  /** The Jump in kg: the routine exercise's step for the lifter's current unit (`stepKgFor`), 2.5 kg / 5 lb until set. */
+  /** The Jump in kg: the routine exercise's saved Jump for the lifter's current unit (`jumpKgFor`), 2.5 kg / 5 lb until set. */
   jumpKg: number;
   /** The lifter's current unit, which `jumpKg` belongs to. */
   unit: WeightUnit;

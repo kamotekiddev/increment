@@ -8,7 +8,7 @@ import { Input, RoundButton, ScreenHeader, Text } from "@/components";
 import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { inCurrentUnit } from "@/engine";
 import { useKeepScreenAwake, useShowPreviousSet, useUnit } from "@/settings";
-import { stepKgFor } from "@/units";
+import { jumpKgFor } from "@/units";
 import { type SetEdit, finishCheck, followUnitRows, lastColumn, lastSetText, parseReps, parseWeight, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
@@ -280,8 +280,8 @@ export default function LiveWorkoutScreen() {
   const total = workout?.exercises.length ?? 0;
   const currentSet = exercise ? currentSetIndex(exercise.rows) : null;
   const last = exercise ? lastColumn(lastExercises[exercise.id] ?? null, exercise.rows.length) : [];
-  // The routine exercise's step for the unit on screen (2.5 kg / 5 lb until set, and when the routine exercise is gone).
-  const jumpKg = exercise ? stepKgFor(exercise.steps, unit) : 0;
+  // The routine exercise's Jump for the unit on screen (2.5 kg / 5 lb until set, and when the routine exercise is gone).
+  const jumpKg = exercise ? jumpKgFor(exercise.jumps, unit) : 0;
   // Rows the lifter has not typed or checked follow the unit, rounded down to the step. Display only: nothing is written until a check or an edit.
   const shownRows = exercise ? followUnitRows(exercise.rows, unit, jumpKg) : [];
   // A Target set in the other unit (Settings changed mid-workout) shows rounded down to the current unit's Jump grid, as the rows do.

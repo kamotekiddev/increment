@@ -7,7 +7,7 @@ import { buildSummary, type OfferItem, type Summary } from "./summary";
 import { toSummaryInput, type SavedExercise } from "./summaryInput";
 import type { Target } from "../engine";
 import type { Unit } from "../units";
-import { pastExercises } from "./workoutQueries";
+import { jumpColumns, jumpsOf, pastExercises } from "./workoutQueries";
 
 export interface LoadedSummary {
   /** The routine's name, or null when the routine is gone. */
@@ -18,7 +18,7 @@ export interface LoadedSummary {
 /**
  * Reads the finished workout and, per exercise, the history of its routine exercise (this workout
  * included, since Finish has already saved it), then builds the summary. Null when the workout does
- * not exist. Each exercise steps by its routine exercise's step for `unit`.
+ * not exist. Each exercise steps by its routine exercise's Jump for `unit`.
  */
 export function loadSummary(workoutId: number, unit: Unit): LoadedSummary | null {
   const workout = db.select().from(workouts).where(eq(workouts.id, workoutId)).get();
@@ -36,8 +36,7 @@ export function loadSummary(workoutId: number, unit: Unit): LoadedSummary | null
       repMin: routineExercises.repMin,
       repMax: routineExercises.repMax,
       rule: routineExercises.rule,
-      stepKg: routineExercises.stepKg,
-      stepLb: routineExercises.stepLb,
+      ...jumpColumns,
     })
     .from(workoutExercises)
     .innerJoin(exercises, eq(exercises.id, workoutExercises.exerciseId))
@@ -64,7 +63,7 @@ export function loadSummary(workoutId: number, unit: Unit): LoadedSummary | null
   const saved: SavedExercise[] = exRows.map((e) => ({
     id: e.id,
     name: e.name,
-    steps: { stepKg: e.stepKg, stepLb: e.stepLb },
+    jumps: jumpsOf(e),
     loadType: e.loadType,
     plan:
       e.planSets !== null && e.repMin !== null && e.repMax !== null && e.rule !== null

@@ -4,7 +4,7 @@ import type { Db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { defaultRule } from "@/engine";
 import { readUnit, writeUnit } from "@/settings/unitSetting";
-import { formatWeight, kgIn, type Steps, type Unit } from "@/units";
+import { formatWeight, kgIn, type Jumps, type Unit } from "@/units";
 
 import { discardWorkout, finishWorkout, startWorkout } from "./workoutQueries";
 
@@ -14,14 +14,14 @@ const db: Db = jest.requireMock("@/db/client").db;
 
 /**
  * A routine with one exercise and three finished Clean workouts at `weightKg` × 8 (logged in kg), the newest Offer
- * accepted, and the routine exercise's saved steps.
+ * accepted, and the routine exercise's saved Jumps.
  */
-function earnedRoutine(steps: Steps, weightKg = 8, equipment = "dumbbell"): { routineId: number; routineExerciseId: number } {
+function earnedRoutine(jumps: Jumps, weightKg = 8, equipment = "dumbbell"): { routineId: number; routineExerciseId: number } {
   const exercise = db.insert(exercises).values({ name: `Lateral raise (${equipment})`, equipment, loadType: "weighted" }).returning().get();
   const routine = db.insert(routines).values({ name: `${equipment} ${exercise.id}` }).returning().get();
   const routineExercise = db
     .insert(routineExercises)
-    .values({ routineId: routine.id, exerciseId: exercise.id, position: 0, sets: 3, repMin: 8, repMax: 10, restS: 90, rule: defaultRule("weighted"), ...steps })
+    .values({ routineId: routine.id, exerciseId: exercise.id, position: 0, sets: 3, repMin: 8, repMax: 10, restS: 90, rule: defaultRule("weighted"), ...jumps })
     .returning()
     .get();
   ["2026-11-03", "2026-11-10", "2026-11-17"].forEach((date, i) => {
@@ -50,9 +50,9 @@ function startedTarget(workoutId: number | null) {
     .get();
 }
 
-const untouched: Steps = { stepKg: null, stepLb: null };
+const untouched: Jumps = { stepKg: null, stepLb: null };
 
-describe("startWorkout steps by the routine exercise's step", () => {
+describe("startWorkout steps by the routine exercise's Jump", () => {
   it("steps by the 2.5 kg default while no step is set, whatever the equipment: a dumbbell curl goes 10 kg to 12.5 kg (not 12 kg)", () => {
     expect(startedTarget(startWorkout(earnedRoutine(untouched, 10).routineId, "kg"))).toEqual({ weightKg: 12.5, reps: 8 });
     expect(startedTarget(startWorkout(earnedRoutine(untouched, 10, "machine").routineId, "kg"))).toEqual({ weightKg: 12.5, reps: 8 });
@@ -89,11 +89,11 @@ describe("startWorkout after a unit switch", () => {
   const LB = 0.45359237;
 
   /** A dumbbell routine with one finished Clean workout at a Target logged in `unit`, saved before Targets recorded their unit. */
-  function dumbbellRoutine(weightKg: number, unit: "kg" | "lb", steps: Steps = untouched): { routineId: number; workoutExerciseId: number } {
+  function dumbbellRoutine(weightKg: number, unit: "kg" | "lb", jumps: Jumps = untouched): { routineId: number; workoutExerciseId: number } {
     const exercise = db.insert(exercises).values({ name: "Hammer curl", equipment: "dumbbell", loadType: "weighted" }).returning().get();
     const routine = db.insert(routines).values({ name: "Arms" }).returning().get();
     db.insert(routineExercises)
-      .values({ routineId: routine.id, exerciseId: exercise.id, position: 0, sets: 3, repMin: 8, repMax: 10, restS: 90, rule: defaultRule("weighted"), ...steps })
+      .values({ routineId: routine.id, exerciseId: exercise.id, position: 0, sets: 3, repMin: 8, repMax: 10, restS: 90, rule: defaultRule("weighted"), ...jumps })
       .run();
     const workout = db
       .insert(workouts)

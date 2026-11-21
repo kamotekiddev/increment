@@ -1,6 +1,6 @@
 import { defaultRule, nextTarget, type HistorySession, type OverloadRule } from "../engine";
 import { input, session } from "../engine/testing";
-import { ruleChoices, withChoices, type RuleChoices } from "./ruleChoices";
+import { jumpToSave, ruleChoices, withChoices, type RuleChoices } from "./ruleChoices";
 
 const off: RuleChoices = { type: "weight-first", missDrop: false, deload: false };
 
@@ -81,5 +81,17 @@ describe("ruleChoices", () => {
 
   it("reads a miss rule that keeps the weight as Keep the weight", () => {
     expect(ruleChoices({ ...defaultRule("weighted"), miss: { after: 2, action: { kind: "keep" } } }).missDrop).toBe(false);
+  });
+});
+
+describe("jumpToSave", () => {
+  it("saves the Jump chosen in Add each time as only that unit's column: 2 kg in kg, 10 lb in lb", () => {
+    expect(jumpToSave("weighted", "kg", 2)).toEqual({ stepKg: 2 });
+    expect(jumpToSave("weighted", "lb", 10)).toEqual({ stepLb: 10 });
+  });
+
+  it("saves no Jump for a bodyweight exercise, which shows no Add each time: both stay null until set", () => {
+    expect(jumpToSave("bodyweight", "kg", 2.5)).toEqual({});
+    expect(jumpToSave("bodyweight", "lb", 5)).toEqual({});
   });
 });

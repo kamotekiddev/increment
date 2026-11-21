@@ -10,10 +10,10 @@ import {
   loggedWeightText,
   loggedWeightWithUnit,
   roundDownToLoadable,
-  stepChoices,
-  stepIn,
-  stepKgFor,
-  stepPatch,
+  jumpChoices,
+  jumpIn,
+  jumpKgFor,
+  jumpPatch,
   toKg,
   weightKg,
 } from "./index";
@@ -134,29 +134,29 @@ describe("loadableIn", () => {
   });
 });
 
-describe("a routine exercise's step (stepIn, stepKgFor)", () => {
+describe("a routine exercise's Jump (jumpIn, jumpKgFor)", () => {
   const untouched = { stepKg: null, stepLb: null };
   it("is 2.5 kg in kg and 5 lb in lb while the lifter has not set one", () => {
-    expect(stepIn(untouched, "kg")).toBe(2.5);
-    expect(stepIn(untouched, "lb")).toBe(5);
-    expect(stepKgFor(untouched, "kg")).toBe(2.5);
-    expect(stepKgFor(untouched, "lb")).toBe(5 * KG_PER_LB);
+    expect(jumpIn(untouched, "kg")).toBe(2.5);
+    expect(jumpIn(untouched, "lb")).toBe(5);
+    expect(jumpKgFor(untouched, "kg")).toBe(2.5);
+    expect(jumpKgFor(untouched, "lb")).toBe(5 * KG_PER_LB);
   });
   it("uses a saved kg step in kg and ignores it in lb: 1 kg in kg, the 5 lb default in lb", () => {
     const oneKg = { stepKg: 1, stepLb: null };
-    expect(stepKgFor(oneKg, "kg")).toBe(1);
-    expect(stepIn(oneKg, "lb")).toBe(5);
-    expect(stepKgFor(oneKg, "lb")).toBe(5 * KG_PER_LB);
+    expect(jumpKgFor(oneKg, "kg")).toBe(1);
+    expect(jumpIn(oneKg, "lb")).toBe(5);
+    expect(jumpKgFor(oneKg, "lb")).toBe(5 * KG_PER_LB);
   });
   it("uses a saved lb step, saved in lb, in lb only: 2.5 lb in lb, the 2.5 kg default in kg", () => {
     const twoAndAHalfLb = { stepKg: null, stepLb: 2.5 };
-    expect(stepIn(twoAndAHalfLb, "lb")).toBe(2.5);
-    expect(stepKgFor(twoAndAHalfLb, "lb")).toBe(2.5 * KG_PER_LB);
-    expect(stepKgFor(twoAndAHalfLb, "kg")).toBe(2.5);
+    expect(jumpIn(twoAndAHalfLb, "lb")).toBe(2.5);
+    expect(jumpKgFor(twoAndAHalfLb, "lb")).toBe(2.5 * KG_PER_LB);
+    expect(jumpKgFor(twoAndAHalfLb, "kg")).toBe(2.5);
   });
   it("is the default when the routine exercise is gone (null)", () => {
-    expect(stepKgFor(null, "kg")).toBe(2.5);
-    expect(stepIn(null, "lb")).toBe(5);
+    expect(jumpKgFor(null, "kg")).toBe(2.5);
+    expect(jumpIn(null, "lb")).toBe(5);
   });
 });
 
@@ -189,29 +189,29 @@ describe("weightKg", () => {
   });
 });
 
-describe("stepChoices (Add each time)", () => {
+describe("jumpChoices (Add each time)", () => {
   it("offers only real kg plate steps in kg", () => {
-    expect(stepChoices("kg")).toEqual([0.5, 1, 1.25, 2, 2.5, 5, 10]);
+    expect(jumpChoices("kg")).toEqual([0.5, 1, 1.25, 2, 2.5, 5, 10]);
   });
   it("offers only real lb plate steps in lb", () => {
-    expect(stepChoices("lb")).toEqual([1.25, 2.5, 5, 10, 15, 20]);
+    expect(jumpChoices("lb")).toEqual([1.25, 2.5, 5, 10, 15, 20]);
   });
   it("keeps a saved step that is off the ladder (from an old backup) in order, so it can still be selected", () => {
-    expect(stepChoices("kg", 3)).toEqual([0.5, 1, 1.25, 2, 2.5, 3, 5, 10]);
-    expect(stepChoices("kg", 2)).toEqual([0.5, 1, 1.25, 2, 2.5, 5, 10]);
+    expect(jumpChoices("kg", 3)).toEqual([0.5, 1, 1.25, 2, 2.5, 3, 5, 10]);
+    expect(jumpChoices("kg", 2)).toEqual([0.5, 1, 1.25, 2, 2.5, 5, 10]);
   });
 });
 
-describe("stepPatch (saving Add each time)", () => {
+describe("jumpPatch (saving Add each time)", () => {
   it("writes only the kg step when saved in kg", () => {
-    expect(stepPatch("kg", 2)).toEqual({ stepKg: 2 });
+    expect(jumpPatch("kg", 2)).toEqual({ stepKg: 2 });
   });
   it("writes only the lb step when saved in lb", () => {
-    expect(stepPatch("lb", 10)).toEqual({ stepLb: 10 });
+    expect(jumpPatch("lb", 10)).toEqual({ stepLb: 10 });
   });
   it("a curl set to 2 kg in kg steps by 2 kg in kg and keeps lb at its own 5 lb default", () => {
-    const curl = { stepKg: null, stepLb: null, ...stepPatch("kg", 2) };
-    expect(stepIn(curl, "kg")).toBe(2);
-    expect(stepIn(curl, "lb")).toBe(5);
+    const curl = { stepKg: null, stepLb: null, ...jumpPatch("kg", 2) };
+    expect(jumpIn(curl, "kg")).toBe(2);
+    expect(jumpIn(curl, "lb")).toBe(5);
   });
 });

@@ -86,6 +86,9 @@ export const size = {
   stepperValue: 62,
   /** A History row (one finished Workout). */
   historyRow: 64,
+  /** A radio circle at the end of a picker row (the Overload rule panel's rule types), and its selected dot. */
+  radio: 22,
+  radioDot: 8,
 } as const;
 
 /** Border widths. */
@@ -138,6 +141,8 @@ export const lineHeight = {
   /** An empty state's heading at `fontSize.action`. */
   action: 22,
   title: 24,
+  /** A bottom sheet's title at `fontSize.title` (`textStyle.sheetTitle`). */
+  sheetTitle: 26,
   /** The large title of an in-page screen header at `fontSize.screen`. */
   screenHeader: 30,
   screen: 38,
@@ -155,6 +160,8 @@ export const textStyle = {
   screenTitle: { fontSize: fontSize.display, lineHeight: lineHeight.screen, letterSpacing: -1 },
   /** Title of a row or card. */
   rowTitle: { fontSize: fontSize.input, lineHeight: lineHeight.title, letterSpacing: -0.4 },
+  /** Title of a bottom sheet at the `title` text size (the Exercise setup sheet, the Overload rule panel). */
+  sheetTitle: { lineHeight: lineHeight.sheetTitle, letterSpacing: -0.4 },
 } as const;
 
 /** The rest panel pinned to the bottom of the live workout: ring size and stroke in points, top corner radius. */

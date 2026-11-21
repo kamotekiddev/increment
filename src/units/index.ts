@@ -2,10 +2,12 @@
  * Every kg/lb conversion lives here; no other file converts. Pure: no I/O, no React, no database.
  *
  * A set stores the number the lifter typed and its unit (`Weight`, ADR 0003). Targets are kg. A routine exercise's
- * step (the Jump) is saved per unit, each in its own unit, and only converted to kg for the engine (`stepKgFor`).
+ * Jump is saved per unit, each in its own unit, and only converted to kg for the engine (`jumpKgFor`).
  * Conversion happens in memory only, for display, rounding a weight about to be lifted, and for
  * comparing and adding up weights; a converted value is never saved.
  */
+
+import { floorToMultiple } from "../grid";
 
 export type Unit = "kg" | "lb";
 
@@ -49,11 +51,12 @@ export function kgIn(kg: number, unit: Unit): number {
 }
 
 /**
- * The largest loadable weight at or below `value`: 137.79 lb with a 5 lb step is 135. The quotient is cleaned to 6
- * decimals first, so a conversion that lands a hair below a step (134.99999999999997 lb) stays on it.
+ * The largest loadable weight at or below `value`: 137.79 lb with a 5 lb Jump is 135. It rounds down as the engine
+ * does (`floorToMultiple` in `src/grid`, one tolerance for both), so a conversion that lands a hair below a multiple
+ * (134.99999999999997 lb) stays on it.
  */
-export function roundDownToLoadable(value: number, step: number): number {
-  return clean(Math.max(0, Math.floor(clean(value / step)) * step));
+export function roundDownToLoadable(value: number, jump: number): number {
+  return floorToMultiple(value, jump);
 }
 
 /**
@@ -67,57 +70,57 @@ export function loadableIn(w: Weight, unit: Unit, jumpKg: number): number {
 }
 
 /**
- * A routine exercise's saved steps (the Jump, "Add each time"), each in its own unit: `stepKg` in kg, `stepLb` in lb.
- * Null until the lifter sets that unit's step.
+ * A routine exercise's saved Jumps ("Add each time"), each in its own unit: `stepKg` in kg, `stepLb` in lb (the
+ * `step_kg` and `step_lb` columns). Null until the lifter sets that unit's Jump.
  */
-export interface Steps {
+export interface Jumps {
   stepKg: number | null;
   stepLb: number | null;
 }
 
-/** The step of an exercise whose lifter never set one, in each unit: one default for every exercise. */
-export const DEFAULT_STEP: Record<Unit, number> = { kg: 2.5, lb: 5 };
+/** The Jump of an exercise whose lifter never set one, in each unit: one default for every exercise. */
+export const DEFAULT_JUMP: Record<Unit, number> = { kg: 2.5, lb: 5 };
 
 /**
- * A routine exercise's step in `unit`, as a number in that unit: its saved step for that unit, else 2.5 kg / 5 lb.
- * The other unit's step is never read or converted, so a 1 kg step leaves lb at its own 5 lb. Null steps (the
+ * A routine exercise's Jump in `unit`, as a number in that unit: its saved Jump for that unit, else 2.5 kg / 5 lb.
+ * The other unit's Jump is never read or converted, so a 1 kg Jump leaves lb at its own 5 lb. Null Jumps (the
  * routine exercise was deleted) are the default.
  */
-export function stepIn(steps: Steps | null, unit: Unit): number {
-  const saved = unit === "kg" ? steps?.stepKg : steps?.stepLb;
-  return saved ?? DEFAULT_STEP[unit];
+export function jumpIn(jumps: Jumps | null, unit: Unit): number {
+  const saved = unit === "kg" ? jumps?.stepKg : jumps?.stepLb;
+  return saved ?? DEFAULT_JUMP[unit];
 }
 
 /**
- * The steps "Add each time" offers, one ladder per unit, in that unit: only steps real plates make.
+ * The Jumps "Add each time" offers, one ladder per unit, in that unit: only Jumps real plates make.
  * kg 0.5, 1, 1.25, 2, 2.5, 5, 10 and lb 1.25, 2.5, 5, 10, 15, 20.
  */
-export const STEP_LADDER: Record<Unit, readonly number[]> = {
+export const JUMP_LADDER: Record<Unit, readonly number[]> = {
   kg: [0.5, 1, 1.25, 2, 2.5, 5, 10],
   lb: [1.25, 2.5, 5, 10, 15, 20],
 };
 
 /**
  * The choices "Add each time" shows in `unit`: that unit's ladder, plus `selected` in order when it is off the
- * ladder (a step restored from an old backup), so the saved step can always be shown as selected.
+ * ladder (a Jump restored from an old backup), so the saved Jump can always be shown as selected.
  */
-export function stepChoices(unit: Unit, selected?: number): number[] {
-  const ladder = [...STEP_LADDER[unit]];
+export function jumpChoices(unit: Unit, selected?: number): number[] {
+  const ladder = [...JUMP_LADDER[unit]];
   if (selected === undefined || ladder.includes(selected)) return ladder;
   return [...ladder, selected].sort((a, b) => a - b);
 }
 
 /**
- * The columns "Add each time" saves for a step chosen in `unit`: only that unit's step, so saving in kg never
- * touches the lb step (and the other way round).
+ * The columns "Add each time" saves for a Jump chosen in `unit`: only that unit's Jump, so saving in kg never
+ * touches the lb Jump (and the other way round).
  */
-export function stepPatch(unit: Unit, step: number): Partial<Steps> {
-  return unit === "kg" ? { stepKg: step } : { stepLb: step };
+export function jumpPatch(unit: Unit, jump: number): Partial<Jumps> {
+  return unit === "kg" ? { stepKg: jump } : { stepLb: jump };
 }
 
-/** `stepIn` as kg: the Jump the engine and the rounding take (`jumpKg`). 5 lb is 2.26796185 kg. */
-export function stepKgFor(steps: Steps | null, unit: Unit): number {
-  return toKg(stepIn(steps, unit), unit);
+/** `jumpIn` as kg: the Jump the engine and the rounding take (`jumpKg`). 5 lb is 2.26796185 kg. */
+export function jumpKgFor(jumps: Jumps | null, unit: Unit): number {
+  return toKg(jumpIn(jumps, unit), unit);
 }
 
 /** A number for display: up to `decimals` places, trailing zeros dropped (60, 62.5, 61.25). */

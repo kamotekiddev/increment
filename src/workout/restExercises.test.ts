@@ -4,7 +4,7 @@ import type { LiveExercise } from "./workoutQueries";
 const ex = (over: Partial<LiveExercise>): LiveExercise => ({
   id: 1,
   name: "Bench press",
-  steps: { stepKg: null, stepLb: null },
+  jumps: { stepKg: null, stepLb: null },
   target: null,
   targetUnit: "kg",
   range: null,
@@ -27,9 +27,9 @@ describe("toRestExercises", () => {
     const [r] = toRestExercises([ex({ rows: [{ setId: 1, weight: 102.5, unit: "kg", reps: 5, done: false, edited: false }] })], "lb");
     expect(r.rows[0]).toMatchObject({ weight: 225, unit: "lb" });
   });
-  it("rounds down to the routine exercise's lb step: 102.5 kg with a 10 lb step is 220 lb", () => {
+  it("rounds down to the routine exercise's lb Jump: 102.5 kg with a 10 lb step is 220 lb", () => {
     const rows = [{ setId: 1, weight: 102.5, unit: "kg" as const, reps: 5, done: false, edited: false }];
-    const [r] = toRestExercises([ex({ rows, steps: { stepKg: 5, stepLb: 10 } })], "lb");
+    const [r] = toRestExercises([ex({ rows, jumps: { stepKg: 5, stepLb: 10 } })], "lb");
     expect(r.rows[0]).toMatchObject({ weight: 220, unit: "lb" });
   });
 });
