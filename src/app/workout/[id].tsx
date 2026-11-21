@@ -4,8 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as Haptics from "expo-haptics";
 import { AppState, Pressable, ScrollView, View } from "react-native";
 
-import { Input, RoundButton, Text } from "@/components";
-import { ScreenHeader } from "@/routines/ScreenHeader";
+import { Input, RoundButton, ScreenHeader, Text } from "@/components";
 import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import { useJumps, useKeepScreenAwake, useShowPreviousSet, useUnit } from "@/settings";
 import { type SetEdit, finishCheck, lastColumn, lastSetText, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";

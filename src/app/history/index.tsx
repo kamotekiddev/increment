@@ -1,11 +1,10 @@
 import { router } from "expo-router";
 import { SectionList, View } from "react-native";
 
-import { RoundButton, Text } from "@/components";
+import { RoundButton, ScreenHeader, Text } from "@/components";
 import { HistoryEmpty } from "@/history/HistoryEmpty";
 import { HistoryListRow } from "@/history/HistoryListRow";
 import { useWorkoutHistory } from "@/history/useWorkoutHistory";
-import { ScreenHeader } from "@/routines/ScreenHeader";
 import { fontSize, lineHeight, spacing, useColors } from "@/theme";
 
 /** Every finished Workout, newest first, under month titles. Read-only; a row opens Past workout. */

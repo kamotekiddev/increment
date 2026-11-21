@@ -5,4 +5,6 @@ export { Input } from "./Input";
 export { Pill } from "./Pill";
 export { PromptHeader, PromptSheet } from "./PromptSheet";
 export { RoundButton } from "./RoundButton";
+export { ScreenHeader } from "./ScreenHeader";
+export type { ScreenHeaderProps } from "./ScreenHeader";
 export { Text } from "./Text";

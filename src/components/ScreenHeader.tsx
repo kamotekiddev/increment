@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Text } from "@/components";
+import { Text } from "./Text";
 import { fontSize, lineHeight, size, spacing } from "@/theme";
 
 export interface ScreenHeaderProps {

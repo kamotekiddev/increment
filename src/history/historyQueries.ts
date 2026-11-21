@@ -2,6 +2,7 @@ import { and, asc, countDistinct, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { exercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
+import { exerciseCountText } from "@/today/todayText";
 import { formatWeight, type Unit } from "@/units";
 import { durationMinutes } from "@/workout/durationMinutes";
 import { repsText } from "@/workout/repsText";
@@ -53,10 +54,6 @@ function durationText({ startedAt, finishedAt }: { startedAt: number; finishedAt
   return rest === 0 ? `${hours} h` : `${hours} h ${rest} min`;
 }
 
-function exerciseCount(n: number): string {
-  return `${n} ${n === 1 ? "exercise" : "exercises"}`;
-}
-
 /** Every finished Workout across all Routines, newest first, under month sections, as finished display text. */
 export function workoutHistory(): HistorySection[] {
   const rows = db
@@ -91,7 +88,7 @@ export function workoutHistory(): HistorySection[] {
       workoutId: row.id,
       dateLabel: dateLabel(row.date),
       routineLabel: routineLabel(row.routineName),
-      detail: `${exerciseCount(row.exercises)} · ${durationText(row)}`,
+      detail: `${exerciseCountText(row.exercises)} · ${durationText(row)}`,
     });
   }
   return [...sections.values()];

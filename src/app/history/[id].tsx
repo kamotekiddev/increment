@@ -2,10 +2,9 @@ import { router, useLocalSearchParams } from "expo-router";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { RoundButton } from "@/components";
+import { RoundButton, ScreenHeader } from "@/components";
 import { PastExerciseRow } from "@/history/PastExerciseRow";
 import { usePastWorkout } from "@/history/usePastWorkout";
-import { ScreenHeader } from "@/routines/ScreenHeader";
 import { radius, spacing, useColors } from "@/theme";
 
 /** One finished Workout, read-only: the Routine, date and duration, then each exercise with its Target and done Working sets. */

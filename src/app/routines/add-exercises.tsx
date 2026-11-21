@@ -2,7 +2,7 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 
-import { Button, RoundButton } from "@/components";
+import { Button, RoundButton, ScreenHeader } from "@/components";
 import { defaultRule } from "@/engine";
 import { ExerciseBrowser } from "@/library/ExerciseBrowser";
 import { exerciseMeta } from "@/library/exerciseMeta";
@@ -12,7 +12,6 @@ import { ExerciseSetupSheet } from "@/routines/ExerciseSetupSheet";
 import { addRoutineExercise, loadRoutineExercises } from "@/routines/routineQueries";
 import { newExerciseSetup, type ExerciseSetup } from "@/routines/routineSetup";
 import { useDefaultRest } from "@/settings";
-import { ScreenHeader } from "@/routines/ScreenHeader";
 import { spacing, useColors } from "@/theme";
 
 export default function AddExercisesScreen() {
