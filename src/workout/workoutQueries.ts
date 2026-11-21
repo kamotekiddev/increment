@@ -124,7 +124,7 @@ export function startWorkout(routineId: number, jumps: Jumps, unit: Unit, now: D
         .returning({ id: workoutExercises.id })
         .get();
 
-      // Pre-filled in the lifter's unit: the Target as a number in that unit (140 lb, 62.5 kg).
+      // Pre-filled in the lifter's unit: the Target as a number in that unit (135 lb, 62.5 kg).
       initialSetRows({ sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax }, target, unit).forEach((row, idx) => {
         tx.insert(sets)
           .values({
