@@ -4,7 +4,7 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** built
 
 - [ ] One migration adds a nullable kg step and lb step to routine exercises and drops the five Jump columns from the settings row without copying them (owner decision 2026-11-21: the app is not released)
 - [ ] One pure function gives a routine exercise's step for a unit: its saved step for that unit, else 2.5 kg / 5 lb
