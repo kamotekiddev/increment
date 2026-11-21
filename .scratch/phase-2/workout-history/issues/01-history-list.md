@@ -4,17 +4,19 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] Progress tab: title row with the History pill (history icon, "History") on the right, as in `Progress.dc.html`; the muted line "Your records will appear here." below. No "Last 8" dropdown, no body
-- [ ] The pill pushes History, a stack screen outside the tab group; Back returns to Progress
-- [ ] A history read module (outside the routes folder) exposes *workout history* (unit) → month sections of rows as finished display text; the screen only renders what it returns
-- [ ] Only finished Workouts; newest first by start time, so two on one day keep their order; no limit, no paging
-- [ ] Month header and row date come from the Workout's stored local date, split by hand (not parsed as UTC); year on the month header only; English month and weekday names
-- [ ] Routine label is the Routine's current name; a Workout with no Routine reads `Workout`
-- [ ] `1 exercise` / `N exercises`, counting the Workout exercises kept on the Workout
-- [ ] Duration is finish minus start floored to minutes (the summary's rule), no cap: `0 min`, `48 min`, `1 h`, `1 h 12 min`
-- [ ] Layout follows `WorkoutHistory.dc.html` and the design tokens: back button and "History" title, month titles, each month's rows in one white card with dividers; the empty card follows `WorkoutHistoryEmpty.dc.html` ("No workouts yet", "Finish a workout and it shows up here.", no button)
-- [ ] Reloads on focus, so a Workout finished elsewhere shows on return
-- [ ] Jest database tests (in-memory database with migrations, like the start-workout test) through *workout history* only: in-progress left out; two Routines; newest first and same-day order; a month and a year boundary (`December 2025` after `January 2026`); weekday and month in the date label; renamed Routine; no-Routine `Workout`; exercise count singular and plural; durations `48 min`, `1 h`, `1 h 12 min`, `3 h 5 min`; no finished Workout returns no sections
-- [ ] Type check, lint and tests pass
+- [x] Progress tab: title row with the History pill (history icon, "History") on the right, as in `Progress.dc.html`; the muted line "Your records will appear here." below. No "Last 8" dropdown, no body
+- [x] The pill pushes History, a stack screen outside the tab group; Back returns to Progress
+- [x] A history read module (outside the routes folder) exposes *workout history* (unit) → month sections of rows as finished display text; the screen only renders what it returns
+- [x] Only finished Workouts; newest first by start time, so two on one day keep their order; no limit, no paging
+- [x] Month header and row date come from the Workout's stored local date, split by hand (not parsed as UTC); year on the month header only; English month and weekday names
+- [x] Routine label is the Routine's current name; a Workout with no Routine reads `Workout`
+- [x] `1 exercise` / `N exercises`, counting the Workout exercises kept on the Workout
+- [x] Duration is finish minus start floored to minutes (the summary's rule), no cap: `0 min`, `48 min`, `1 h`, `1 h 12 min`
+- [x] Layout follows `WorkoutHistory.dc.html` and the design tokens: back button and "History" title, month titles, each month's rows in one white card with dividers; the empty card follows `WorkoutHistoryEmpty.dc.html` ("No workouts yet", "Finish a workout and it shows up here.", no button)
+- [x] Reloads on focus, so a Workout finished elsewhere shows on return
+- [x] Jest database tests (in-memory database with migrations, like the start-workout test) through *workout history* only: in-progress left out; two Routines; newest first and same-day order; a month and a year boundary (`December 2025` after `January 2026`); weekday and month in the date label; renamed Routine; no-Routine `Workout`; exercise count singular and plural; durations `48 min`, `1 h`, `1 h 12 min`, `3 h 5 min`; no finished Workout returns no sections
+- [x] Type check, lint and tests pass
+
+**Not verified here:** layout against the mockups, the pill push and Back, and reload on focus were type-checked only, not run on a device. Ticket 03 does the device check.
