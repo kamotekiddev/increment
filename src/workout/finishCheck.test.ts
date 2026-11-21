@@ -1,7 +1,7 @@
 import { finishCheck } from "./finishCheck";
 import type { SetRow } from "./types";
 
-const row = (done: boolean): SetRow => ({ weightKg: 60, reps: 10, done, edited: false });
+const row = (done: boolean): SetRow => ({ weight: 60, unit: "kg", reps: 10, done, edited: false });
 
 describe("finishCheck", () => {
   it("reports nothing to warn about when every set is done", () => {

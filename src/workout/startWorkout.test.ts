@@ -6,7 +6,7 @@ import { defaultRule } from "@/engine";
 import { DEFAULT_JUMPS_KG, effectiveJumps } from "@/settings";
 import { readJumps } from "@/settings/jumpSetting";
 import { readUnit, writeUnit } from "@/settings/unitSetting";
-import { formatWeight } from "@/units";
+import { formatWeight, kgIn, type Unit } from "@/units";
 
 import { finishWorkout, startWorkout } from "./workoutQueries";
 
@@ -33,7 +33,7 @@ function earnedRoutine(equipment: string): number {
       .returning()
       .get();
     for (let idx = 0; idx < 3; idx++) {
-      db.insert(sets).values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx, weightKg: 8, enteredUnit: "kg", reps: 8, done: true }).run();
+      db.insert(sets).values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx, weight: 8, weightUnit: "kg", reps: 8, done: true }).run();
     }
   });
   return routine.id;
@@ -82,7 +82,8 @@ describe("startWorkout after a unit switch", () => {
       .returning()
       .get();
     for (let idx = 0; idx < 3; idx++) {
-      db.insert(sets).values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx, weightKg, enteredUnit: unit, reps: 8, done: true }).run();
+      // Saved as typed: the Target as a number in the unit it was logged in.
+      db.insert(sets).values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx, weight: kgIn(weightKg, unit), weightUnit: unit, reps: 8, done: true }).run();
     }
     return { routineId: routine.id, workoutExerciseId: we.id };
   }
@@ -92,14 +93,14 @@ describe("startWorkout after a unit switch", () => {
     db.select({ unit: workoutExercises.targetUnit }).from(workoutExercises).where(eq(workoutExercises.workoutId, workoutId ?? -1)).get()?.unit;
   const startedSets = (workoutId: number | null) =>
     db
-      .select({ id: sets.id, weightKg: sets.weightKg })
+      .select({ id: sets.id, weight: sets.weight, weightUnit: sets.weightUnit })
       .from(sets)
       .innerJoin(workoutExercises, eq(workoutExercises.id, sets.workoutExerciseId))
       .where(eq(workoutExercises.workoutId, workoutId ?? -1))
       .all();
-  /** Checks every prefilled set in `unit` and finishes the workout. */
-  function doAllAndFinish(workoutId: number, unit: "kg" | "lb") {
-    for (const s of startedSets(workoutId)) db.update(sets).set({ done: true, enteredUnit: unit }).where(eq(sets.id, s.id)).run();
+  /** Checks every prefilled set as it was prefilled and finishes the workout. */
+  function doAllAndFinish(workoutId: number) {
+    for (const s of startedSets(workoutId)) db.update(sets).set({ done: true }).where(eq(sets.id, s.id)).run();
     finishWorkout(workoutId, new Date(2026, 10, 19, 1));
   }
 
@@ -109,7 +110,7 @@ describe("startWorkout after a unit switch", () => {
     const inKg = start(routineId)!;
     expect(startedTarget(inKg)).toEqual({ weightKg: 10, reps: 8 });
     expect(startedUnit(inKg)).toBe("kg");
-    doAllAndFinish(inKg, "kg");
+    doAllAndFinish(inKg);
 
     writeUnit(db, "lb");
     const inLb = start(routineId);
@@ -119,11 +120,20 @@ describe("startWorkout after a unit switch", () => {
     expect(startedUnit(inLb)).toBe("lb");
     const prefilled = startedSets(inLb);
     expect(prefilled).toHaveLength(3);
-    expect(prefilled.map((s) => formatWeight(s.weightKg, "lb"))).toEqual(["20", "20", "20"]);
+    // Prefilled in lb, as a lb number: exactly 20, no float noise.
+    expect(prefilled.map((s) => [s.weight, s.weightUnit])).toEqual([
+      [20, "lb"],
+      [20, "lb"],
+      [20, "lb"],
+    ]);
 
     // Stored sets never change.
-    const logged = db.select({ weightKg: sets.weightKg }).from(sets).where(eq(sets.workoutExerciseId, workoutExerciseId)).all();
-    expect(logged.map((s) => s.weightKg)).toEqual([10, 10, 10]);
+    const logged = db.select({ weight: sets.weight, weightUnit: sets.weightUnit }).from(sets).where(eq(sets.workoutExerciseId, workoutExerciseId)).all();
+    expect(logged).toEqual([
+      { weight: 10, weightUnit: "kg" },
+      { weight: 10, weightUnit: "kg" },
+      { weight: 10, weightUnit: "kg" },
+    ]);
   });
 
   it("an old row with no stored unit falls back to its sets' unit: 135 lb (61.23 kg) started in kg is 62 kg on the 2 kg Dumbbell grid", () => {
@@ -136,5 +146,50 @@ describe("startWorkout after a unit switch", () => {
     const { routineId } = dumbbellRoutine(10, "kg");
     writeUnit(db, "kg");
     expect(startedTarget(startWorkout(routineId, { ...DEFAULT_JUMPS_KG, dumbbell: 4 }, "kg"))).toEqual({ weightKg: 10, reps: 8 });
+  });
+});
+
+describe("startWorkout pre-fills a weight that can be loaded in the lifter's unit", () => {
+  /** A barbell routine with one finished first workout (no Target), three sets of `weight` × 8 saved in `unit`. */
+  function firstWorkout(weight: number, unit: Unit): number {
+    const exercise = db.insert(exercises).values({ name: "Bench press", equipment: "barbell", loadType: "weighted" }).returning().get();
+    const routine = db.insert(routines).values({ name: "Push" }).returning().get();
+    db.insert(routineExercises)
+      .values({ routineId: routine.id, exerciseId: exercise.id, position: 0, sets: 3, repMin: 8, repMax: 10, restS: 90, rule: defaultRule("weighted") })
+      .run();
+    const workout = db.insert(workouts).values({ routineId: routine.id, startedAt: 1, finishedAt: 2, date: "2026-11-17", inProgress: false }).returning().get();
+    const we = db.insert(workoutExercises).values({ workoutId: workout.id, exerciseId: exercise.id, position: 0 }).returning().get();
+    for (let idx = 0; idx < 3; idx++) {
+      db.insert(sets).values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx, weight, weightUnit: unit, reps: 8, done: true }).run();
+    }
+    return routine.id;
+  }
+
+  /** The first pre-filled set of a workout started in `unit` with untouched Jumps (Barbell 2.5 kg, 5 lb). */
+  function prefill(routineId: number, unit: Unit) {
+    writeUnit(db, unit);
+    const workoutId = startWorkout(routineId, effectiveJumps(readJumps(db), unit), unit, new Date(2026, 10, 21));
+    return db
+      .select({ weight: sets.weight, weightUnit: sets.weightUnit })
+      .from(sets)
+      .innerJoin(workoutExercises, eq(workoutExercises.id, sets.workoutExerciseId))
+      .where(eq(workoutExercises.workoutId, workoutId ?? -1))
+      .get();
+  }
+
+  it("last set 100 kg, lifter in lb, 5 lb Jump: pre-fill is 220 lb", () => {
+    expect(prefill(firstWorkout(100, "kg"), "lb")).toEqual({ weight: 220, weightUnit: "lb" });
+  });
+
+  it("last set 60 kg, lifter in lb: pre-fill is 130 lb (132.28 rounds to 130)", () => {
+    expect(prefill(firstWorkout(60, "kg"), "lb")).toEqual({ weight: 130, weightUnit: "lb" });
+  });
+
+  it("last set 135 lb, lifter in kg, 2.5 kg Jump: pre-fill is 60 kg (61.23 rounds to 60)", () => {
+    expect(prefill(firstWorkout(135, "lb"), "kg")).toEqual({ weight: 60, weightUnit: "kg" });
+  });
+
+  it("last set in the lifter's own unit is pre-filled as is: 61.25 kg stays 61.25 kg", () => {
+    expect(prefill(firstWorkout(61.25, "kg"), "kg")).toEqual({ weight: 61.25, weightUnit: "kg" });
   });
 });

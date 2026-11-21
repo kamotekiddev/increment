@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
-import { nextTarget, type LoadType, type Target } from "@/engine";
+import { nextTarget, type LoadType, type Target, type WeightUnit } from "@/engine";
 import { jumpKgFor, type Jumps } from "@/settings";
 import type { Unit } from "@/units";
 
 import { toHistory, type PastExercise } from "./historyInputs";
 import { applyEdit, type SetEdit } from "./applyEdit";
+import { followUnitRows } from "./followUnit";
 import { initialSetRows } from "./initialSetRows";
-import { doneFields, setDone } from "./markDone";
+import { setDone } from "./markDone";
 import { rowFromStored, weightToStore } from "./setStorage";
 import type { SetRow } from "./types";
 
@@ -123,15 +124,15 @@ export function startWorkout(routineId: number, jumps: Jumps, unit: Unit, now: D
         .returning({ id: workoutExercises.id })
         .get();
 
-      initialSetRows({ sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax }, target).forEach((row, idx) => {
+      // Pre-filled in the lifter's unit: the Target as a number in that unit (140 lb, 62.5 kg).
+      initialSetRows({ sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax }, target, unit).forEach((row, idx) => {
         tx.insert(sets)
           .values({
             workoutExerciseId: workoutExercise.id,
             exerciseId: ex.exerciseId,
             idx,
-            weightKg: weightToStore(row.weightKg),
-            // Placeholder: set to the unit on screen when the set is checked. Unchecked sets are dropped at Finish.
-            enteredUnit: "kg",
+            weight: weightToStore(row.weight),
+            weightUnit: row.unit,
             reps: row.reps,
           })
           .run();
@@ -151,7 +152,11 @@ export interface LiveSet extends SetRow {
 export interface LiveExercise {
   id: number;
   name: string;
+  /** The exercise's equipment, which picks its Jump. */
+  equipment: string;
   target: Target | null;
+  /** The lifter's unit when Start set the Target; null on rows saved before it was stored. */
+  targetUnit: WeightUnit | null;
   range: { repMin: number; repMax: number } | null;
   /** The Routine exercise's Rest length in seconds; the default when the routine exercise is gone. */
   restSeconds: number;
@@ -175,6 +180,8 @@ export async function loadWorkout(id: number): Promise<LiveWorkout | null> {
       name: exercises.name,
       targetWeightKg: workoutExercises.targetWeightKg,
       targetReps: workoutExercises.targetReps,
+      targetUnit: workoutExercises.targetUnit,
+      equipment: exercises.equipment,
       repMin: routineExercises.repMin,
       repMax: routineExercises.repMax,
       restS: routineExercises.restS,
@@ -206,7 +213,9 @@ export async function loadWorkout(id: number): Promise<LiveWorkout | null> {
     exercises: exRows.map((e) => ({
       id: e.id,
       name: e.name,
+      equipment: e.equipment,
       target: e.targetWeightKg !== null && e.targetReps !== null ? { weightKg: e.targetWeightKg, reps: e.targetReps } : null,
+      targetUnit: e.targetUnit,
       range: e.repMin !== null && e.repMax !== null ? { repMin: e.repMin, repMax: e.repMax } : null,
       restSeconds: e.restS ?? DEFAULT_REST_SECONDS,
       loadType: e.loadType,
@@ -232,21 +241,24 @@ export function useWorkout(id: number): [LiveWorkout | null | undefined, (w: Liv
 
 /**
  * Marks a set done or not done and writes it at once. A weighted set with a blank weight is not
- * marked (the write is skipped); a bodyweight set is saved at weight 0. Returns the updated rows of that exercise.
+ * marked (the write is skipped); a bodyweight set is saved at weight 0. A set is checked as the screen
+ * shows it in `unit` (`followUnit`): an untouched 100 kg row shown as 220 lb is saved as 220 lb, and a typed
+ * or checked row keeps its saved number and unit. Unchecking writes only the done mark. Returns the updated
+ * rows of that exercise.
  */
-export function markSetDone(rows: LiveSet[], index: number, done: boolean, unit: Unit, loadType: LoadType): LiveSet[] {
-  const next = setDone(rows, index, done, loadType) as LiveSet[];
-  if (next === rows) return rows;
-  const changed = doneFields(done, loadType);
+export function markSetDone(rows: LiveSet[], index: number, done: boolean, unit: Unit, loadType: LoadType, jumpKg: number): LiveSet[] {
+  const shown = followUnitRows(rows, unit, jumpKg);
+  const next = setDone(shown, index, done, loadType) as LiveSet[];
+  if (next === shown) return rows;
+  const row = next[index];
   db.transaction((tx) => {
-    // `entered_unit` is the unit on screen when the set is checked. Unchecking leaves it as it was.
     tx.update(sets)
-      .set(done ? { ...changed, enteredUnit: unit } : changed)
-      .where(eq(sets.id, rows[index].setId))
+      .set(done ? { done, weight: weightToStore(row.weight), weightUnit: row.unit } : { done })
+      .where(eq(sets.id, row.setId))
       .run();
-    touchWorkout(tx, rows[index].setId);
+    touchWorkout(tx, row.setId);
   });
-  return next;
+  return rows.map((r, i) => (i === index ? row : r));
 }
 
 /** Stamps the workout that owns this set as just edited, which is what crash resume's 12-hour window reads. */
@@ -297,29 +309,29 @@ export function discardAndStartWorkout(inProgressId: number, routineId: number, 
   return startWorkout(routineId, jumps, unit);
 }
 
-/** Applies a typed or stepped edit to one row, following the rule, and writes every row it changed. */
-export function editSet(rows: LiveSet[], index: number, edit: SetEdit, unit: Unit): LiveSet[] {
-  const next = applyEdit(rows, index, edit).map((r, i) => ({ ...r, setId: rows[i].setId })) as LiveSet[];
+/**
+ * Applies a typed or stepped edit to one row, following the rule, and writes every row it changed. The edit
+ * applies to the rows as shown in `unit` (`followUnit`), and each changed row is saved with its number and
+ * unit together: a typed weight in the unit on screen, as typed.
+ */
+export function editSet(rows: LiveSet[], index: number, edit: SetEdit, unit: Unit, jumpKg: number): LiveSet[] {
+  const shown = followUnitRows(rows, unit, jumpKg);
+  const next = applyEdit(shown, index, edit).map((r, i) => ({ ...r, setId: rows[i].setId })) as LiveSet[];
+  const changed = (r: LiveSet, i: number) =>
+    r.weight !== shown[i].weight || r.unit !== shown[i].unit || r.reps !== shown[i].reps || r.edited !== shown[i].edited;
   db.transaction((tx) => {
     let wrote = false;
     next.forEach((r, i) => {
-      if (r.weightKg !== rows[i].weightKg || r.reps !== rows[i].reps || r.edited !== rows[i].edited) {
-        tx.update(sets)
-          .set({
-            weightKg: weightToStore(r.weightKg),
-            reps: r.reps,
-            edited: r.edited,
-            // A weight typed into a checked set was typed in the unit on screen now.
-            ...(r.done && r.weightKg !== rows[i].weightKg && i === index ? { enteredUnit: unit } : {}),
-          })
-          .where(eq(sets.id, r.setId))
-          .run();
-        wrote = true;
-      }
+      if (!changed(r, i)) return;
+      tx.update(sets)
+        .set({ weight: weightToStore(r.weight), weightUnit: r.unit, reps: r.reps, edited: r.edited })
+        .where(eq(sets.id, r.setId))
+        .run();
+      wrote = true;
     });
     if (wrote) touchWorkout(tx, next[0].setId);
   });
-  return next;
+  return next.map((r, i) => (changed(r, i) ? r : rows[i]));
 }
 
 /**

@@ -1,38 +1,28 @@
-import { KG_PER_LB, type Unit } from "@/units";
+import type { Unit } from "@/units";
 
-import { weightFromTyped, weightText } from "./typedWeight";
-
-describe("weightFromTyped", () => {
-  it("reads typed text in the unit on screen and returns kg", () => {
-    expect(weightFromTyped("62.5", "kg")).toBe(62.5);
-    expect(weightFromTyped("135", "lb")).toBe(135 * KG_PER_LB);
-  });
-
-  it("keeps blank as null and invalid text as undefined", () => {
-    expect(weightFromTyped("", "lb")).toBeNull();
-    expect(weightFromTyped("1e5", "lb")).toBeUndefined();
-  });
-});
+import { weightText } from "./typedWeight";
 
 describe("weightText", () => {
   it("is blank for a blank weight", () => {
-    expect(weightText(null, "kg")).toBe("");
+    expect(weightText({ weight: null, unit: "kg" }, "kg")).toBe("");
   });
 
-  it("shows the kg value in the unit on screen", () => {
-    expect(weightText(62.5, "kg")).toBe("62.5");
-    expect(weightText(135 * KG_PER_LB, "lb")).toBe("135");
+  it("shows a weight saved in the unit on screen exactly", () => {
+    expect(weightText({ weight: 62.5, unit: "kg" }, "kg")).toBe("62.5");
+    expect(weightText({ weight: 135, unit: "lb" }, "lb")).toBe("135");
+    expect(weightText({ weight: 61.25, unit: "kg" }, "kg")).toBe("61.25");
   });
 
-  it("a flip lb, kg, lb leaves an unedited kg weight identical", () => {
-    // Nothing is parsed back from the text, so the stored kg never moves.
-    const kg = 62.5;
-    const shown = (["lb", "kg", "lb"] as Unit[]).map((u) => weightText(kg, u));
+  it("converts a weight saved in the other unit, to 0.01", () => {
+    expect(weightText({ weight: 62.5, unit: "kg" }, "lb")).toBe("137.79");
+    expect(weightText({ weight: 135, unit: "lb" }, "kg")).toBe("61.23");
+  });
+
+  it("a flip lb, kg, lb leaves the saved weight identical", () => {
+    // Nothing is parsed back from the text, so the saved number never moves.
+    const saved = { weight: 62.5, unit: "kg" as Unit };
+    const shown = (["lb", "kg", "lb"] as Unit[]).map((u) => weightText(saved, u));
     expect(shown).toEqual(["137.79", "62.5", "137.79"]);
-    expect(kg).toBe(62.5);
-  });
-
-  it("reading displayed text back would lose precision, which is why unedited weights are never re-read", () => {
-    expect(weightFromTyped(weightText(62.5, "lb"), "lb")).not.toBe(62.5);
+    expect(saved).toEqual({ weight: 62.5, unit: "kg" });
   });
 });

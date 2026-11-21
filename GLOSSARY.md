@@ -121,5 +121,5 @@ The list of the lifter's finished Workouts, newest first. Each one opens to its 
 _Avoid_: Log, session history, Exercise history
 
 **Unit**:
-The weight system the lifter has chosen to see and type weights in, kg or lb. One global choice. It changes only what is shown and read; every weight is stored in kg.
+The weight system the lifter has chosen to see and type weights in, kg or lb. One global choice. It changes only what is shown and read; a set keeps the number and unit it was typed in, and switching never changes a stored set.
 _Avoid_: Measurement system, weight mode

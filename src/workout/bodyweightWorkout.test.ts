@@ -21,7 +21,7 @@ function pullupsLoggedWithABelt(): number {
   const past = db.insert(workouts).values({ routineId, startedAt: 1, date: "2026-11-02", inProgress: false }).returning().get();
   const we = db.insert(workoutExercises).values({ workoutId: past.id, exerciseId, position: 0 }).returning().get();
   [9, 8, 8].forEach((reps, idx) =>
-    db.insert(sets).values({ workoutExerciseId: we.id, exerciseId, idx, weightKg: 20, enteredUnit: "kg", reps, done: true }).run(),
+    db.insert(sets).values({ workoutExerciseId: we.id, exerciseId, idx, weight: 20, weightUnit: "kg", reps, done: true }).run(),
   );
   return routineId;
 }
@@ -34,12 +34,12 @@ describe("a bodyweight exercise in the live workout", () => {
     const pullups = workout!.exercises[0];
     expect(pullups.target).toEqual({ weightKg: 0, reps: 8 });
     const stored = () => db.select().from(sets).where(eq(sets.workoutExerciseId, pullups.id)).orderBy(sets.idx).all();
-    expect(stored().map((s) => s.weightKg)).toEqual([0, 0, 0]);
+    expect(stored().map((s) => s.weight)).toEqual([0, 0, 0]);
 
     // Even a row that still carries a weight (a workout started before the split) saves 0 when checked.
-    const rows = pullups.rows.map((r, i) => (i === 0 ? { ...r, weightKg: 20 } : r));
-    const next = markSetDone(rows, 0, true, "kg", "bodyweight");
-    expect(next[0]).toMatchObject({ weightKg: 0, done: true });
-    expect(stored()[0]).toMatchObject({ weightKg: 0, done: true, reps: 8 });
+    const rows = pullups.rows.map((r, i) => (i === 0 ? { ...r, weight: 20 } : r));
+    const next = markSetDone(rows, 0, true, "kg", "bodyweight", DEFAULT_JUMPS_KG.bodyweight);
+    expect(next[0]).toMatchObject({ weight: 0, done: true });
+    expect(stored()[0]).toMatchObject({ weight: 0, done: true, reps: 8 });
   });
 });

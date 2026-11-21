@@ -1,5 +1,5 @@
 import { nextTarget } from "../engine";
-import { toHistory, type PastExercise } from "./historyInputs";
+import { loggedUnit, toHistory, type PastExercise } from "./historyInputs";
 
 const past = (over: Partial<PastExercise>): PastExercise => ({
   startedAt: 1,
@@ -15,7 +15,7 @@ const past = (over: Partial<PastExercise>): PastExercise => ({
 describe("toHistory", () => {
   it("orders sessions newest first and sets by index", () => {
     const history = toHistory([
-      past({ startedAt: 1, date: "2026-11-01", sets: [{ idx: 1, weightKg: 60, reps: 9, done: true, isWarmup: false }, { idx: 0, weightKg: 60, reps: 10, done: true, isWarmup: false }] }),
+      past({ startedAt: 1, date: "2026-11-01", sets: [{ idx: 1, weight: 60, weightUnit: "kg" as const, reps: 9, done: true, isWarmup: false }, { idx: 0, weight: 60, weightUnit: "kg" as const, reps: 10, done: true, isWarmup: false }] }),
       past({ startedAt: 2, date: "2026-11-08" }),
     ], 3);
     expect(history.map((h) => h.date)).toEqual(["2026-11-08", "2026-11-01"]);
@@ -28,7 +28,7 @@ describe("toHistory", () => {
   });
 
   it("feeds the engine: a first workout becomes the baseline Target", () => {
-    const history = toHistory([past({ sets: [{ idx: 0, weightKg: 40, reps: 8, done: true, isWarmup: false }] })], 1);
+    const history = toHistory([past({ sets: [{ idx: 0, weight: 40, weightUnit: "kg" as const, reps: 8, done: true, isWarmup: false }] })], 1);
     const result = nextTarget({
       rule: { v: 1, step: "weight", repStep: 1, sessionsToEarn: 2 },
       planned: { sets: 1, repMin: 8, repMax: 12 },
@@ -42,7 +42,7 @@ describe("toHistory", () => {
 });
 
 describe("toHistory by plan position", () => {
-  const done = (idx: number) => ({ idx, weightKg: 60, reps: 10, done: true, isWarmup: false });
+  const done = (idx: number) => ({ idx, weight: 60, weightUnit: "kg" as const, reps: 10, done: true, isWarmup: false });
   const ask = (history: ReturnType<typeof toHistory>) =>
     nextTarget({
       rule: { v: 1, step: "weight", repStep: 1, sessionsToEarn: 1 },
@@ -65,7 +65,7 @@ describe("toHistory by plan position", () => {
 });
 
 describe("toHistory: the unit a Target was set in", () => {
-  const set = (weightKg: number, enteredUnit: "kg" | "lb") => ({ idx: 0, weightKg, reps: 8, done: true, isWarmup: false, enteredUnit });
+  const set = (weight: number, weightUnit: "kg" | "lb") => ({ idx: 0, weight, weightUnit, reps: 8, done: true, isWarmup: false });
   const target = { targetWeightKg: 10, targetReps: 8 };
   const unitOf = (row: Partial<PastExercise>) => toHistory([past(row)], 3)[0].targetUnit;
 
@@ -84,7 +84,27 @@ describe("toHistory: the unit a Target was set in", () => {
     expect(toHistory([past({ ...accepted, acceptedTargetUnit: null })], 3)[0].acceptedTargetUnit).toBe("kg");
   });
   it("a first workout with no Target uses the unit its heaviest set was logged in", () => {
-    const sets = [set(10, "kg"), { ...set(20, "lb"), idx: 1 }];
+    // 30 lb (13.61 kg) is heavier than 10 kg.
+    const sets = [set(10, "kg"), { ...set(30, "lb"), idx: 1 }];
     expect(unitOf({ targetUnit: "kg", sets })).toBe("lb");
+  });
+});
+
+describe("toHistory: weights are kg in memory only", () => {
+  it("gives the engine kg for a set saved as 135 lb, and leaves the saved set as typed", () => {
+    const sets = [{ idx: 0, weight: 135, weightUnit: "lb" as const, reps: 5, done: true, isWarmup: false }];
+    const [session] = toHistory([past({ sets })], 1);
+    expect(session.sets[0].weightKg).toBeCloseTo(61.23497, 5);
+    expect(sets[0]).toEqual({ idx: 0, weight: 135, weightUnit: "lb", reps: 5, done: true, isWarmup: false });
+  });
+
+  it("compares mixed units in kg: 225 lb (102.06 kg) is heavier than 100 kg", () => {
+    const sets = [
+      { idx: 0, weight: 100, weightUnit: "kg" as const, reps: 5, done: true, isWarmup: false },
+      { idx: 1, weight: 225, weightUnit: "lb" as const, reps: 5, done: true, isWarmup: false },
+    ];
+    expect(loggedUnit(sets)).toBe("lb");
+    const kg = toHistory([past({ sets })], 2)[0].sets.map((s) => s.weightKg);
+    expect(Math.max(...kg)).toBeCloseTo(102.058, 3);
   });
 });

@@ -6,7 +6,7 @@ import { toSummaryInput, type SavedExercise } from "./summaryInput";
 const planned = { sets: 3, repMin: 8, repMax: 10 };
 const rule = defaultRule("weighted");
 
-const set = (idx: number, reps: number) => ({ idx, weightKg: 60, reps, done: true, isWarmup: false });
+const set = (idx: number, reps: number) => ({ idx, weight: 60, weightUnit: "kg" as const, reps, done: true, isWarmup: false });
 
 const past = (startedAt: number, date: string, reps: number[], extra: Partial<PastExercise> = {}): PastExercise => ({
   startedAt,

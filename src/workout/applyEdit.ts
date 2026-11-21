@@ -1,7 +1,11 @@
+import type { Unit } from "../units";
 import type { SetRow } from "./types";
 
 export interface SetEdit {
-  weightKg?: number | null;
+  /** A weight as typed, saved as is with `unit`. */
+  weight?: number | null;
+  /** The unit `weight` was typed in: the unit on screen. Required with `weight`. */
+  unit?: Unit;
   reps?: number;
 }
 
@@ -12,7 +16,7 @@ export interface SetEdit {
 export function applyEdit(rows: SetRow[], index: number, edit: SetEdit): SetRow[] {
   const change = (row: SetRow): SetRow => ({
     ...row,
-    ...(edit.weightKg !== undefined ? { weightKg: edit.weightKg } : {}),
+    ...(edit.weight !== undefined ? { weight: edit.weight, unit: edit.unit ?? row.unit } : {}),
     ...(edit.reps !== undefined ? { reps: edit.reps } : {}),
   });
   return rows.map((row, i) => {

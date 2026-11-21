@@ -1,4 +1,4 @@
-import { formatWithUnit, type Unit } from "../units";
+import { weightIn, type Unit } from "../units";
 import { repsText } from "./repsText";
 import type { SetRow } from "./types";
 
@@ -14,6 +14,7 @@ export interface RestExercise {
   /** The Routine exercise's Rest length in seconds, from the Workout's snapshot. */
   restSeconds: number;
   bodyweight: boolean;
+  /** The rows as the screen shows them in the current unit (`followUnit`). */
   rows: SetRow[];
 }
 
@@ -73,7 +74,8 @@ function nextOpenExercise(exercises: RestExercise[], from: number): number | nul
 }
 
 function loadText(e: RestExercise, row: SetRow, unit: Unit): string | null {
-  return e.bodyweight || row.weightKg === null || row.weightKg === 0 ? null : formatWithUnit(row.weightKg, unit);
+  if (e.bodyweight || row.weight === null || row.weight === 0) return null;
+  return `${weightIn({ value: row.weight, unit: row.unit }, unit)} ${unit}`;
 }
 
 /** The "Next up" line after a rest in exercise `exerciseIndex`. Null when nothing is open. */

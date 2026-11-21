@@ -1,10 +1,13 @@
+import { DEFAULT_JUMPS_KG, effectiveJumps, UNTOUCHED_JUMPS } from "../settings/jumps";
 import { lastColumn, lastSetText } from "./lastColumn";
 import type { PastExercise } from "./historyInputs";
 
 const past = (sets: PastExercise["sets"]): PastExercise => ({
   startedAt: 1, date: "2026-01-01", targetWeightKg: null, targetReps: null, progressAccepted: false, isDeload: false, sets,
 });
-const s = (idx: number, weightKg: number, reps: number, done = true) => ({ idx, weightKg, reps, done, isWarmup: false });
+const s = (idx: number, weight: number, reps: number, done = true) => ({ idx, weight, weightUnit: "kg" as const, reps, done, isWarmup: false });
+const kgJump = DEFAULT_JUMPS_KG.barbell;
+const lbJump = effectiveJumps(UNTOUCHED_JUMPS, "lb").barbell;
 
 describe("lastColumn", () => {
   it("gives dashes for every row when there is no past workout", () => {
@@ -12,36 +15,43 @@ describe("lastColumn", () => {
   });
   it("matches past sets to rows by position", () => {
     expect(lastColumn(past([s(1, 62.5, 7), s(0, 60, 8)]), 2)).toEqual([
-      { weightKg: 60, reps: 8 },
-      { weightKg: 62.5, reps: 7 },
+      { weight: 60, unit: "kg", reps: 8 },
+      { weight: 62.5, unit: "kg", reps: 7 },
     ]);
   });
   it("gives a dash for a row beyond the past sets", () => {
-    expect(lastColumn(past([s(0, 60, 8)]), 2)).toEqual([{ weightKg: 60, reps: 8 }, null]);
+    expect(lastColumn(past([s(0, 60, 8)]), 2)).toEqual([{ weight: 60, unit: "kg", reps: 8 }, null]);
   });
   it("gives a dash for a past set that was not done", () => {
     expect(lastColumn(past([s(0, 60, 8, false)]), 1)).toEqual([null]);
   });
   it("matches by plan position when an unchecked set left a gap", () => {
     expect(lastColumn(past([s(0, 60, 8), s(1, 60, 8), s(3, 70, 6)]), 4)).toEqual([
-      { weightKg: 60, reps: 8 },
-      { weightKg: 60, reps: 8 },
+      { weight: 60, unit: "kg", reps: 8 },
+      { weight: 60, unit: "kg", reps: 8 },
       null,
-      { weightKg: 70, reps: 6 },
+      { weight: 70, unit: "kg", reps: 6 },
     ]);
   });
 });
 
 describe("lastSetText", () => {
-  it("writes weight in the unit on screen and reps", () => {
-    expect(lastSetText({ weightKg: 60, reps: 8 }, "kg", "weighted")).toBe("60 × 8");
-    expect(lastSetText({ weightKg: 61.2349, reps: 5 }, "lb", "weighted")).toBe("135 × 5");
+  it("writes a set saved in the unit on screen exactly, with reps", () => {
+    expect(lastSetText({ weight: 60, unit: "kg", reps: 8 }, "kg", "weighted", kgJump)).toBe("60 × 8");
+    expect(lastSetText({ weight: 135, unit: "lb", reps: 5 }, "lb", "weighted", lbJump)).toBe("135 × 5");
+  });
+  it("never rounds a set saved in the unit on screen: 61.25 kg stays 61.25 with a 2.5 kg Jump", () => {
+    expect(lastSetText({ weight: 61.25, unit: "kg", reps: 8 }, "kg", "weighted", kgJump)).toBe("61.25 × 8");
+  });
+  it("converts a set saved in the other unit and rounds it to the Jump", () => {
+    expect(lastSetText({ weight: 100, unit: "kg", reps: 8 }, "lb", "weighted", lbJump)).toBe("220 × 8");
+    expect(lastSetText({ weight: 135, unit: "lb", reps: 8 }, "kg", "weighted", kgJump)).toBe("60 × 8");
   });
   it("writes a dash when there is no past set", () => {
-    expect(lastSetText(null, "kg", "weighted")).toBe("–");
+    expect(lastSetText(null, "kg", "weighted", kgJump)).toBe("–");
   });
   it("writes reps only on a bodyweight exercise, hiding weight logged before the split", () => {
-    expect(lastSetText({ weightKg: 0, reps: 8 }, "kg", "bodyweight")).toBe("8 reps");
-    expect(lastSetText({ weightKg: 20, reps: 1 }, "lb", "bodyweight")).toBe("1 rep");
+    expect(lastSetText({ weight: 0, unit: "kg", reps: 8 }, "kg", "bodyweight", kgJump)).toBe("8 reps");
+    expect(lastSetText({ weight: 20, unit: "kg", reps: 1 }, "lb", "bodyweight", lbJump)).toBe("1 rep");
   });
 });

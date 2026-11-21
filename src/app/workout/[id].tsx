@@ -7,8 +7,9 @@ import { AppState, Pressable, ScrollView, View } from "react-native";
 import { Input, RoundButton, Text } from "@/components";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { borderWidth, fontFamily, fontSize, minTouch, opacity, radius, spacing, useColors } from "@/theme";
-import { useJumps, useKeepScreenAwake, useShowPreviousSet, useUnit } from "@/settings";
-import { type SetEdit, finishCheck, lastColumn, lastSetText, parseReps, parseWeight, weightFromTyped, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
+import { inCurrentUnit } from "@/engine";
+import { jumpKgFor, useJumps, useKeepScreenAwake, useShowPreviousSet, useUnit } from "@/settings";
+import { type SetEdit, finishCheck, followUnitRows, lastColumn, lastSetText, parseReps, parseWeight, weightFieldText, typeDraft, clearDraft, EMPTY_DRAFTS, type WeightDrafts } from "@/workout";
 import { bannerText } from "@/workout/bannerText";
 import { toRestExercises } from "@/workout/restExercises";
 import { RestPanel } from "@/workout/RestPanel";
@@ -156,7 +157,7 @@ export default function LiveWorkoutScreen() {
   // When the app last left the foreground, so a rest that ended while it was away gets no buzz.
   // Starts from the state at mount, so a screen opened while the app is in the background begins away.
   const away = useRef<AwayTrace | null>(trackAway(null, AppState.currentState ?? "active", Date.now()));
-  const restExercises = useMemo(() => (workout ? toRestExercises(workout.exercises) : []), [workout]);
+  const restExercises = useMemo(() => (workout ? toRestExercises(workout.exercises, unit, jumps) : []), [workout, unit, jumps]);
   // The latest exercises and viewed index, so a rest ending reads them at call time, not from a stale render.
   const latest = useRef({ restExercises, current, unit });
   useEffect(() => {
@@ -280,6 +281,11 @@ export default function LiveWorkoutScreen() {
   const total = workout?.exercises.length ?? 0;
   const currentSet = exercise ? currentSetIndex(exercise.rows) : null;
   const last = exercise ? lastColumn(lastExercises[exercise.id] ?? null, exercise.rows.length) : [];
+  const jumpKg = exercise ? jumpKgFor(exercise.equipment, jumps) : 0;
+  // Rows the lifter has not typed or checked follow the unit, rounded to the Jump. Display only: nothing is written until a check or an edit.
+  const shownRows = exercise ? followUnitRows(exercise.rows, unit, jumpKg) : [];
+  // A Target set in the other unit (Settings changed mid-workout) shows on the current unit's Jump grid, as the rows do.
+  const shownTarget = exercise?.target ? inCurrentUnit(exercise.target, exercise.targetUnit ?? unit, { unit, jumpKg }) : null;
   // A bodyweight exercise has no weight box: its sets are reps only and save weight 0.
   const bodyweight = exercise?.loadType === "bodyweight";
   // With the Last column hidden, the weight and reps boxes share its freed width.
@@ -287,7 +293,7 @@ export default function LiveWorkoutScreen() {
 
   function edit(index: number, change: SetEdit) {
     if (!workout || !exercise) return;
-    const rows = editSet(exercise.rows, index, change, unit);
+    const rows = editSet(exercise.rows, index, change, unit, jumpKg);
     setWorkout({
       ...workout,
       exercises: workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e)),
@@ -297,13 +303,13 @@ export default function LiveWorkoutScreen() {
   function toggle(index: number) {
     if (!workout || !exercise) return;
     const row = exercise.rows[index];
-    const rows = markSetDone(exercise.rows, index, !row.done, unit, exercise.loadType);
+    const rows = markSetDone(exercise.rows, index, !row.done, unit, exercise.loadType, jumpKg);
     if (rows === exercise.rows) return;
     setDrafts((d) => clearDraft(d, row.setId));
     const exercises = workout.exercises.map((e) => (e === exercise ? { ...e, rows } : e));
     setWorkout({ ...workout, exercises });
     const action = onSetToggled({
-      exercises: toRestExercises(exercises),
+      exercises: toRestExercises(exercises, unit, jumps),
       set: { exerciseIndex: current, setIndex: index },
       done: !row.done,
       timer: restStore.getState().timer,
@@ -312,7 +318,7 @@ export default function LiveWorkoutScreen() {
     if (action.kind === "start" || action.kind === "replace") sawRunning.current = true;
     restStore.getState().apply(action, Number(idParam));
     // The last open set of the Workout: no rest to run, so offer to finish.
-    if (!row.done && workoutComplete(toRestExercises(exercises))) setFinishing(allDonePrompt());
+    if (!row.done && workoutComplete(toRestExercises(exercises, unit, jumps))) setFinishing(allDonePrompt());
   }
 
   function adjust(deltaSeconds: number) {
@@ -443,7 +449,7 @@ export default function LiveWorkoutScreen() {
                   lineHeight: 19,
                 }}
               >
-                {bannerText(exercise.target, exercise.range, unit, exercise.loadType)}
+                {bannerText(shownTarget, exercise.range, unit, exercise.loadType)}
               </Text>
             </View>
             <View style={{ gap: spacing.sm }}>
@@ -468,7 +474,7 @@ export default function LiveWorkoutScreen() {
                 </Text>
                 <View style={{ width: minTouch }} />
               </View>
-              {exercise.rows.map((row, index) => {
+              {shownRows.map((row, index) => {
                 const blocked = !row.done && !canMarkDone(row, exercise.loadType);
                 return (
                   <View
@@ -491,7 +497,7 @@ export default function LiveWorkoutScreen() {
                       </Text>
                       {showPreviousSet ? (
                         <Text variant="caption" tone="muted" numberOfLines={1} style={{ flex: 1, fontSize: fontSize.meta }}>
-                          {lastSetText(last[index], unit, exercise.loadType)}
+                          {lastSetText(last[index], unit, exercise.loadType, jumpKg)}
                         </Text>
                       ) : null}
                       {bodyweight ? null : (
@@ -503,10 +509,11 @@ export default function LiveWorkoutScreen() {
                             value={weightFieldText(drafts, row, unit)}
                             flat={index !== currentSet}
                             onText={(t) => {
-                              const w = weightFromTyped(t, unit);
+                              // Saved exactly as typed, in the unit on screen: never converted or rounded.
+                              const w = parseWeight(t);
                               if (w === undefined) return;
                               setDrafts((d) => typeDraft(d, row.setId, t, unit));
-                              edit(index, { weightKg: w });
+                              edit(index, { weight: w, unit });
                             }}
                           />
                         </View>

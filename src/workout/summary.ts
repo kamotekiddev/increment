@@ -88,13 +88,13 @@ const doneWorking = (sets: LoggedSet[]) => sets.filter((s) => s.done && !s.isWar
 const sameTarget = (a: Target, b: Target) => Math.abs(a.weightKg - b.weightKg) < 1e-6 && a.reps === b.reps;
 
 /** Clean workouts in a row at the latest regular Target. Mirrors the engine's Streak. */
-function streakLength(history: HistorySession[], planned: Planned): number {
+function streakLength(history: HistorySession[], planned: Planned, judgeIn: Pick<NextTargetInput, "unit" | "jumpKg">): number {
   const regular = history.filter((s) => !s.isDeload);
   const ref = regular[0]?.target;
   if (!ref) return 0;
   let count = 0;
   for (const s of regular) {
-    if (!s.target || !sameTarget(s.target, ref) || classify(s, planned) !== "clean") break;
+    if (!s.target || !sameTarget(s.target, ref) || classify(s, planned, judgeIn) !== "clean") break;
     count++;
   }
   return count;
@@ -107,12 +107,12 @@ const withoutPreSplitWeight = (ex: SummaryExercise): SummaryExercise =>
 function buildCard(ex: SummaryExercise, unit: Unit): { card: SummaryCard; offer: OfferItem | null } {
   const input: NextTargetInput = { rule: ex.rule, planned: ex.planned, loadType: ex.loadType, history: ex.history, jumpKg: ex.jumpKg, unit };
   const current = ex.history[0];
-  const outcome = classify(current, ex.planned);
+  const outcome = classify(current, ex.planned, input);
   const result = nextTarget(input);
   // This workout's Target as the engine sees it now: snapped to the Jump's grid if it was set in the other unit.
   const shown = current.target ? inCurrentUnit(current.target, current.targetUnit, input) : null;
 
-  const streak = outcome === "clean" ? streakLength(ex.history, ex.planned) : null;
+  const streak = outcome === "clean" ? streakLength(ex.history, ex.planned, input) : null;
   // A Deload workout never re-asks an earlier Offer.
   let offer: SummaryOffer | null = null;
   if (outcome !== "deload") {

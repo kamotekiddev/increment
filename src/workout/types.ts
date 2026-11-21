@@ -1,7 +1,11 @@
-/** One set row on the live workout screen. Weights are kg. */
+import type { Unit } from "../units";
+
+/** One set row on the live workout screen: the weight as saved, in the unit it was saved in. */
 export interface SetRow {
-  /** Null while blank (first workout with no Target). */
-  weightKg: number | null;
+  /** The number as typed or pre-filled, in `unit`. Null while blank (first workout with no Target). */
+  weight: number | null;
+  /** The unit `weight` is in. */
+  unit: Unit;
   reps: number;
   done: boolean;
   /** The lifter typed or nudged this row themselves. Edited rows never follow. */

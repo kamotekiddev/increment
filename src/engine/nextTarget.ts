@@ -1,4 +1,4 @@
-import { classify } from "./outcome";
+import { classify, type JudgeIn } from "./outcome";
 import { floorToMultiple, nearestMultiple, nextMultipleAbove, sameWeight } from "./rounding";
 import { effectiveStep } from "./rule";
 import type { HistorySession, NextTargetInput, Planned, Target, TargetResult, WeightUnit } from "./types";
@@ -47,26 +47,26 @@ function baselineTarget(session: HistorySession, planned: Planned): Target | nul
   return { weightKg, reps: Math.min(Math.max(lowest, planned.repMin), planned.repMax) };
 }
 
-function streakLength(sessions: HistorySession[], planned: Planned): number {
+function streakLength(sessions: HistorySession[], planned: Planned, judgeIn: JudgeIn): number {
   const ref = sessions[0]?.target;
   if (!ref) return 0;
   let count = 0;
   for (const s of sessions) {
     if (!s.target || !sameTarget(s.target, ref)) break;
-    if (classify(s, planned) !== "clean") break;
+    if (classify(s, planned, judgeIn) !== "clean") break;
     count++;
   }
   return count;
 }
 
 /** Misses in a row at the same weight. Holds neither count nor reset; a clean workout resets. */
-function missCount(sessions: HistorySession[], planned: Planned): number {
+function missCount(sessions: HistorySession[], planned: Planned, judgeIn: JudgeIn): number {
   const ref = sessions[0]?.target;
   if (!ref) return 0;
   let count = 0;
   for (const s of sessions) {
     if (!s.target || !sameWeight(s.target.weightKg, ref.weightKg)) break;
-    const outcome = classify(s, planned);
+    const outcome = classify(s, planned, judgeIn);
     if (outcome === "clean") break;
     if (outcome === "miss") count++;
   }
@@ -119,7 +119,7 @@ function regularTarget(input: NextTargetInput, regular: HistorySession[]): Targe
   }
   // A Target set in the other unit snaps first, so a step goes one Jump above what Stay would show.
   const base = inCurrentUnit(latest.target, latest.targetUnit, input);
-  const earned = streakLength(regular, planned) >= rule.sessionsToEarn;
+  const earned = streakLength(regular, planned, input) >= rule.sessionsToEarn;
   const stepped = stepUp(base, input);
 
   if (earned) {
@@ -133,8 +133,8 @@ function regularTarget(input: NextTargetInput, regular: HistorySession[]): Targe
     return { target: base, proposal: stepped, reason: "earned" };
   }
 
-  const outcome = classify(latest, planned);
-  if (outcome === "miss" && rule.miss && missCount(regular, planned) >= rule.miss.after) {
+  const outcome = classify(latest, planned, input);
+  if (outcome === "miss" && rule.miss && missCount(regular, planned, input) >= rule.miss.after) {
     if (rule.miss.action.kind === "keep") return { target: base, proposal: null, reason: "miss-keep" };
     const dropped = floorToMultiple(base.weightKg * (1 - rule.miss.action.percent / 100), jumpKg);
     const weightKg = dropped < base.weightKg ? dropped : Math.max(0, base.weightKg - jumpKg);

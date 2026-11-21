@@ -2,7 +2,10 @@ import { sql } from "drizzle-orm";
 import type { OverloadRule } from "../engine/types";
 import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
-/** All weights are kg (full-precision REAL). `entered_unit` records what the lifter typed. */
+/**
+ * A set stores the number the lifter typed and the unit they typed it in (ADR 0003): `weight` + `weight_unit`.
+ * Targets and Jumps are kg (full-precision REAL). Conversion happens in memory only, in `src/units`.
+ */
 
 export const exercises = sqliteTable("exercises", {
   id: integer("id").primaryKey({ autoIncrement: true }),
@@ -78,7 +81,7 @@ export const workoutExercises = sqliteTable(
     targetReps: integer("target_reps"),
     /**
      * The lifter's unit when Start set the Target. The next Target snaps to the Jump's grid only when the unit
-     * differs. Null on rows saved before it was stored: those fall back to their sets' entered_unit, then kg.
+     * differs. Null on rows saved before it was stored: those fall back to their sets' weight_unit, then kg.
      */
     targetUnit: text("target_unit", { enum: ["kg", "lb"] }),
     /** The lifter accepted the offered step after this workout. */
@@ -109,8 +112,10 @@ export const sets = sqliteTable(
     /** Denormalised so records can be queried per exercise without a join. */
     exerciseId: integer("exercise_id").notNull().references(() => exercises.id),
     idx: integer("idx").notNull(),
-    weightKg: real("weight_kg").notNull(),
-    enteredUnit: text("entered_unit", { enum: ["kg", "lb"] }).notNull(),
+    /** The number as typed (135 for 135 lb), never converted or rounded on save. A blank weight is 0 until typed. */
+    weight: real("weight").notNull(),
+    /** The unit `weight` was typed in. Switching the display unit never changes it. */
+    weightUnit: text("weight_unit", { enum: ["kg", "lb"] }).notNull(),
     reps: integer("reps").notNull(),
     done: integer("done", { mode: "boolean" }).notNull().default(false),
     isWarmup: integer("is_warmup", { mode: "boolean" }).notNull().default(false),
@@ -132,7 +137,7 @@ export const settings = sqliteTable("settings", {
  */
 export const userSettings = sqliteTable("user_settings", {
   id: integer("id").primaryKey(),
-  /** The unit every weight is shown and typed in. Stored weights stay kg. */
+  /** The unit every weight is shown and typed in. A display preference only: switching it never writes a set. */
   unit: text("unit", { enum: ["kg", "lb"] }).notNull().default("kg"),
   /**
    * The Jumps: the smallest weight the lifter can add, one per equipment group, stored in kg whichever unit

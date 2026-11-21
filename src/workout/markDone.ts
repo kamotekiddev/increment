@@ -3,12 +3,12 @@ import type { SetRow } from "./types";
 
 /** A weighted set cannot be marked done while its weight is blank. A bodyweight set needs reps only. */
 export function canMarkDone(row: SetRow, loadType: LoadType): boolean {
-  return loadType === "bodyweight" || row.weightKg !== null;
+  return loadType === "bodyweight" || row.weight !== null;
 }
 
 /** The fields a row takes when marked done or not done: a bodyweight set marked done carries weight 0. */
-export function doneFields(done: boolean, loadType: LoadType): { done: boolean; weightKg?: number } {
-  return done && loadType === "bodyweight" ? { done, weightKg: 0 } : { done };
+export function doneFields(done: boolean, loadType: LoadType): { done: boolean; weight?: number } {
+  return done && loadType === "bodyweight" ? { done, weight: 0 } : { done };
 }
 
 /**

@@ -1,19 +1,19 @@
-import { KG_PER_LB } from "@/units";
+import type { Unit } from "@/units";
 
 import { clearDraft, EMPTY_DRAFTS, typeDraft, weightFieldText } from "./weightDrafts";
 
-const row = (setId: number, weightKg: number | null) => ({ setId, weightKg });
+const row = (setId: number, weight: number | null, unit: Unit = "kg") => ({ setId, weight, unit });
 
 describe("weight drafts", () => {
-  it("shows an unedited weight from its exact kg in the unit on screen", () => {
+  it("shows an unedited weight exactly in its own unit, converted in the other", () => {
     expect(weightFieldText(EMPTY_DRAFTS, row(1, 62.5), "kg")).toBe("62.5");
     expect(weightFieldText(EMPTY_DRAFTS, row(1, 62.5), "lb")).toBe("137.79");
+    expect(weightFieldText(EMPTY_DRAFTS, row(1, 135, "lb"), "lb")).toBe("135");
   });
 
   it("keeps typed text as typed after an edit, even when display rounding would change it", () => {
     const drafts = typeDraft(EMPTY_DRAFTS, 1, "135.005", "lb");
-    const kg = 135.005 * KG_PER_LB;
-    expect(weightFieldText(drafts, row(1, kg), "lb")).toBe("135.005");
+    expect(weightFieldText(drafts, row(1, 135.005, "lb"), "lb")).toBe("135.005");
     expect(weightFieldText(drafts, row(2, 50), "lb")).toBe("110.23");
   });
 
@@ -22,12 +22,11 @@ describe("weight drafts", () => {
     expect(weightFieldText(drafts, row(1, 62), "kg")).toBe("62.");
   });
 
-  it("drops every draft on a unit switch and converts the stored kg, back and forth", () => {
-    const typedKg = 135 * KG_PER_LB;
+  it("drops every draft on a unit switch and shows the saved weight, back and forth", () => {
     const drafts = typeDraft(EMPTY_DRAFTS, 1, "135", "lb");
-    expect(weightFieldText(drafts, row(1, typedKg), "kg")).toBe("61.23");
-    // Back in lb the draft is still gone: the field reads the stored kg, which is exact.
-    expect(weightFieldText(drafts, row(1, typedKg), "lb")).toBe("135");
+    expect(weightFieldText(drafts, row(1, 135, "lb"), "kg")).toBe("61.23");
+    // Back in lb the draft is still gone: the field reads the saved 135 lb, which is exact.
+    expect(weightFieldText(drafts, row(1, 135, "lb"), "lb")).toBe("135");
   });
 
   it("a weight edited after a switch is a new draft in the new unit", () => {
@@ -36,12 +35,12 @@ describe("weight drafts", () => {
     expect(weightFieldText(drafts, row(1, 60), "kg")).toBe("60");
     // Another row's older lb draft did not survive the switch.
     const other = typeDraft(stale, 2, "60", "kg");
-    expect(weightFieldText(other, row(1, 135 * KG_PER_LB), "kg")).toBe("61.23");
+    expect(weightFieldText(other, row(1, 135, "lb"), "kg")).toBe("61.23");
   });
 
   it("clears a draft when the set is checked", () => {
     const drafts = clearDraft(typeDraft(EMPTY_DRAFTS, 1, "135.005", "lb"), 1);
-    expect(weightFieldText(drafts, row(1, 135.005 * KG_PER_LB), "lb")).toBe("135.01");
+    expect(weightFieldText(drafts, row(1, 135.005, "lb"), "lb")).toBe("135.01");
   });
 
   it("shows blank for a blank draft", () => {
