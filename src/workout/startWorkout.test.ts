@@ -235,3 +235,52 @@ describe("startWorkout pre-fills a weight that can be loaded in the lifter's uni
     expect(prefill(firstWorkout(61.25, "kg"), "kg")).toEqual({ weight: 61.25, weightUnit: "kg" });
   });
 });
+
+describe("startWorkout with Deload weeks on", () => {
+  /** A barbell row with Deload every 2 weeks at 60%, and one finished workout at 60 kg × 8 on each of `dates`. */
+  function deloadRoutine(dates: string[]): number {
+    const exercise = db.insert(exercises).values({ name: "Barbell row", equipment: "barbell", loadType: "weighted" }).returning().get();
+    const routine = db.insert(routines).values({ name: `Pull ${exercise.id}` }).returning().get();
+    const rule = { ...defaultRule("weighted"), deload: { everyWeeks: 2, percent: 40 } };
+    db.insert(routineExercises)
+      .values({ routineId: routine.id, exerciseId: exercise.id, position: 0, sets: 3, repMin: 8, repMax: 10, restS: 90, rule })
+      .run();
+    dates.forEach((date, i) => {
+      const workout = db.insert(workouts).values({ routineId: routine.id, startedAt: i + 1, finishedAt: i + 2, date, inProgress: false }).returning().get();
+      const we = db
+        .insert(workoutExercises)
+        .values({ workoutId: workout.id, exerciseId: exercise.id, position: 0, targetWeightKg: 60, targetReps: 8, targetUnit: "kg" })
+        .returning()
+        .get();
+      for (let idx = 0; idx < 3; idx++) {
+        db.insert(sets).values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx, weight: 60, weightUnit: "kg", reps: 8, done: true }).run();
+      }
+    });
+    return routine.id;
+  }
+
+  const started = (workoutId: number | null) =>
+    db
+      .select({ weightKg: workoutExercises.targetWeightKg, isDeload: workoutExercises.isDeload })
+      .from(workoutExercises)
+      .where(eq(workoutExercises.workoutId, workoutId ?? -1))
+      .get();
+
+  it("marks the workout exercise as a Deload when one is due, at the lighter Target: 60 kg becomes 35 kg", () => {
+    const routineId = deloadRoutine(["2026-11-09", "2026-11-16"]);
+    expect(started(startWorkout(routineId, "kg", new Date(2026, 10, 19)))).toEqual({ weightKg: 35, isDeload: true });
+  });
+
+  it("does not mark a regular workout as a Deload", () => {
+    const routineId = deloadRoutine(["2026-11-16"]);
+    expect(started(startWorkout(routineId, "kg", new Date(2026, 10, 19)))).toEqual({ weightKg: 60, isDeload: false });
+  });
+
+  it("after the Deload is done, the next workout is back at 60 kg and not another Deload", () => {
+    const routineId = deloadRoutine(["2026-11-09", "2026-11-16"]);
+    const deloadId = startWorkout(routineId, "kg", new Date(2026, 10, 19))!;
+    db.update(sets).set({ done: true }).where(eq(sets.workoutExerciseId, db.select({ id: workoutExercises.id }).from(workoutExercises).where(eq(workoutExercises.workoutId, deloadId)).get()!.id)).run();
+    finishWorkout(deloadId, new Date(2026, 10, 19, 1));
+    expect(started(startWorkout(routineId, "kg", new Date(2026, 10, 21)))).toEqual({ weightKg: 60, isDeload: false });
+  });
+});

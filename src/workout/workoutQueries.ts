@@ -102,14 +102,14 @@ export function startWorkout(routineId: number, unit: Unit, now: Date = new Date
 
     planned.forEach((ex, position) => {
       const rows = pastExercises(tx, routineId, ex.exerciseId);
-      const target: Target | null = nextTarget({
+      const { target, reason } = nextTarget({
         rule: ex.rule,
         planned: { sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax },
         loadType: ex.loadType,
         history: toHistory(rows, ex.sets),
         jumpKg: stepKgFor(ex, unit),
         unit,
-      }).target;
+      });
 
       const workoutExercise = tx
         .insert(workoutExercises)
@@ -120,6 +120,8 @@ export function startWorkout(routineId: number, unit: Unit, now: Date = new Date
           targetWeightKg: target?.weightKg ?? null,
           targetReps: target?.reps ?? null,
           targetUnit: unit,
+          // A due Deload is recorded, so it skips the Streak and the next Deload counts its weeks from here.
+          isDeload: reason === "deload",
         })
         .returning({ id: workoutExercises.id })
         .get();

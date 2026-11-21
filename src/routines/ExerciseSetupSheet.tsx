@@ -38,10 +38,10 @@ export interface ExerciseSetupSheetProps {
   /** Disables the primary button while a save is in flight. */
   busy?: boolean;
   /**
-   * The setup, and the step saved in the rule panel as only that unit's column (`stepPatch`); empty when the
-   * lifter did not save a step, so an unset step stays null.
+   * The setup, the step saved in the rule panel as only that unit's column (`stepPatch`; empty when the lifter did
+   * not save a step, so an unset step stays null), and the rule saved there (undefined when the panel was not saved).
    */
-  onSubmit: (setup: ExerciseSetup, steps: Partial<Steps>) => void;
+  onSubmit: (setup: ExerciseSetup, steps: Partial<Steps>, rule?: OverloadRule) => void;
   onDismiss: () => void;
   /** Editing only: shows a red Remove from routine action that calls this. */
   onRemove?: () => void;
@@ -49,8 +49,8 @@ export interface ExerciseSetupSheetProps {
 
 /**
  * Sets, reps (min and max) and rest steppers, the Progression row and one primary button. Tapping Progression
- * swaps the sheet's content for the Overload rule panel; Save rule there stages the step, and the primary button
- * saves it with the rest.
+ * swaps the sheet's content for the Overload rule panel; Save rule there stages the step and the rule (the row then
+ * describes the staged rule), and the primary button saves them with the rest.
  */
 export function ExerciseSetupSheet({
   visible,
@@ -72,6 +72,8 @@ export function ExerciseSetupSheet({
   const [setup, setSetup] = useState<ExerciseSetup>(initial);
   const [editingRule, setEditingRule] = useState(false);
   const [stepChange, setStepChange] = useState<Partial<Steps>>({});
+  const [ruleChange, setRuleChange] = useState<OverloadRule | undefined>(undefined);
+  const shownRule = ruleChange ?? rule;
 
   // Start from the given values every time the sheet opens (reset during render, not in an effect).
   const [wasVisible, setWasVisible] = useState(visible);
@@ -81,6 +83,7 @@ export function ExerciseSetupSheet({
       setSetup(initial);
       setEditingRule(false);
       setStepChange({});
+      setRuleChange(undefined);
     }
   }
 
@@ -102,14 +105,15 @@ export function ExerciseSetupSheet({
       <BottomSheet visible={visible} onDismiss={onDismiss}>
         <RulePanel
           exerciseName={exerciseName}
-          rule={rule}
+          rule={shownRule}
           planned={setup}
           loadType={loadType}
           history={history}
           unit={unit}
           initialStep={stepIn({ ...steps, ...stepChange }, unit)}
-          onSave={(step) => {
+          onSave={(step, saved) => {
             setStepChange((change) => ({ ...change, ...stepPatch(unit, step) }));
+            setRuleChange(saved);
             setEditingRule(false);
           }}
           onClose={() => setEditingRule(false)}
@@ -143,7 +147,7 @@ export function ExerciseSetupSheet({
       </View>
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`Progression: ${describeRule(rule)}`}
+        accessibilityLabel={`Progression: ${describeRule(shownRule)}`}
         accessibilityHint="Opens the overload rule"
         onPress={() => setEditingRule(true)}
         style={({ pressed }) => ({
@@ -176,12 +180,12 @@ export function ExerciseSetupSheet({
             Progression
           </Text>
           <Text variant="label" style={{ fontSize: fontSize.meta, lineHeight: 19 }}>
-            {describeRule(rule)}
+            {describeRule(shownRule)}
           </Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.iconFaint} />
       </Pressable>
-      <Button label={primaryLabel} large disabled={busy} onPress={() => onSubmit(setup, stepChange)} />
+      <Button label={primaryLabel} large disabled={busy} onPress={() => onSubmit(setup, stepChange, ruleChange)} />
       {onRemove ? (
         <Pressable
           accessibilityRole="button"

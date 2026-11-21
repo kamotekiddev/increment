@@ -48,7 +48,7 @@ Plain functions: `nextTarget({rule, planned, loadType, history, jumpKg, unit}) â
 - **Earned**: the Streak (clean workouts in a row at the same Target) reaches `sessionsToEarn`. The engine then returns a `proposal`; the lifter chooses whether to accept, and an accepted step becomes the Target of the following workout.
 - **Outcomes** of a past workout: clean (every planned set at or above the Target; a set logged in another unit than its Target is compared with the Target snapped to the current unit's Jump grid, as the live workout showed it), hold (short of the Target but every set at or above the rep range minimum), miss (a set below the rep range minimum, or fewer sets than planned). Only the first planned working sets are judged.
 - **Steps**: weight adds the Jump; reps adds the rep step, capped at the top of the range; both does both. Bodyweight exercises can only step by reps, and their Targets carry no weight: the engine reads any weight logged on them (before the bodyweight-or-weighted split) as 0.
-- **Free rule**: the step comes from the exercise's `load_type` (weight for weighted, reps otherwise), three clean workouts in a row, no miss rule, no deload.
+- **Default rule**: a new routine exercise starts with the step from its `load_type` (weight for weighted, reps otherwise), three clean workouts in a row, no miss rule, no deload. Every lifter can change the step, the miss rule (two misses in a row: drop 10%) and the deload (every 6 weeks, 40% lighter) in the Overload rule panel; Start marks a workout exercise `is_deload` when the engine returns a due Deload.
 
 ## Offline one-time purchase
 - A non-consumable product on both stores, bought through react-native-iap.

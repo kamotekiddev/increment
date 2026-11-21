@@ -5,7 +5,7 @@ export function effectiveStep(step: Step, loadType: LoadType): Step {
   return loadType === "bodyweight" ? "reps" : step;
 }
 
-/** The free rule. The step comes from the exercise's load type. */
+/** The default rule a routine exercise starts with. The step comes from the exercise's load type. */
 export function defaultRule(loadType: LoadType): OverloadRule {
   return {
     v: 1,

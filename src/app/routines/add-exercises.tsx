@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 
 import { Button, RoundButton, ScreenHeader } from "@/components";
-import { defaultRule } from "@/engine";
+import { defaultRule, type OverloadRule } from "@/engine";
 import { ExerciseBrowser } from "@/library/ExerciseBrowser";
 import { exerciseMeta } from "@/library/exerciseMeta";
 import { useExercises, type LibraryExercise } from "@/library/exerciseQueries";
@@ -35,14 +35,14 @@ export default function AddExercisesScreen() {
   // Finished workouts of this exercise in this routine (one removed and added back), for the rule panel's preview.
   const past = useMemo(() => (picked ? loadPastExercises(routineId, picked.id) : []), [picked, routineId]);
 
-  function onSubmit(setup: ExerciseSetup, steps: Partial<Steps>) {
+  function onSubmit(setup: ExerciseSetup, steps: Partial<Steps>, saved?: OverloadRule) {
     // The ref blocks a second tap before state has re-rendered.
     if (!picked || addingRef.current) return;
     addingRef.current = true;
     setAdding(true);
     try {
       // False means the exercise was already in the routine; it is marked added either way.
-      addRoutineExercise(routineId, picked.id, picked.loadType, setup, steps);
+      addRoutineExercise(routineId, picked.id, picked.loadType, setup, steps, saved ?? rule);
       setAddedIds((prev) => new Set(prev).add(picked.id));
       setOpen(false);
     } finally {

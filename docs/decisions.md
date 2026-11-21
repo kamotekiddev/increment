@@ -9,7 +9,7 @@
 - **Units**: a global kg/lb preference, display only. A set is stored as typed, with its unit; Targets are kg, and a routine exercise's Jump is saved per unit in that unit. See [ADR 0003](adr/0003-sets-store-the-weight-as-typed.md).
 - **Exercise library source**: a curated subset (178 exercises at the start of Phase 0) of the public-domain [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (Unlicense), text instructions only, with a load type on each exercise.
 - **Weights**: a set stores the number typed and its unit (owner decision 2026-11-21, [ADR 0003](adr/0003-sets-store-the-weight-as-typed.md), superseding [ADR 0001](adr/0001-weights-stored-in-kg.md) for sets). Only weights about to be lifted (pre-fills, the Last column, Targets) are rounded to the Jump, and only when they came from the other unit; history shows a set in the other unit as "≈20.4 kg", one decimal. The rounding step is the Jump per equipment, not a step per exercise. Backup is still Phase 3; its file carries each set's unit. See `.scratch/phase-2/set-units/spec.md`.
-- **Progression**: earned after N clean workouts in a row (default 3); the lifter chooses whether to accept the step. Pro unlocks the step, N, miss handling and deload.
+- **Progression**: earned after N clean workouts in a row (default 3); the lifter chooses whether to accept the step. The step, miss handling and deload are free for everyone (owner decision 2026-11-21).
 - **Free routine limit**: 2. Adding a third shows the limit pop-up.
 - **Routines**: deleting a routine deletes its workouts, and Target history is per routine; see [ADR 0002](adr/0002-deleting-a-routine-deletes-its-workouts.md).
 - **Visual direction**: minimal light UI, neutral base, purple accent `#5B3DF5`, Sora font.

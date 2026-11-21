@@ -35,6 +35,7 @@ import {
 import type { ExerciseSetup } from "@/routines/routineSetup";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontFamily, fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
+import type { OverloadRule } from "@/engine";
 import type { Steps } from "@/units";
 import { useInProgressOnFocus } from "@/workout/inProgressQueries";
 import { isRoutineLocked, LOCK_MESSAGE } from "@/workout/routineLock";
@@ -140,9 +141,9 @@ export default function EditRoutineScreen() {
   // The edited exercise's finished workouts in this routine, for the rule panel's preview.
   const editingPast = useMemo(() => (editing ? loadPastExercises(id, editing.exerciseId) : []), [editing, id]);
 
-  async function saveExercise(setup: ExerciseSetup, steps: Partial<Steps>) {
+  async function saveExercise(setup: ExerciseSetup, steps: Partial<Steps>, rule?: OverloadRule) {
     if (!editing) return;
-    await updateRoutineExercise(editing.id, setup, steps);
+    await updateRoutineExercise(editing.id, setup, steps, rule);
     setEditing(null);
     setExerciseVersion((v) => v + 1);
   }

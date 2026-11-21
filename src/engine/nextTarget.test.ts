@@ -59,7 +59,7 @@ describe("nextTarget: first workouts", () => {
   });
 });
 
-describe("nextTarget: earning progression (free rule, 3 clean in a row)", () => {
+describe("nextTarget: earning progression (default rule, 3 clean in a row)", () => {
   const clean = (d: string) => session(d, T, [8, 8, 8]);
 
   it("two clean workouts is not earned", () => {

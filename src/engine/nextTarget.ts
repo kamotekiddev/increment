@@ -73,6 +73,22 @@ function missCount(sessions: HistorySession[], planned: Planned, judgeIn: JudgeI
   return count;
 }
 
+/** Pure: clean workouts in a row at the latest regular Target, the Streak that `sessionsToEarn` counts toward. */
+export function cleanStreak(given: NextTargetInput): number {
+  const history = given.loadType === "bodyweight" ? withoutAddedWeight(given.history) : given.history;
+  return streakLength(
+    history.filter((s) => !s.isDeload),
+    given.planned,
+    given,
+  );
+}
+
+/** Pure: the Target weight after a miss rule's drop: `percent` lighter, rounded down to the Jump, and at least one Jump lower. */
+export function missDropKg(baseKg: number, percent: number, jumpKg: number): number {
+  const dropped = floorToMultiple(baseKg * (1 - percent / 100), jumpKg);
+  return dropped < baseKg ? dropped : Math.max(0, baseKg - jumpKg);
+}
+
 function deloadDue(history: HistorySession[], everyWeeks: number): boolean {
   const lastDeload = history.findIndex((s) => s.isDeload);
   const since = lastDeload === -1 ? history : history.slice(0, lastDeload);
@@ -136,8 +152,7 @@ function regularTarget(input: NextTargetInput, regular: HistorySession[]): Targe
   const outcome = classify(latest, planned, input);
   if (outcome === "miss" && rule.miss && missCount(regular, planned, input) >= rule.miss.after) {
     if (rule.miss.action.kind === "keep") return { target: base, proposal: null, reason: "miss-keep" };
-    const dropped = floorToMultiple(base.weightKg * (1 - rule.miss.action.percent / 100), jumpKg);
-    const weightKg = dropped < base.weightKg ? dropped : Math.max(0, base.weightKg - jumpKg);
+    const weightKg = missDropKg(base.weightKg, rule.miss.action.percent, jumpKg);
     return { target: { weightKg, reps: base.reps }, proposal: null, reason: "miss-drop" };
   }
   const reason = outcome === "miss" ? "miss" : outcome === "hold" ? "hold" : "on-track";

@@ -180,7 +180,8 @@ export function useRoutineExercises(routineId: number, version = 0): RoutineExer
  * Adds an exercise at the end of a routine with the default rule for its load type. One row per
  * exercise per routine (a unique index enforces it): returns false and changes nothing when it is
  * already there. Position and insert run in one synchronous transaction. `steps` holds only the step the lifter
- * saved in the Overload rule panel (`stepPatch`); a step never set stays null.
+ * saved in the Overload rule panel (`stepPatch`); a step never set stays null. `rule` is the rule saved there,
+ * else the default rule for the load type.
  */
 export function addRoutineExercise(
   routineId: number,
@@ -188,6 +189,7 @@ export function addRoutineExercise(
   loadType: typeof exercises.$inferSelect.loadType,
   setup: ExerciseSetup,
   steps: Partial<Steps> = {},
+  rule: OverloadRule = defaultRule(loadType),
 ): boolean {
   return db.transaction((tx) => {
     const [{ n }] = tx
@@ -197,7 +199,7 @@ export function addRoutineExercise(
       .all();
     const inserted = tx
       .insert(routineExercises)
-      .values({ routineId, exerciseId, position: n, ...setup, ...steps, rule: defaultRule(loadType) })
+      .values({ routineId, exerciseId, position: n, ...setup, ...steps, rule })
       .onConflictDoNothing()
       .returning({ id: routineExercises.id })
       .all();
@@ -207,14 +209,19 @@ export function addRoutineExercise(
 
 /**
  * Saves new sets, rep range and rest on this routine exercise row only, and the step saved in the Overload rule
- * panel (`stepPatch`: only that unit's column, so the other unit's step is untouched).
+ * panel (`stepPatch`: only that unit's column, so the other unit's step is untouched), and the rule saved there
+ * (none: the saved rule stays).
  */
 export async function updateRoutineExercise(
   routineExerciseId: number,
   setup: ExerciseSetup,
   steps: Partial<Steps> = {},
+  rule?: OverloadRule,
 ): Promise<void> {
-  await db.update(routineExercises).set({ ...setup, ...steps }).where(eq(routineExercises.id, routineExerciseId));
+  await db
+    .update(routineExercises)
+    .set({ ...setup, ...steps, ...(rule ? { rule } : {}) })
+    .where(eq(routineExercises.id, routineExerciseId));
 }
 
 /** This routine exercise's finished workouts, newest first: the history Start reads, for the rule panel's preview. */

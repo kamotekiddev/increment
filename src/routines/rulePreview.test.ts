@@ -74,6 +74,67 @@ describe("rulePreview", () => {
     );
   });
 
+  it("once the step is Earned (the lifter chose Stay), one more clean workout brings the Offer back: no 'in a row'", () => {
+    const earned = ["2026-11-16", "2026-11-13", "2026-11-11"].map((d) => session(d, { weightKg: 62.5, reps: 8 }, [8, 8, 8]));
+    expect(preview({ rule: defaultRule("weighted"), history: earned })).toBe(
+      "Next session: 62.5 kg × 6–8. Hit 8 on every set and it becomes 65 kg.",
+    );
+  });
+
+  it("counts only the clean workouts still needed: one of 3 done leaves 2", () => {
+    const oneClean = [session("2026-11-16", { weightKg: 60, reps: 8 }, [8, 8, 8])];
+    expect(preview({ rule: defaultRule("weighted"), history: oneClean })).toBe(
+      "Next session: 60 kg × 6–8. Hit 8 on every set 2 workouts in a row and it becomes 62.5 kg.",
+    );
+  });
+
+  it("follows the rule type: Double progression adds weight and a rep, Reps only a rep", () => {
+    const fresh = [session("2026-11-16", { weightKg: 62.5, reps: 7 }, [7, 6, 6])];
+    const rule = { ...defaultRule("weighted"), sessionsToEarn: 1 };
+    expect(preview({ rule: { ...rule, step: "both" }, history: fresh })).toBe(
+      "Next session: 62.5 kg × 6–8. Hit 7 on every set and it becomes 65 kg × 8.",
+    );
+    expect(preview({ rule: { ...rule, step: "reps" }, history: fresh })).toBe(
+      "Next session: 62.5 kg × 6–8. Hit 7 on every set and it becomes 62.5 kg × 8.",
+    );
+    expect(preview({ rule: { ...rule, step: "both" }, history: [] })).toBe(
+      "Your first session sets the starting weight. Each step adds 2.5 kg and 1 rep.",
+    );
+  });
+
+  it("with Drop 10% on, says what two misses in a row drop the Target to: 62.5 kg drops to 55 kg (56.25 rounded down)", () => {
+    const fresh = [session("2026-11-16", { weightKg: 62.5, reps: 8 }, [8, 7, 7])];
+    const rule = { ...defaultRule("weighted"), sessionsToEarn: 1, miss: { after: 2, action: { kind: "drop" as const, percent: 10 } } };
+    expect(preview({ rule, history: fresh })).toBe(
+      "Next session: 62.5 kg × 6–8. Hit 8 on every set and it becomes 65 kg. Miss twice in a row and it drops to 55 kg.",
+    );
+    expect(preview({ rule, history: [] })).toBe(
+      "Your first session sets the starting weight. Each step adds 2.5 kg. Miss twice in a row and it drops 10%.",
+    );
+  });
+
+  it("with Deload weeks on, says how often; when one is due, the next session is the Deload", () => {
+    const rule = { ...defaultRule("weighted"), deload: { everyWeeks: 2, percent: 40 } };
+    const oneWeek = [session("2026-11-16", { weightKg: 62.5, reps: 8 }, [8, 7, 7])];
+    expect(preview({ rule, history: oneWeek })).toBe(
+      "Next session: 62.5 kg × 6–8. Hit 8 on every set 3 workouts in a row and it becomes 65 kg. Every 2 weeks, one Deload workout at 60%.",
+    );
+    const twoWeeks = [...oneWeek, session("2026-11-09", { weightKg: 62.5, reps: 8 }, [8, 7, 7])];
+    expect(preview({ rule, history: twoWeeks })).toBe("Deload next session: 37.5 kg × 6–8. It does not count toward your Streak.");
+  });
+
+  it("for a bodyweight exercise, leaves out the miss rule and Deload, which only change weight", () => {
+    const pullUps = [session("2026-11-16", { weightKg: 0, reps: 8 }, [8, 7, 7], { weightKg: 0 })];
+    const rule = {
+      ...defaultRule("bodyweight"),
+      sessionsToEarn: 1,
+      miss: { after: 2, action: { kind: "drop" as const, percent: 10 } },
+    };
+    expect(preview({ rule, loadType: "bodyweight", planned: { sets: 3, repMin: 6, repMax: 10 }, history: pullUps })).toBe(
+      "Next session: 8 reps. Hit 8 on every set and it becomes 9 reps.",
+    );
+  });
+
   it("marks the next Target as the strong part, as the mockup sets it in bold", () => {
     const fresh = [session("2026-11-16", { weightKg: 62.5, reps: 8 }, [8, 7, 7])];
     const input: RulePreviewInput = {
