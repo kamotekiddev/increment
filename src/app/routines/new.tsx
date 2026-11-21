@@ -2,7 +2,7 @@ import { router, Stack } from "expo-router";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 
-import { Button, RoundButton, Text } from "@/components";
+import { Button, RoundButton, ScreenHeader, Text } from "@/components";
 import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { DayPicker } from "@/routines/DayPicker";
 import { EmptyExercises } from "@/routines/EmptyExercises";
@@ -13,7 +13,6 @@ import { validateRoutineName } from "@/routines/routineName";
 import { routineNameMessage } from "@/routines/routineNameMessage";
 import { toggleDay } from "@/routines/routineDays";
 import { createRoutine, loadRoutines, useIsPro } from "@/routines/routineQueries";
-import { ScreenHeader } from "@/routines/ScreenHeader";
 import { fontFamily, fontSize, spacing, useColors } from "@/theme";
 
 export default function NewRoutineScreen() {
