@@ -43,3 +43,4 @@ A Target or pre-fill can land on a weight the lifter can't load. The Jump is one
 
 - One default (2.5 kg / 5 lb) for every exercise stays: the step is per exercise so a lifter tunes the ones that differ.
 - The old Jumps are dropped, not copied.
+- A round trip can lose an earned step, accepted for now (owner, 2026-11-21): 62.5 kg shows as 135 lb, Go up is 140 lb (63.5 kg), and back in kg that rounds down to 62.5 kg.
