@@ -4,7 +4,7 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** built
 
 - [ ] The Progression row opens the panel from both adding and editing a routine exercise; no Pro check on this path
 - [ ] "Add each time" shows only the current unit's steps, with the saved step (or the 2.5 kg / 5 lb default) selected
