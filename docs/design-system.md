@@ -49,6 +49,6 @@ Line heights that a component sets itself come from `lineHeight` in `src/theme` 
 - **Tab bar**: a floating white pill; the active tab is an accent pill. Tabs: Today, Routines, Library, Progress.
 - **Bottom sheet**: `bg` colour (not white), with rounded top corners, over a dimmed backdrop. Used for pop-ups, confirmations and pickers. Its React Native content sits in an `RNHostView` (never a `Host`) inside the native sheet.
 - **Routine screens**: in-page headers with round buttons instead of the native header, white cards on `bg`, and the main action fixed at the bottom. Sizes come from `size` in `src/theme`.
-- **Settings rows and the Weight jumps − / +**: sizes come from `size` too (`size.settingsRow`, `size.stepper`, `size.jumpValue`); the 36 pt − / + reach 44 pt with hitSlop.
+- **Settings rows and the Default rest − / +**: sizes come from `size` too (`size.settingsRow`, `size.stepper`, `size.stepperValue`); the 36 pt − / + reach 44 pt with hitSlop.
 - **History rows**: a History row is at least `size.historyRow` (64 pt) tall.
 - Touch targets are at least 44 pt.

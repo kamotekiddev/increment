@@ -10,6 +10,8 @@ import {
   loggedWeightText,
   loggedWeightWithUnit,
   roundDownToLoadable,
+  stepIn,
+  stepKgFor,
   toKg,
   weightKg,
 } from "./index";
@@ -127,6 +129,32 @@ describe("loadableIn", () => {
   });
   it("leaves bodyweight 0 at 0", () => {
     expect(loadableIn({ value: 0, unit: "kg" }, "lb", lb5)).toBe(0);
+  });
+});
+
+describe("a routine exercise's step (stepIn, stepKgFor)", () => {
+  const untouched = { stepKg: null, stepLb: null };
+  it("is 2.5 kg in kg and 5 lb in lb while the lifter has not set one", () => {
+    expect(stepIn(untouched, "kg")).toBe(2.5);
+    expect(stepIn(untouched, "lb")).toBe(5);
+    expect(stepKgFor(untouched, "kg")).toBe(2.5);
+    expect(stepKgFor(untouched, "lb")).toBe(5 * KG_PER_LB);
+  });
+  it("uses a saved kg step in kg and ignores it in lb: 1 kg in kg, the 5 lb default in lb", () => {
+    const oneKg = { stepKg: 1, stepLb: null };
+    expect(stepKgFor(oneKg, "kg")).toBe(1);
+    expect(stepIn(oneKg, "lb")).toBe(5);
+    expect(stepKgFor(oneKg, "lb")).toBe(5 * KG_PER_LB);
+  });
+  it("uses a saved lb step, saved in lb, in lb only: 2.5 lb in lb, the 2.5 kg default in kg", () => {
+    const twoAndAHalfLb = { stepKg: null, stepLb: 2.5 };
+    expect(stepIn(twoAndAHalfLb, "lb")).toBe(2.5);
+    expect(stepKgFor(twoAndAHalfLb, "lb")).toBe(2.5 * KG_PER_LB);
+    expect(stepKgFor(twoAndAHalfLb, "kg")).toBe(2.5);
+  });
+  it("is the default when the routine exercise is gone (null)", () => {
+    expect(stepKgFor(null, "kg")).toBe(2.5);
+    expect(stepIn(null, "lb")).toBe(5);
   });
 });
 

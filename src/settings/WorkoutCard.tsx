@@ -71,7 +71,7 @@ export function WorkoutCard() {
           <Text
             variant="label"
             accessibilityLabel={`Default rest ${restLabel(defaultRestS)}`}
-            style={{ minWidth: size.jumpValue, textAlign: "center", fontSize: fontSize.body, letterSpacing: letterSpacing.value }}
+            style={{ minWidth: size.stepperValue, textAlign: "center", fontSize: fontSize.body, letterSpacing: letterSpacing.value }}
           >
             {restLabel(defaultRestS)}
           </Text>

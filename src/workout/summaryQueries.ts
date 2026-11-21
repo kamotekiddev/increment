@@ -6,7 +6,6 @@ import { exercises, routineExercises, routines, sets, workoutExercises, workouts
 import { buildSummary, type OfferItem, type Summary } from "./summary";
 import { toSummaryInput, type SavedExercise } from "./summaryInput";
 import type { Target } from "../engine";
-import type { Jumps } from "@/settings";
 import type { Unit } from "../units";
 import { pastExercises } from "./workoutQueries";
 
@@ -19,9 +18,9 @@ export interface LoadedSummary {
 /**
  * Reads the finished workout and, per exercise, the history of its routine exercise (this workout
  * included, since Finish has already saved it), then builds the summary. Null when the workout does
- * not exist. Each exercise steps by the Jump of its equipment.
+ * not exist. Each exercise steps by its routine exercise's step for `unit`.
  */
-export function loadSummary(workoutId: number, unit: Unit, jumps: Jumps): LoadedSummary | null {
+export function loadSummary(workoutId: number, unit: Unit): LoadedSummary | null {
   const workout = db.select().from(workouts).where(eq(workouts.id, workoutId)).get();
   if (!workout) return null;
   const routineName =
@@ -32,12 +31,13 @@ export function loadSummary(workoutId: number, unit: Unit, jumps: Jumps): Loaded
       id: workoutExercises.id,
       exerciseId: workoutExercises.exerciseId,
       name: exercises.name,
-      equipment: exercises.equipment,
       loadType: exercises.loadType,
       planSets: routineExercises.sets,
       repMin: routineExercises.repMin,
       repMax: routineExercises.repMax,
       rule: routineExercises.rule,
+      stepKg: routineExercises.stepKg,
+      stepLb: routineExercises.stepLb,
     })
     .from(workoutExercises)
     .innerJoin(exercises, eq(exercises.id, workoutExercises.exerciseId))
@@ -64,7 +64,7 @@ export function loadSummary(workoutId: number, unit: Unit, jumps: Jumps): Loaded
   const saved: SavedExercise[] = exRows.map((e) => ({
     id: e.id,
     name: e.name,
-    equipment: e.equipment,
+    steps: { stepKg: e.stepKg, stepLb: e.stepLb },
     loadType: e.loadType,
     plan:
       e.planSets !== null && e.repMin !== null && e.repMax !== null && e.rule !== null
@@ -74,13 +74,13 @@ export function loadSummary(workoutId: number, unit: Unit, jumps: Jumps): Loaded
     past: workout.routineId === null ? [] : pastExercises(db, workout.routineId, e.exerciseId),
   }));
 
-  const input = toSummaryInput({ startedAt: workout.startedAt, finishedAt: workout.finishedAt, exercises: saved }, jumps, unit);
+  const input = toSummaryInput({ startedAt: workout.startedAt, finishedAt: workout.finishedAt, exercises: saved }, unit);
   return { title: routineName, summary: buildSummary(input) };
 }
 
 /**
  * Saves the lifter's answer to an Offer at once: Accept is true, Decline is false. Accept also saves
- * `stepped`, the Target the Offer showed, so the next Start shows that Target even if a Jump changes,
+ * `stepped`, the Target the Offer showed, so the next Start shows that Target even if the step changes,
  * and `unit`, the unit it was offered in, so it snaps to the Jump's grid if the lifter later switches unit.
  */
 export function answerOffer(workoutExerciseId: number, accepted: boolean, stepped: Target, unit: Unit): void {
@@ -96,11 +96,11 @@ export function answerOffer(workoutExerciseId: number, accepted: boolean, steppe
 }
 
 /** The Offers of a finished workout, in workout order. Empty when nothing is Earned or the workout is gone. */
-export function loadOffers(workoutId: number, unit: Unit, jumps: Jumps): OfferItem[] {
-  return loadSummary(workoutId, unit, jumps)?.summary.offers ?? [];
+export function loadOffers(workoutId: number, unit: Unit): OfferItem[] {
+  return loadSummary(workoutId, unit)?.summary.offers ?? [];
 }
 
-/** The summary of a finished workout, read when the screen opens and again when the unit (the card lines are written in it) or a Jump changes. Null when the workout does not exist. */
-export function useSummary(workoutId: number, unit: Unit, jumps: Jumps): LoadedSummary | null {
-  return useMemo(() => loadSummary(workoutId, unit, jumps), [workoutId, unit, jumps]);
+/** The summary of a finished workout, read when the screen opens and again when the unit (the card lines are written in it, and it picks each step) changes. Null when the workout does not exist. */
+export function useSummary(workoutId: number, unit: Unit): LoadedSummary | null {
+  return useMemo(() => loadSummary(workoutId, unit), [workoutId, unit]);
 }

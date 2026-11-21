@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Text } from "@/components";
 import { fontFamily, fontSize, radius, spacing, useColors } from "@/theme";
-import { useJumps, useUnit } from "@/settings";
+import { useUnit } from "@/settings";
 import { loadText, offerHeading, targetText } from "@/workout";
 import { answerOffer, loadOffers } from "@/workout/summaryQueries";
 
@@ -20,10 +20,9 @@ export default function OfferScreen() {
   const insets = useSafeAreaInsets();
   const { id, step } = useLocalSearchParams<{ id: string; step: string }>();
   const { unit } = useUnit();
-  const { jumps } = useJumps();
   const workoutId = Number(id);
   const index = Number(step ?? 0);
-  const offers = useMemo(() => loadOffers(workoutId, unit, jumps), [workoutId, unit, jumps]);
+  const offers = useMemo(() => loadOffers(workoutId, unit), [workoutId, unit]);
   const offer = offers[index];
   const answered = useRef(false);
 

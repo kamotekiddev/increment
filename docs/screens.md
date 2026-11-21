@@ -70,8 +70,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 ## 6 · Settings and data
 | Screen | Notes |
 |---|---|
-| Settings | Interactive kg/lb, a "Weight jumps" row (no value shown, one Jump per equipment) that opens Weight jumps, and a Workout card: Default rest (inline − / + stepper, 15 s steps from 0:15 to 10:00), Show previous set (switch) and Keep screen awake (switch) |
-| Weight jumps | Smallest jump for each equipment (Barbell, Dumbbell, Machine, Cable, Bodyweight added weight), with − / + stepping through real plate sizes. Each jump shows in the lifter's unit as the nearest plate step (5 kg is 10 lb), and the note under the card says so. No plates: "Plates at your gym" moves to Phase 3 |
+| Settings | Interactive kg/lb with a note, and a Workout card: Default rest (inline − / + stepper, 15 s steps from 0:15 to 10:00), Show previous set (switch) and Keep screen awake (switch) |
 | Your data | Free state: backup locked → Paywall |
 | Backup ready | Share sheet for the backup file |
 | Automatic backups (Pro) | Frequency, location, files kept |

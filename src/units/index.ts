@@ -1,7 +1,8 @@
 /**
  * Every kg/lb conversion lives here; no other file converts. Pure: no I/O, no React, no database.
  *
- * A set stores the number the lifter typed and its unit (`Weight`, ADR 0003). Targets and Jumps are kg.
+ * A set stores the number the lifter typed and its unit (`Weight`, ADR 0003). Targets are kg. A routine exercise's
+ * step (the Jump) is saved per unit, each in its own unit, and only converted to kg for the engine (`stepKgFor`).
  * Conversion happens in memory only, for display, rounding a weight about to be lifted, and for
  * comparing and adding up weights; a converted value is never saved.
  */
@@ -63,6 +64,33 @@ export function roundDownToLoadable(value: number, step: number): number {
 export function loadableIn(w: Weight, unit: Unit, jumpKg: number): number {
   if (w.unit === unit) return w.value;
   return roundDownToLoadable(convert(w.value, w.unit, unit), clean(fromKg(jumpKg, unit)));
+}
+
+/**
+ * A routine exercise's saved steps (the Jump, "Add each time"), each in its own unit: `stepKg` in kg, `stepLb` in lb.
+ * Null until the lifter sets that unit's step.
+ */
+export interface Steps {
+  stepKg: number | null;
+  stepLb: number | null;
+}
+
+/** The step of an exercise whose lifter never set one, in each unit: one default for every exercise. */
+export const DEFAULT_STEP: Record<Unit, number> = { kg: 2.5, lb: 5 };
+
+/**
+ * A routine exercise's step in `unit`, as a number in that unit: its saved step for that unit, else 2.5 kg / 5 lb.
+ * The other unit's step is never read or converted, so a 1 kg step leaves lb at its own 5 lb. Null steps (the
+ * routine exercise was deleted) are the default.
+ */
+export function stepIn(steps: Steps | null, unit: Unit): number {
+  const saved = unit === "kg" ? steps?.stepKg : steps?.stepLb;
+  return saved ?? DEFAULT_STEP[unit];
+}
+
+/** `stepIn` as kg: the Jump the engine and the rounding take (`jumpKg`). 5 lb is 2.26796185 kg. */
+export function stepKgFor(steps: Steps | null, unit: Unit): number {
+  return toKg(stepIn(steps, unit), unit);
 }
 
 /** A number for display: up to `decimals` places, trailing zeros dropped (60, 62.5, 61.25). */

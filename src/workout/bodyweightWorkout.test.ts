@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { defaultRule } from "@/engine";
-import { DEFAULT_JUMPS_KG } from "@/settings";
+import { DEFAULT_STEP } from "@/units";
 
 import { loadWorkout, markSetDone, startWorkout } from "./workoutQueries";
 
@@ -28,7 +28,7 @@ function pullupsLoggedWithABelt(): number {
 
 describe("a bodyweight exercise in the live workout", () => {
   it("carries no weight logged before the split into the Target or the prefilled sets, and saves done sets at 0", async () => {
-    const workoutId = startWorkout(pullupsLoggedWithABelt(), DEFAULT_JUMPS_KG, "kg", new Date(2026, 10, 9))!;
+    const workoutId = startWorkout(pullupsLoggedWithABelt(), "kg", new Date(2026, 10, 9))!;
 
     const workout = await loadWorkout(workoutId);
     const pullups = workout!.exercises[0];
@@ -38,7 +38,7 @@ describe("a bodyweight exercise in the live workout", () => {
 
     // Even a row that still carries a weight (a workout started before the split) saves 0 when checked.
     const rows = pullups.rows.map((r, i) => (i === 0 ? { ...r, weight: 20 } : r));
-    const next = markSetDone(rows, 0, true, "kg", "bodyweight", DEFAULT_JUMPS_KG.bodyweight);
+    const next = markSetDone(rows, 0, true, "kg", "bodyweight", DEFAULT_STEP.kg);
     expect(next[0]).toMatchObject({ weight: 0, done: true });
     expect(stored()[0]).toMatchObject({ weight: 0, done: true, reps: 8 });
   });

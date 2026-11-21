@@ -78,12 +78,12 @@ export const size = {
   emptyIcon: 60,
   hero: 190,
   stepNumber: 26,
-  /** A Settings list row (Weight jumps). */
+  /** A Settings list row (Default rest, Show previous set). */
   settingsRow: 54,
-  /** The round − / + of a Weight jumps row; hitSlop takes its touch target to `minTouch`. */
+  /** The round − / + of a Settings row (Default rest); hitSlop takes its touch target to `minTouch`. */
   stepper: 36,
-  /** The least width of a Jump value between − and +, so the row does not shift as the value changes. */
-  jumpValue: 62,
+  /** The least width of a value between − and + (Default rest), so the row does not shift as the value changes. */
+  stepperValue: 62,
   /** A History row (one finished Workout). */
   historyRow: 64,
 } as const;
@@ -145,7 +145,7 @@ export const lineHeight = {
 
 /** Letter spacing for text that sets its own tracking. */
 export const letterSpacing = {
-  /** A weight shown as a value (a Jump between − and +): numbers use tight tracking. */
+  /** A weight shown as a value (a value between − and +): numbers use tight tracking. */
   value: -0.3,
 } as const;
 

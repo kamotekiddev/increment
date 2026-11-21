@@ -2,9 +2,8 @@ import { eq } from "drizzle-orm";
 
 import type { Db } from "@/db/client";
 import { exercises, sets, userSettings, workoutExercises, workouts } from "@/db/schema";
-import { loggedWeightWithUnit } from "@/units";
+import { DEFAULT_STEP, loggedWeightWithUnit } from "@/units";
 import { parseWeight } from "@/workout";
-import { DEFAULT_JUMPS_KG } from "./jumps";
 import { editSet, markSetDone, type LiveSet } from "@/workout/workoutQueries";
 
 import { createTestDb } from "../../test-support/testDb";
@@ -15,7 +14,7 @@ import { readUnit, writeUnit } from "./unitSetting";
 jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
 const appDb: Db = jest.requireMock("@/db/client").db;
 
-/** The settings rows, unit column only (the Jump columns are covered in jumpSetting.test.ts). */
+/** The settings rows, unit column only. */
 const unitRows = (db: Db) => db.select({ id: userSettings.id, unit: userSettings.unit }).from(userSettings).all();
 
 describe("unit setting", () => {
@@ -58,7 +57,7 @@ describe("unit setting", () => {
           .returning({ id: sets.id })
           .get().id,
     );
-    const jump = DEFAULT_JUMPS_KG.barbell;
+    const jump = DEFAULT_STEP.kg;
     let rows: LiveSet[] = setIds.map((setId) => ({ setId, weight: 100, unit: "kg", reps: 5, done: false, edited: false }));
 
     // Set 1 stays untouched and open: shown as 220 lb in lb, but switching never writes it.
@@ -100,7 +99,7 @@ describe("unit setting", () => {
       .values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx: 0, weight: 0, weightUnit: "lb", reps: 10 })
       .returning()
       .get().id;
-    const jump = DEFAULT_JUMPS_KG.cable;
+    const jump = DEFAULT_STEP.kg;
     let rows: LiveSet[] = [{ setId, weight: null, unit: "lb", reps: 10, done: false, edited: false }];
     rows = editSet(rows, 0, { weight: parseWeight("45"), unit: "lb" }, "lb", jump);
     markSetDone(rows, 0, true, "lb", "weighted", jump);

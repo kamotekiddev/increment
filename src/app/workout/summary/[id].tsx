@@ -3,7 +3,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Card, Pill, Text } from "@/components";
-import { useJumps, useUnit } from "@/settings";
+import { useUnit } from "@/settings";
 import { fontFamily, fontSize, radius, spacing, useColors } from "@/theme";
 import { formatWeight } from "@/units";
 import type { SummaryCard, SummaryHeader } from "@/workout";
@@ -95,8 +95,7 @@ export default function WorkoutSummaryScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { unit } = useUnit();
-  const { jumps } = useJumps();
-  const loaded = useSummary(Number(id), unit, jumps);
+  const loaded = useSummary(Number(id), unit);
 
   /** Returns to where the workout started (the root when there is nowhere to go back to). */
   function done() {

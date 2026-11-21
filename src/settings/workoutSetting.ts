@@ -2,7 +2,7 @@ import type { SelectInsertDb } from "@/db/client";
 import { userSettings } from "@/db/schema";
 import { clampRest } from "@/routines/routineSetup";
 
-/** The one settings row (shared with the unit and the Jumps). */
+/** The one settings row (shared with the unit). */
 const ROW_ID = 1;
 
 export interface WorkoutSettings {

@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
 import { nextTarget, type LoadType, type Target, type WeightUnit } from "@/engine";
-import { jumpKgFor, type Jumps } from "@/settings";
-import type { Unit } from "@/units";
+import { stepKgFor, type Steps, type Unit } from "@/units";
 
 import { toHistory, type PastExercise } from "./historyInputs";
 import { applyEdit, type SetEdit } from "./applyEdit";
@@ -71,11 +70,11 @@ function deleteWorkoutExercise(q: Queryable, workoutExerciseId: number): void {
 /**
  * Starts a workout from a routine as it is now, in one synchronous transaction. Each exercise's
  * Target comes from the engine, reading only finished workouts of this routine (ADR 0002) and
- * stepping by the Jump of the exercise's equipment in the lifter's current `unit`. Each Target records
- * that unit, so a Target set in the other unit snaps to the Jump's grid next time. Returns the new
- * workout id, or null when the routine has no exercises.
+ * stepping by the routine exercise's step for the lifter's current `unit` (2.5 kg / 5 lb until set). Each
+ * Target records that unit, so a Target set in the other unit snaps to the Jump's grid next time. Returns the
+ * new workout id, or null when the routine has no exercises.
  */
-export function startWorkout(routineId: number, jumps: Jumps, unit: Unit, now: Date = new Date()): number | null {
+export function startWorkout(routineId: number, unit: Unit, now: Date = new Date()): number | null {
   return db.transaction((tx) => {
     const planned = tx
       .select({
@@ -84,8 +83,9 @@ export function startWorkout(routineId: number, jumps: Jumps, unit: Unit, now: D
         repMin: routineExercises.repMin,
         repMax: routineExercises.repMax,
         rule: routineExercises.rule,
+        stepKg: routineExercises.stepKg,
+        stepLb: routineExercises.stepLb,
         loadType: exercises.loadType,
-        equipment: exercises.equipment,
       })
       .from(routineExercises)
       .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
@@ -107,7 +107,7 @@ export function startWorkout(routineId: number, jumps: Jumps, unit: Unit, now: D
         planned: { sets: ex.sets, repMin: ex.repMin, repMax: ex.repMax },
         loadType: ex.loadType,
         history: toHistory(rows, ex.sets),
-        jumpKg: jumpKgFor(ex.equipment, jumps),
+        jumpKg: stepKgFor(ex, unit),
         unit,
       }).target;
 
@@ -152,8 +152,11 @@ export interface LiveSet extends SetRow {
 export interface LiveExercise {
   id: number;
   name: string;
-  /** The exercise's equipment, which picks its Jump. */
-  equipment: string;
+  /**
+   * The routine exercise's saved steps, read with the unit on screen (`stepKgFor`) since the unit can change
+   * mid-workout. Both null when the routine exercise is gone, which is the 2.5 kg / 5 lb default.
+   */
+  steps: Steps;
   target: Target | null;
   /** The lifter's unit when Start set the Target; null on rows saved before it was stored. */
   targetUnit: WeightUnit | null;
@@ -181,7 +184,8 @@ export async function loadWorkout(id: number): Promise<LiveWorkout | null> {
       targetWeightKg: workoutExercises.targetWeightKg,
       targetReps: workoutExercises.targetReps,
       targetUnit: workoutExercises.targetUnit,
-      equipment: exercises.equipment,
+      stepKg: routineExercises.stepKg,
+      stepLb: routineExercises.stepLb,
       repMin: routineExercises.repMin,
       repMax: routineExercises.repMax,
       restS: routineExercises.restS,
@@ -213,7 +217,7 @@ export async function loadWorkout(id: number): Promise<LiveWorkout | null> {
     exercises: exRows.map((e) => ({
       id: e.id,
       name: e.name,
-      equipment: e.equipment,
+      steps: { stepKg: e.stepKg, stepLb: e.stepLb },
       target: e.targetWeightKg !== null && e.targetReps !== null ? { weightKg: e.targetWeightKg, reps: e.targetReps } : null,
       targetUnit: e.targetUnit,
       range: e.repMin !== null && e.repMax !== null ? { repMin: e.repMin, repMax: e.repMax } : null,
@@ -304,9 +308,9 @@ export function finishWorkout(id: number, now: Date = new Date()): void {
 }
 
 /** Discards the workout in progress, then starts the routine. Returns the new workout id (null when the routine is empty). */
-export function discardAndStartWorkout(inProgressId: number, routineId: number, jumps: Jumps, unit: Unit): number | null {
+export function discardAndStartWorkout(inProgressId: number, routineId: number, unit: Unit): number | null {
   discardWorkout(inProgressId);
-  return startWorkout(routineId, jumps, unit);
+  return startWorkout(routineId, unit);
 }
 
 /**
