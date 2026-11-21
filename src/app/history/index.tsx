@@ -8,7 +8,7 @@ import { useWorkoutHistory } from "@/history/useWorkoutHistory";
 import { ScreenHeader } from "@/routines/ScreenHeader";
 import { fontSize, spacing, useColors } from "@/theme";
 
-/** Every finished Workout, newest first, under month titles. Read-only; rows open nothing yet. */
+/** Every finished Workout, newest first, under month titles. Read-only; a row opens Past workout. */
 export default function HistoryScreen() {
   const colors = useColors();
   const sections = useWorkoutHistory();
@@ -40,7 +40,12 @@ export default function HistoryScreen() {
           </Text>
         )}
         renderItem={({ item, index, section }) => (
-          <HistoryListRow row={item} first={index === 0} last={index === section.data.length - 1} />
+          <HistoryListRow
+            row={item}
+            first={index === 0}
+            last={index === section.data.length - 1}
+            onPress={() => router.push({ pathname: "/history/[id]", params: { id: String(item.workoutId) } })}
+          />
         )}
       />
     </View>

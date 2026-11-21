@@ -1,8 +1,9 @@
-import { count, desc, eq } from "drizzle-orm";
+import { and, asc, count, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
-import { routines, workoutExercises, workouts } from "@/db/schema";
-import type { Unit } from "@/units";
+import { exercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
+import { formatWeight, type Unit } from "@/units";
+import { repsText } from "@/workout/repsText";
 
 /** One month of History: its title (`November 2026`) and its rows, newest first. */
 export interface HistorySection {
@@ -92,4 +93,88 @@ export function workoutHistory(_unit: Unit): HistorySection[] {
     });
   }
   return sections;
+}
+
+/** One finished Workout on Past workout, as display text. */
+export interface PastWorkout {
+  /** The Routine's current name, or `Workout`. */
+  routineLabel: string;
+  /** `Thu, 12 Nov · 48 min` */
+  detail: string;
+  /** One per Workout exercise, in the Workout's order. */
+  cards: PastExerciseCard[];
+}
+
+/** One exercise of a Past workout, as display text. */
+export interface PastExerciseCard {
+  workoutExerciseId: number;
+  name: string;
+  /** `Target 62.5 × 8`, `Target 10 reps`, or null when the Workout had no Target for it. */
+  target: string | null;
+  /** Done as a Deload: the screen shows the grey Deload pill. */
+  deload: boolean;
+  /** One per done Working set, in set order: `62.5 × 8`. */
+  chips: string[];
+}
+
+/** The stored Target as text, by Load type; converted for display, never snapped to the Jump grid. */
+function targetText(loadType: "weighted" | "bodyweight", weightKg: number | null, reps: number | null, unit: Unit): string | null {
+  if (reps === null) return null;
+  if (loadType === "bodyweight") return `Target ${repsText(reps)}`;
+  if (weightKg === null) return null;
+  return `Target ${formatWeight(weightKg, unit)} × ${reps}`;
+}
+
+/** One finished Workout as display text: its header and exercise cards. */
+export function pastWorkout(id: number, unit: Unit): PastWorkout | null {
+  const workout = db
+    .select({ date: workouts.date, startedAt: workouts.startedAt, finishedAt: workouts.finishedAt, routineName: routines.name })
+    .from(workouts)
+    .leftJoin(routines, eq(routines.id, workouts.routineId))
+    .where(and(eq(workouts.id, id), eq(workouts.inProgress, false)))
+    .get();
+  if (!workout) return null;
+
+  const rows = db
+    .select({
+      workoutExerciseId: workoutExercises.id,
+      name: exercises.name,
+      loadType: exercises.loadType,
+      targetWeightKg: workoutExercises.targetWeightKg,
+      targetReps: workoutExercises.targetReps,
+      deload: workoutExercises.isDeload,
+    })
+    .from(workoutExercises)
+    .innerJoin(exercises, eq(exercises.id, workoutExercises.exerciseId))
+    .where(eq(workoutExercises.workoutId, id))
+    .orderBy(asc(workoutExercises.position), asc(workoutExercises.id))
+    .all();
+
+  // Working sets only: done and not a warm-up, in set order.
+  const workingSets = db
+    .select({ workoutExerciseId: sets.workoutExerciseId, weightKg: sets.weightKg, reps: sets.reps })
+    .from(sets)
+    .innerJoin(workoutExercises, eq(workoutExercises.id, sets.workoutExerciseId))
+    .where(and(eq(workoutExercises.workoutId, id), eq(sets.done, true), eq(sets.isWarmup, false)))
+    .orderBy(asc(sets.idx), asc(sets.id))
+    .all();
+  const chips = new Map<number, string[]>();
+  for (const set of workingSets) {
+    const list = chips.get(set.workoutExerciseId) ?? [];
+    // Any weight above 0 shows, so added weight logged on a bodyweight exercise stays visible.
+    list.push(set.weightKg > 0 ? `${formatWeight(set.weightKg, unit)} × ${set.reps}` : repsText(set.reps));
+    chips.set(set.workoutExerciseId, list);
+  }
+
+  return {
+    routineLabel: workout.routineName ?? "Workout",
+    detail: `${dateLabel(workout.date)} · ${durationText(workout.startedAt, workout.finishedAt ?? workout.startedAt)}`,
+    cards: rows.map((row) => ({
+      workoutExerciseId: row.workoutExerciseId,
+      name: row.name,
+      target: targetText(row.loadType, row.targetWeightKg, row.targetReps, unit),
+      deload: row.deload,
+      chips: chips.get(row.workoutExerciseId) ?? [],
+    })),
+  };
 }

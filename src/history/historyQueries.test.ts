@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { exercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 
-import { workoutHistory } from "./historyQueries";
+import { pastWorkout, workoutHistory } from "./historyQueries";
 
 // workoutHistory reads the app's `db`; point that at an in-memory database with every migration applied.
 jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
@@ -139,5 +139,138 @@ describe("workoutHistory", () => {
     ];
     durations.forEach(([minutes], i) => saveWorkout({ routineId: legs, date: "2026-11-01", startedAt: at(2026, 11, 1, 6 - i), minutes, exercises: 2 }));
     expect(workoutHistory("kg")[0].data.map((r) => r.detail)).toEqual(durations.map(([, text]) => `2 exercises · ${text}`));
+  });
+});
+
+interface LoggedSet {
+  weightKg: number;
+  reps: number;
+  /** Set index; defaults to the order given. */
+  idx?: number;
+  done?: boolean;
+  warmup?: boolean;
+}
+
+interface LoggedExercise {
+  name: string;
+  loadType?: "weighted" | "bodyweight";
+  position: number;
+  /** Stored Target `[kg, reps]`, or null for none. */
+  target?: [number, number] | null;
+  deload?: boolean;
+  sets?: LoggedSet[];
+}
+
+/** A Workout with exercises in the given shape; returns its id. */
+function logWorkout(workout: SavedWorkout, logged: LoggedExercise[]): number {
+  const id = saveWorkout({ ...workout, exercises: 0 });
+  for (const { name, loadType = "weighted", position, target = null, deload = false, sets: loggedSets = [] } of logged) {
+    const exercise = db.insert(exercises).values({ name, equipment: "barbell", loadType }).returning().get();
+    const we = db
+      .insert(workoutExercises)
+      .values({ workoutId: id, exerciseId: exercise.id, position, targetWeightKg: target?.[0] ?? null, targetReps: target?.[1] ?? null, isDeload: deload })
+      .returning()
+      .get();
+    loggedSets.forEach(({ weightKg, reps, idx, done = true, warmup = false }, i) => {
+      db.insert(sets)
+        .values({ workoutExerciseId: we.id, exerciseId: exercise.id, idx: idx ?? i, weightKg, enteredUnit: "kg", reps, done, isWarmup: warmup })
+        .run();
+    });
+  }
+  return id;
+}
+
+describe("pastWorkout", () => {
+  it("heads the Workout with its Routine's current name, and the date and duration as History shows them", () => {
+    const push = routine("Push");
+    const id = logWorkout({ routineId: push, date: "2026-11-12", startedAt: at(2026, 11, 12), minutes: 72 }, []);
+    db.update(routines).set({ name: "Push day A" }).where(eq(routines.id, push)).run();
+    expect(pastWorkout(id, "kg")).toMatchObject({ routineLabel: "Push day A", detail: "Thu, 12 Nov · 1 h 12 min" });
+  });
+
+  it("shows one card per Workout exercise, in the order they had in the Workout", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      { name: "Overhead press", position: 1 },
+      { name: "Dips", position: 2 },
+      { name: "Barbell bench press", position: 0 },
+    ]);
+    expect(pastWorkout(id, "kg")?.cards.map((c) => c.name)).toEqual(["Barbell bench press", "Overhead press", "Dips"]);
+  });
+
+  it("shows a weighted Target in the current Unit, converted for display and never snapped to the Jump grid", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      { name: "Barbell bench press", position: 0, target: [62.5, 8] },
+    ]);
+    expect(pastWorkout(id, "kg")?.cards[0].target).toBe("Target 62.5 × 8");
+    expect(pastWorkout(id, "lb")?.cards[0].target).toBe("Target 137.79 × 8");
+  });
+
+  it("shows a bodyweight exercise's Target in reps", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      { name: "Dips", loadType: "bodyweight", position: 0, target: [0, 10] },
+    ]);
+    expect(pastWorkout(id, "lb")?.cards[0].target).toBe("Target 10 reps");
+  });
+
+  it("shows no Target on an exercise's first workout", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      { name: "Barbell bench press", position: 0, target: null, sets: [{ weightKg: 60, reps: 8 }] },
+    ]);
+    expect(pastWorkout(id, "kg")?.cards[0].target).toBeNull();
+  });
+
+  it("flags a Workout exercise done as a Deload", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      { name: "Barbell bench press", position: 0, target: [55, 8], deload: true },
+      { name: "Overhead press", position: 1, target: [40, 8] },
+    ]);
+    expect(pastWorkout(id, "kg")?.cards.map((c) => c.deload)).toEqual([true, false]);
+  });
+
+  it("shows one chip per done Working set, in set order, leaving out warm-ups and sets not done", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      {
+        name: "Barbell bench press",
+        position: 0,
+        target: [62.5, 8],
+        sets: [
+          { idx: 3, weightKg: 62.5, reps: 7 },
+          { idx: 0, weightKg: 40, reps: 10, warmup: true },
+          { idx: 1, weightKg: 62.5, reps: 8 },
+          { idx: 4, weightKg: 62.5, reps: 6, done: false },
+          { idx: 2, weightKg: 60, reps: 8 },
+        ],
+      },
+    ]);
+    expect(pastWorkout(id, "kg")?.cards[0].chips).toEqual(["62.5 × 8", "60 × 8", "62.5 × 7"]);
+  });
+
+  it("shows a chip in the current Unit, matching a Target it hit", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      { name: "Barbell bench press", position: 0, target: [62.5, 8], sets: [{ weightKg: 62.5, reps: 8 }] },
+    ]);
+    expect(pastWorkout(id, "lb")?.cards[0]).toMatchObject({ target: "Target 137.79 × 8", chips: ["137.79 × 8"] });
+  });
+
+  it("shows a set with no weight in reps: `9 reps`, `1 rep`", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      { name: "Dips", loadType: "bodyweight", position: 0, target: [0, 10], sets: [{ weightKg: 0, reps: 9 }, { weightKg: 0, reps: 1 }] },
+    ]);
+    expect(pastWorkout(id, "kg")?.cards[0].chips).toEqual(["9 reps", "1 rep"]);
+  });
+
+  it("keeps added weight logged on a bodyweight exercise: `10 × 8`", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      { name: "Dips", loadType: "bodyweight", position: 0, target: [0, 8], sets: [{ weightKg: 10, reps: 8 }] },
+    ]);
+    expect(pastWorkout(id, "kg")?.cards[0].chips).toEqual(["10 × 8"]);
+  });
+
+  it("returns nothing for an unknown id or a Workout in progress", () => {
+    const live = logWorkout({ routineId: routine("Legs"), date: "2026-11-12", startedAt: at(2026, 11, 12), inProgress: true }, [
+      { name: "Squat", position: 0, target: [100, 5], sets: [{ weightKg: 100, reps: 5 }] },
+    ]);
+    expect(pastWorkout(live, "kg")).toBeNull();
+    expect(pastWorkout(live + 1, "kg")).toBeNull();
   });
 });

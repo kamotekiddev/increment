@@ -1,8 +1,8 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { fontSize, radius, spacing, useColors } from "@/theme";
+import { fontSize, opacity, radius, spacing, useColors } from "@/theme";
 
 import type { HistoryRow } from "./historyQueries";
 
@@ -11,14 +11,19 @@ export interface HistoryListRowProps {
   /** First and last row of its month round the card's top and bottom; the rest draw a divider above. */
   first: boolean;
   last: boolean;
+  /** Opens Past workout for this Workout. */
+  onPress: () => void;
 }
 
 /** One finished Workout on History: `Thu, 12 Nov` and the Routine, `5 exercises · 48 min` under it, a chevron. */
-export function HistoryListRow({ row, first, last }: HistoryListRowProps) {
+export function HistoryListRow({ row, first, last, onPress }: HistoryListRowProps) {
   const colors = useColors();
   return (
-    <View
-      style={{
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${row.dateLabel}, ${row.routineLabel}, ${row.detail}`}
+      onPress={onPress}
+      style={({ pressed }) => ({
         marginHorizontal: spacing.xl,
         paddingHorizontal: spacing.lg,
         backgroundColor: colors.card,
@@ -26,7 +31,8 @@ export function HistoryListRow({ row, first, last }: HistoryListRowProps) {
         borderTopRightRadius: first ? radius.card : 0,
         borderBottomLeftRadius: last ? radius.card : 0,
         borderBottomRightRadius: last ? radius.card : 0,
-      }}
+        opacity: pressed ? opacity.pressed : 1,
+      })}
     >
       <View
         style={{
@@ -54,6 +60,6 @@ export function HistoryListRow({ row, first, last }: HistoryListRowProps) {
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.iconFaint} />
       </View>
-    </View>
+    </Pressable>
   );
 }

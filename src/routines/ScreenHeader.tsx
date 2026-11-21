@@ -11,12 +11,15 @@ export interface ScreenHeaderProps {
   title: string;
   /** "start" is the large title next to the button; "center" is the small title between two buttons. */
   align?: "start" | "center";
+  /** A muted line under a "start" title (Past workout's `Thu, 12 Nov · 48 min`). */
+  subtitle?: string;
   right?: ReactNode;
 }
 
 /** The in-page header that replaces the native one: 48 pt round buttons and a title, below the status bar. */
-export function ScreenHeader({ left, title, align = "start", right }: ScreenHeaderProps) {
+export function ScreenHeader({ left, title, align = "start", subtitle, right }: ScreenHeaderProps) {
   const insets = useSafeAreaInsets();
+  const startTitleStyle = { fontSize: fontSize.screen, lineHeight: 30, letterSpacing: -0.7 };
   return (
     <View
       style={{
@@ -29,8 +32,17 @@ export function ScreenHeader({ left, title, align = "start", right }: ScreenHead
       }}
     >
       {left}
-      {align === "start" ? (
-        <Text variant="title" accessibilityRole="header" style={{ flex: 1, fontSize: fontSize.screen, lineHeight: 30, letterSpacing: -0.7 }}>
+      {align === "start" && subtitle !== undefined ? (
+        <View style={{ flex: 1 }}>
+          <Text variant="title" accessibilityRole="header" style={startTitleStyle}>
+            {title}
+          </Text>
+          <Text tone="muted" style={{ fontSize: fontSize.small, lineHeight: 18 }}>
+            {subtitle}
+          </Text>
+        </View>
+      ) : align === "start" ? (
+        <Text variant="title" accessibilityRole="header" style={[{ flex: 1 }, startTitleStyle]}>
           {title}
         </Text>
       ) : (
