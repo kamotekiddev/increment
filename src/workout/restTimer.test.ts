@@ -11,7 +11,7 @@ import {
 } from "./restTimer";
 import type { SetRow } from "./types";
 
-const set = (weightKg: number | null, done = false, reps = 8): SetRow => ({ weightKg, reps, done, edited: false });
+const set = (weight: number | null, done = false, reps = 8): SetRow => ({ weight, unit: "kg", reps, done, edited: false });
 const ex = (name: string, restSeconds: number, rows: SetRow[], bodyweight = false): RestExercise => ({
   name,
   restSeconds,

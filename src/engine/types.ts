@@ -37,6 +37,11 @@ export interface LoggedSet {
   reps: number;
   done: boolean;
   isWarmup: boolean;
+  /**
+   * The unit the set was logged in. When it differs from the session's Target unit, the set is judged against the
+   * Target as shown in that unit (snapped to the Jump's grid). Absent means the Target's unit.
+   */
+  unit?: WeightUnit;
 }
 
 /** One past workout of one exercise. `sets` are in set order. */

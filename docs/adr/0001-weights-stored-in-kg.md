@@ -1,6 +1,6 @@
 # 0001: Weights are stored in kg as full-precision numbers, with the entered unit
 
-**Status:** accepted
+**Status:** superseded for sets by [0003](0003-sets-store-the-weight-as-typed.md) (2026-11-21). Targets and Jumps are still stored in kg.
 
 ## Context
 

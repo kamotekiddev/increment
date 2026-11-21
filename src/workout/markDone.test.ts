@@ -1,7 +1,7 @@
 import { canMarkDone, setDone } from "./markDone";
 import type { SetRow } from "./types";
 
-const row = (weightKg: number | null, done = false): SetRow => ({ weightKg, reps: 8, done, edited: false });
+const row = (weight: number | null, done = false): SetRow => ({ weight, unit: "kg", reps: 8, done, edited: false });
 
 describe("canMarkDone", () => {
   it("is false while the weight is blank", () => {
@@ -32,7 +32,7 @@ describe("on a bodyweight exercise", () => {
     expect(canMarkDone(row(null), "bodyweight")).toBe(true);
   });
   it("a done set saves weight 0, whatever weight it carried", () => {
-    expect(setDone([row(null), row(20)], 0, true, "bodyweight")[0]).toEqual({ weightKg: 0, reps: 8, done: true, edited: false });
-    expect(setDone([row(20)], 0, true, "bodyweight")[0].weightKg).toBe(0);
+    expect(setDone([row(null), row(20)], 0, true, "bodyweight")[0]).toEqual({ weight: 0, unit: "kg", reps: 8, done: true, edited: false });
+    expect(setDone([row(20)], 0, true, "bodyweight")[0].weight).toBe(0);
   });
 });

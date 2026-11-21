@@ -13,7 +13,7 @@ function installBeforeSplit() {
   const pullups = db.select().from(exercises).where(eq(exercises.slug, "pullups")).get()!;
   const workout = db.insert(workouts).values({ startedAt: 1, date: "2026-11-01", inProgress: false }).returning().get();
   const we = db.insert(workoutExercises).values({ workoutId: workout.id, exerciseId: pullups.id, position: 0 }).returning().get();
-  db.insert(sets).values({ workoutExerciseId: we.id, exerciseId: pullups.id, idx: 0, weightKg: 10, enteredUnit: "kg", reps: 6, done: true }).run();
+  db.insert(sets).values({ workoutExerciseId: we.id, exerciseId: pullups.id, idx: 0, weight: 10, weightUnit: "kg", reps: 6, done: true }).run();
   return { db, pullupsId: pullups.id };
 }
 
@@ -35,7 +35,7 @@ describe("seedLibrary", () => {
     seedLibrary(db);
     expect(db.select().from(exercises).where(eq(exercises.id, pullupsId)).get()).toMatchObject({ slug: "pullups", loadType: "bodyweight" });
     expect(db.select().from(workoutExercises).all().map((we) => we.exerciseId)).toEqual([pullupsId]);
-    expect(db.select().from(sets).all()).toEqual([expect.objectContaining({ exerciseId: pullupsId, weightKg: 10, reps: 6 })]);
+    expect(db.select().from(sets).all()).toEqual([expect.objectContaining({ exerciseId: pullupsId, weight: 10, reps: 6 })]);
   });
 
   it("adds no duplicate rows when run again", () => {

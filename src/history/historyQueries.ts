@@ -3,7 +3,7 @@ import { and, asc, countDistinct, desc, eq } from "drizzle-orm";
 import { db } from "@/db/client";
 import { exercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { exerciseCountText } from "@/today/todayText";
-import { formatWeight, type Unit } from "@/units";
+import { kgIn, loggedWeightText, type Unit } from "@/units";
 import { durationMinutes } from "@/workout/durationMinutes";
 import { repsText } from "@/workout/repsText";
 import { routineLabel } from "@/workout/routineLabel";
@@ -112,16 +112,26 @@ export interface PastExerciseCard {
   target: string | null;
   /** Done as a Deload: the screen shows the grey Deload pill. */
   deload: boolean;
-  /** One per done Working set, in set order: `62.5 × 8`. */
+  /** One per done Working set, in set order: `62.5 × 8`, or `≈20.4 × 10` for a set logged in the other Unit. */
   chips: string[];
 }
 
-/** The stored Target as text, by Load type; converted for display, never snapped to the Jump grid. */
-function targetText(loadType: "weighted" | "bodyweight", weightKg: number | null, reps: number | null, unit: Unit): string | null {
+/**
+ * The stored Target as text, by Load type, shown like its sets: exactly in the Unit it was set in, else converted to one
+ * decimal with "≈". Never snapped to the Jump grid. A Target saved before its Unit was stored counts as kg.
+ */
+function targetText(
+  loadType: "weighted" | "bodyweight",
+  weightKg: number | null,
+  reps: number | null,
+  setIn: Unit | null,
+  unit: Unit,
+): string | null {
   if (reps === null) return null;
   if (loadType === "bodyweight") return `Target ${repsText(reps)}`;
   if (weightKg === null) return null;
-  return `Target ${formatWeight(weightKg, unit)} × ${reps}`;
+  const from = setIn ?? "kg";
+  return `Target ${loggedWeightText({ value: kgIn(weightKg, from), unit: from }, unit)} × ${reps}`;
 }
 
 /** One finished Workout as display text: its header and exercise cards. */
@@ -141,6 +151,7 @@ export function pastWorkout(id: number, unit: Unit): PastWorkout | null {
       loadType: exercises.loadType,
       targetWeightKg: workoutExercises.targetWeightKg,
       targetReps: workoutExercises.targetReps,
+      targetUnit: workoutExercises.targetUnit,
       deload: workoutExercises.isDeload,
     })
     .from(workoutExercises)
@@ -151,7 +162,7 @@ export function pastWorkout(id: number, unit: Unit): PastWorkout | null {
 
   // Working sets only: done and not a warm-up, in set order.
   const workingSets = db
-    .select({ workoutExerciseId: sets.workoutExerciseId, weightKg: sets.weightKg, reps: sets.reps })
+    .select({ workoutExerciseId: sets.workoutExerciseId, weight: sets.weight, weightUnit: sets.weightUnit, reps: sets.reps })
     .from(sets)
     .innerJoin(workoutExercises, eq(workoutExercises.id, sets.workoutExerciseId))
     .where(and(eq(workoutExercises.workoutId, id), eq(sets.done, true), eq(sets.isWarmup, false)))
@@ -160,8 +171,10 @@ export function pastWorkout(id: number, unit: Unit): PastWorkout | null {
   const chips = new Map<number, string[]>();
   for (const set of workingSets) {
     const list = chips.get(set.workoutExerciseId) ?? [];
-    // Any weight above 0 shows, so added weight logged on a bodyweight exercise stays visible.
-    list.push(set.weightKg > 0 ? `${formatWeight(set.weightKg, unit)} × ${set.reps}` : repsText(set.reps));
+    // Any weight above 0 shows, so added weight logged on a bodyweight exercise stays visible. A set shows exactly in
+    // its own Unit, or converted to one decimal with "≈" in the other; never rounded to a plate weight (ADR 0003).
+    const logged = { value: set.weight, unit: set.weightUnit };
+    list.push(set.weight > 0 ? `${loggedWeightText(logged, unit)} × ${set.reps}` : repsText(set.reps));
     chips.set(set.workoutExerciseId, list);
   }
 
@@ -176,7 +189,7 @@ export function pastWorkout(id: number, unit: Unit): PastWorkout | null {
         {
           workoutExerciseId: row.workoutExerciseId,
           name: row.name,
-          target: targetText(row.loadType, row.targetWeightKg, row.targetReps, unit),
+          target: targetText(row.loadType, row.targetWeightKg, row.targetReps, row.targetUnit, unit),
           deload: row.deload,
           chips: done,
         },

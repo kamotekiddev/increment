@@ -1,18 +1,10 @@
-import { formatWeight, toKg, type Unit } from "@/units";
-
-import { parseWeight } from "./parseInput";
+import { weightIn, type Unit } from "@/units";
 
 /**
- * Typed weight text read in the unit on screen, as kg: null for blank, undefined when invalid.
- * Only typed text goes through this. A weight the lifter has not typed keeps its exact stored kg
- * and is never read back from display text, so switching unit changes nothing in storage.
+ * What a row's weight field shows in the unit on screen: the saved number when it was saved in that unit
+ * (exact, up to 0.01), else converted. Display only: a weight the lifter has not typed is never read back
+ * from this text, so switching unit changes nothing in storage.
  */
-export function weightFromTyped(text: string, unit: Unit): number | null | undefined {
-  const parsed = parseWeight(text);
-  return typeof parsed === "number" ? toKg(parsed, unit) : parsed;
-}
-
-/** What the weight field shows for a stored kg value in the unit on screen. Display only. */
-export function weightText(weightKg: number | null, unit: Unit): string {
-  return weightKg === null ? "" : formatWeight(weightKg, unit);
+export function weightText(row: { weight: number | null; unit: Unit }, unit: Unit): string {
+  return row.weight === null ? "" : weightIn({ value: row.weight, unit: row.unit }, unit);
 }

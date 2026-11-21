@@ -12,7 +12,7 @@ Increment is an offline mobile workout tracker for iOS and Android, built around
 - **Custom routines**: name a routine, choose its days, and set sets, reps and rest for each exercise.
 - **Live workout logging**: a set table showing your previous set, a rest timer, and a target banner.
 - **Progressive overload**: each exercise has a rule ("add 2.5 kg once every set hits 8 reps"). Increment sets next session's target and rounds it to plates you can actually load.
-- **kg / lb as a global preference**: weights are stored once and converted for display, so switching gyms or units never changes your history.
+- **kg / lb as a global preference**: each set is saved exactly as typed, with its unit, so switching gyms or units never changes your history.
 - **Fully offline**: no account and no server; your data stays on the phone.
 - **One-time Pro unlock**: no subscription.
 

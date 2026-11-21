@@ -6,8 +6,8 @@ import { weightText } from "./typedWeight";
  * The weight text a lifter typed into each row after an edit, by set id, and the unit it was typed in.
  * A draft lasts until its set is checked, the unit changes, or the screen is left. Until then the
  * field shows exactly what was typed ("135.005" stays "135.005"); an unedited weight has no draft
- * and is shown from its exact stored kg. After a unit switch every draft is dropped and the field
- * shows the stored kg converted, so nothing reads in the old unit.
+ * and is shown from its saved number. After a unit switch every draft is dropped and the field
+ * shows the row in the new unit, so nothing reads in the old unit.
  */
 export interface WeightDrafts {
   unit: Unit | null;
@@ -34,7 +34,7 @@ export function clearDraft(drafts: WeightDrafts, setId: number): WeightDrafts {
   return { unit: drafts.unit, texts };
 }
 
-/** What a row's weight field shows: its draft when it has one in this unit, else its stored kg converted. */
-export function weightFieldText(drafts: WeightDrafts, row: { setId: number; weightKg: number | null }, unit: Unit): string {
-  return live(drafts, unit)[row.setId] ?? weightText(row.weightKg, unit);
+/** What a row's weight field shows: its draft when it has one in this unit, else its saved weight in this unit. */
+export function weightFieldText(drafts: WeightDrafts, row: { setId: number; weight: number | null; unit: Unit }, unit: Unit): string {
+  return live(drafts, unit)[row.setId] ?? weightText(row, unit);
 }

@@ -1,6 +1,6 @@
 import type { LoadType, OverloadRule, Planned } from "../engine";
 import { jumpKgFor, type Jumps } from "../settings/jumps";
-import type { Unit } from "../units";
+import { weightKg, type Unit } from "../units";
 import { toHistory, type PastExercise } from "./historyInputs";
 import type { SummaryExercise, SummaryInput } from "./summary";
 
@@ -40,7 +40,8 @@ export function toSummaryInput(saved: SavedWorkout, jumps: Jumps, unit: Unit): S
       name: ex.name,
       sets: [...ex.sets]
         .sort((a, b) => a.idx - b.idx)
-        .map((s) => ({ weightKg: s.weightKg, reps: s.reps, done: s.done, isWarmup: s.isWarmup })),
+        // In kg in memory only, for judging and the volume total.
+        .map((s) => ({ weightKg: weightKg({ value: s.weight, unit: s.weightUnit }), reps: s.reps, done: s.done, isWarmup: s.isWarmup, unit: s.weightUnit })),
       planned: ex.plan.planned,
       rule: ex.plan.rule,
       loadType: ex.loadType,

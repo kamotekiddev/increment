@@ -57,7 +57,8 @@ function HeaderCard({ title, header }: { title: string; header: SummaryHeader })
         {header.showTotalReps ? (
           <Stat value={String(header.totalReps)} label="Total reps" />
         ) : (
-          <Stat value={formatWeight(header.volumeKg, unit)} unit={unit} label="Volume" />
+          // Volume is summed in kg in memory and shown in the lifter's unit to one decimal.
+          <Stat value={formatWeight(header.volumeKg, unit, 1)} unit={unit} label="Volume" />
         )}
       </View>
     </View>
