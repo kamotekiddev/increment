@@ -74,18 +74,39 @@ describe("rulePreview", () => {
     );
   });
 
-  it("once the step is Earned (the lifter chose Stay), one more clean workout brings the Offer back: no 'in a row'", () => {
-    const earned = ["2026-11-16", "2026-11-13", "2026-11-11"].map((d) => session(d, { weightKg: 62.5, reps: 8 }, [8, 8, 8]));
-    expect(preview({ rule: defaultRule("weighted"), history: earned })).toBe(
-      "Next session: 62.5 kg × 6–8. Hit 8 on every set and it becomes 65 kg.",
-    );
-  });
+  describe("counts the clean workouts already in a row at 60 kg × 8, as Start does (3 earn the step)", () => {
+    /** `n` clean workouts in a row at 60 kg × 8, newest first. */
+    const clean = (n: number) =>
+      ["2026-11-16", "2026-11-13", "2026-11-11"].slice(0, n).map((d) => session(d, { weightKg: 60, reps: 8 }, [8, 8, 8]));
+    const at60 = (history: HistorySession[]) => preview({ rule: defaultRule("weighted"), history });
 
-  it("counts only the clean workouts still needed: one of 3 done leaves 2", () => {
-    const oneClean = [session("2026-11-16", { weightKg: 60, reps: 8 }, [8, 8, 8])];
-    expect(preview({ rule: defaultRule("weighted"), history: oneClean })).toBe(
-      "Next session: 60 kg × 6–8. Hit 8 on every set 2 workouts in a row and it becomes 62.5 kg.",
-    );
+    it("none clean yet (a Hold last time): 3 workouts in a row", () => {
+      const held = [session("2026-11-16", { weightKg: 60, reps: 8 }, [8, 7, 7])];
+      expect(at60(held)).toBe("Next session: 60 kg × 6–8. Hit 8 on every set 3 workouts in a row and it becomes 62.5 kg.");
+    });
+
+    it("a Hold after two clean workouts restarts the count: 3 workouts in a row", () => {
+      const heldAfterTwo = [session("2026-11-18", { weightKg: 60, reps: 8 }, [8, 7, 7]), ...clean(2)];
+      expect(at60(heldAfterTwo)).toBe("Next session: 60 kg × 6–8. Hit 8 on every set 3 workouts in a row and it becomes 62.5 kg.");
+    });
+
+    it("one clean: 2 more workouts", () => {
+      expect(at60(clean(1))).toBe("Next session: 60 kg × 6–8. Hit 8 on every set 2 more workouts and it becomes 62.5 kg.");
+    });
+
+    it("two clean: 1 more workout", () => {
+      expect(at60(clean(2))).toBe("Next session: 60 kg × 6–8. Hit 8 on every set 1 more workout and it becomes 62.5 kg.");
+    });
+
+    it("three clean: the step is earned and offered at Start", () => {
+      expect(at60(clean(3))).toBe("Next session: 60 kg × 6–8. You've earned 62.5 kg; it's offered at Start.");
+    });
+
+    it("three clean with Double progression: the earned step names the reps too", () => {
+      expect(preview({ rule: { ...defaultRule("weighted"), step: "both" }, planned: { sets: 3, repMin: 6, repMax: 10 }, history: clean(3) })).toBe(
+        "Next session: 60 kg × 6–10. You've earned 62.5 kg × 9; it's offered at Start.",
+      );
+    });
   });
 
   it("follows the rule type: Double progression adds weight and a rep, Reps only a rep", () => {

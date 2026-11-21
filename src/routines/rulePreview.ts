@@ -9,6 +9,7 @@ import {
   type NextTargetInput,
   type OverloadRule,
   type Planned,
+  type Reason,
   type Target,
 } from "../engine";
 import { formatNumber, formatWithUnit, toKg, type Unit } from "../units";
@@ -77,6 +78,20 @@ function extrasText(input: RulePreviewInput, target: Target | null, jumpKg: numb
   return out;
 }
 
+/**
+ * The clean workouts still needed to earn the step, with a leading space. On track, the engine's Streak counts
+ * toward it: " 2 more workouts", " 1 more workout". A new or restarted Streak needs them all: " 3 workouts in a
+ * row", or nothing when one is enough.
+ */
+function stillNeeded(reason: Reason, input: NextTargetInput): string {
+  const n = input.rule.sessionsToEarn;
+  if (reason === "on-track") {
+    const left = n - cleanStreak(input);
+    if (left < n) return ` ${left} more ${left === 1 ? "workout" : "workouts"}`;
+  }
+  return n > 1 ? ` ${n} workouts in a row` : "";
+}
+
 /** The preview split so the next Target can be set in bold: `lead` + `strong` + `rest` is the whole line. */
 export interface RulePreviewParts {
   lead: string;
@@ -114,12 +129,12 @@ export function rulePreviewParts(input: RulePreviewInput): RulePreviewParts {
   const lead = "Next session: ";
   const strong = nextText(target, input);
   const extras = extrasText(input, target, engineInput.jumpKg);
-  // Earned and declined: the next clean workout brings the Offer back.
-  const stepped = reason === "earned" ? proposal : stepUp(target, engineInput);
+  if (reason === "earned" && proposal) {
+    return { lead, strong, rest: `. You've earned ${steppedText(proposal, input)}; it's offered at Start.${extras}` };
+  }
+  const stepped = stepUp(target, engineInput);
   if (!stepped) return { lead, strong, rest: "." + extras };
-  const n = reason === "earned" ? 1 : reason === "on-track" ? rule.sessionsToEarn - cleanStreak(engineInput) : rule.sessionsToEarn;
-  const when = n > 1 ? ` ${n} workouts in a row` : "";
-  return { lead, strong, rest: `. Hit ${target.reps} on every set${when} and it becomes ${steppedText(stepped, input)}.${extras}` };
+  return { lead, strong, rest: `. Hit ${target.reps} on every set${stillNeeded(reason, engineInput)} and it becomes ${steppedText(stepped, input)}.${extras}` };
 }
 
 /** `rulePreviewParts` as one line of text. */
