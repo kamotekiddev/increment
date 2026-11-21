@@ -4,7 +4,8 @@ import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-or
 
 /**
  * A set stores the number the lifter typed and the unit they typed it in (ADR 0003): `weight` + `weight_unit`.
- * Targets and Jumps are kg (full-precision REAL). Conversion happens in memory only, in `src/units`.
+ * Targets are kg (full-precision REAL); a routine exercise's Jump is saved per unit, each in its own unit.
+ * Conversion happens in memory only, in `src/units`.
  */
 
 export const exercises = sqliteTable("exercises", {
@@ -42,6 +43,13 @@ export const routineExercises = sqliteTable(
     restS: integer("rest_s").notNull(),
     /** OverloadRule JSON (see src/engine/types.ts); carries its own `v`. */
     rule: text("rule", { mode: "json" }).$type<OverloadRule>().notNull(),
+    /**
+     * The Jump ("Add each time"), one per unit, each in its own unit: `step_kg` in kg (2.5), `step_lb` in lb (5),
+     * never converted. NULL until the lifter sets that unit's Jump: an empty one is 2.5 kg / 5 lb (`jumpIn`).
+     * The engine steps by the one for the lifter's current unit; switching unit never writes either.
+     */
+    stepKg: real("step_kg"),
+    stepLb: real("step_lb"),
   },
   (t) => [
     index("routine_exercises_routine_idx").on(t.routineId, t.position),
@@ -139,18 +147,6 @@ export const userSettings = sqliteTable("user_settings", {
   id: integer("id").primaryKey(),
   /** The unit every weight is shown and typed in. A display preference only: switching it never writes a set. */
   unit: text("unit", { enum: ["kg", "lb"] }).notNull().default("kg"),
-  /**
-   * The Jumps: the smallest weight the lifter can add, one per equipment group, stored in kg whichever unit
-   * set it (15 lb is 6.80388555). In the other unit it shows as the nearest rung of that unit's ladder
-   * (`effectiveJumps`): 5 kg is 10 lb. NULL until the lifter changes that Jump: an untouched Jump is the
-   * current unit's default (2.5 kg, 5 lb for Barbell).
-   */
-  jumpBarbellKg: real("jump_barbell_kg"),
-  jumpDumbbellKg: real("jump_dumbbell_kg"),
-  jumpMachineKg: real("jump_machine_kg"),
-  jumpCableKg: real("jump_cable_kg"),
-  /** Added weight (belt, vest) on a weighted bodyweight exercise. */
-  jumpBodyweightKg: real("jump_bodyweight_kg"),
   /** Default rest: the Rest length (seconds) an exercise gets when added to a Routine. Read through the rest clamp. */
   defaultRestS: integer("default_rest_s").notNull().default(90),
   /** Show previous set: whether the live workout draws the Last column. */

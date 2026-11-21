@@ -13,7 +13,7 @@ import { View } from "react-native";
 
 import { Text } from "@/components";
 import { useDatabase } from "@/db/useDatabase";
-import { loadJumpsOnce, loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
+import { loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
 import { spacing, useColors } from "@/theme";
 import { setupRestNotifications } from "@/workout/restNotification";
 
@@ -31,11 +31,10 @@ export default function RootLayout() {
     Sora_800ExtraBold,
   });
   const { ready: dbReady, error: openError } = useDatabase();
-  // Once the database is ready, read the saved unit and Jumps before any screen renders.
+  // Once the database is ready, read the saved unit and Workout settings before any screen renders.
   const unitError = dbReady ? loadUnitOnce() : null;
-  const jumpError = dbReady ? loadJumpsOnce() : null;
   const workoutError = dbReady ? loadWorkoutSettingsOnce() : null;
-  const dbError = openError ?? unitError ?? jumpError ?? workoutError;
+  const dbError = openError ?? unitError ?? workoutError;
 
   const fontsDone = fontsLoaded || fontError != null;
   const done = fontsDone && (dbReady || dbError != null);

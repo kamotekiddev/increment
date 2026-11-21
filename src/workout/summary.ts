@@ -13,7 +13,7 @@ export interface SummaryExercise {
   planned: Planned;
   rule: OverloadRule;
   loadType: LoadType;
-  /** The Jump, in kg. */
+  /** The Jump in kg: the routine exercise's saved Jump for the lifter's current unit (`jumpKgFor`), 2.5 kg / 5 lb until set. */
   jumpKg: number;
   /** Engine history for this routine exercise, newest first. history[0] is this workout, with its progressAccepted. */
   history: HistorySession[];

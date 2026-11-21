@@ -9,6 +9,7 @@ import m0006 from './0006_yellow_rictor.sql';
 import m0007 from './0007_round_loki.sql';
 import m0008 from './0008_sharp_starfox.sql';
 import m0009 from './0009_set_weight_as_typed.sql';
+import m0010 from './0010_step_per_routine_exercise.sql';
 
   export default {
     journal,
@@ -22,7 +23,8 @@ m0005,
 m0006,
 m0007,
 m0008,
-m0009
+m0009,
+m0010
     }
   }
   

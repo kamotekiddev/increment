@@ -1,5 +1,5 @@
 import { classify, type JudgeIn } from "./outcome";
-import { floorToMultiple, nearestMultiple, nextMultipleAbove, sameWeight } from "./rounding";
+import { floorToMultiple, nextMultipleAbove, sameWeight, snapDown } from "./rounding";
 import { effectiveStep } from "./rule";
 import type { HistorySession, NextTargetInput, Planned, Target, TargetResult, WeightUnit } from "./types";
 
@@ -73,6 +73,22 @@ function missCount(sessions: HistorySession[], planned: Planned, judgeIn: JudgeI
   return count;
 }
 
+/** Pure: clean workouts in a row at the latest regular Target, the Streak that `sessionsToEarn` counts toward. */
+export function cleanStreak(given: NextTargetInput): number {
+  const history = given.loadType === "bodyweight" ? withoutAddedWeight(given.history) : given.history;
+  return streakLength(
+    history.filter((s) => !s.isDeload),
+    given.planned,
+    given,
+  );
+}
+
+/** Pure: the Target weight after a miss rule's drop: `percent` lighter, rounded down to the Jump, and at least one Jump lower. */
+export function missDropKg(baseKg: number, percent: number, jumpKg: number): number {
+  const dropped = floorToMultiple(baseKg * (1 - percent / 100), jumpKg);
+  return dropped < baseKg ? dropped : Math.max(0, baseKg - jumpKg);
+}
+
 function deloadDue(history: HistorySession[], everyWeeks: number): boolean {
   const lastDeload = history.findIndex((s) => s.isDeload);
   const since = lastDeload === -1 ? history : history.slice(0, lastDeload);
@@ -81,14 +97,14 @@ function deloadDue(history: HistorySession[], everyWeeks: number): boolean {
 }
 
 /**
- * A past Target as the lifter can load it now. One set in another unit than the current one snaps to the
- * nearest multiple of the Jump (a tie rounds up): 10 kg is 22.05 lb, which a 5 lb grid shows as 20 lb. One
+ * A past Target as the lifter can load it now. One set in another unit than the current one rounds down to a
+ * multiple of the Jump: 62.5 kg is 137.79 lb, which a 5 lb grid shows as 135 lb (not 140). One
  * set in the current unit is kept as is, even if the Jump changed since. A Target already on the grid, and
  * a bodyweight 0, are unchanged.
  */
 export function inCurrentUnit(target: Target, setIn: WeightUnit | undefined, input: Pick<NextTargetInput, "unit" | "jumpKg">): Target {
   if ((setIn ?? "kg") === input.unit) return target;
-  return { ...target, weightKg: nearestMultiple(target.weightKg, input.jumpKg) };
+  return { ...target, weightKg: snapDown(target.weightKg, input.jumpKg) };
 }
 
 export function nextTarget(given: NextTargetInput): TargetResult {
@@ -136,8 +152,7 @@ function regularTarget(input: NextTargetInput, regular: HistorySession[]): Targe
   const outcome = classify(latest, planned, input);
   if (outcome === "miss" && rule.miss && missCount(regular, planned, input) >= rule.miss.after) {
     if (rule.miss.action.kind === "keep") return { target: base, proposal: null, reason: "miss-keep" };
-    const dropped = floorToMultiple(base.weightKg * (1 - rule.miss.action.percent / 100), jumpKg);
-    const weightKg = dropped < base.weightKg ? dropped : Math.max(0, base.weightKg - jumpKg);
+    const weightKg = missDropKg(base.weightKg, rule.miss.action.percent, jumpKg);
     return { target: { weightKg, reps: base.reps }, proposal: null, reason: "miss-drop" };
   }
   const reason = outcome === "miss" ? "miss" : outcome === "hold" ? "hold" : "on-track";

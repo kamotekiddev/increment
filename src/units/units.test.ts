@@ -9,7 +9,11 @@ import {
   loadableIn,
   loggedWeightText,
   loggedWeightWithUnit,
-  roundToLoadable,
+  roundDownToLoadable,
+  jumpChoices,
+  jumpIn,
+  jumpKgFor,
+  jumpPatch,
   toKg,
   weightKg,
 } from "./index";
@@ -91,26 +95,68 @@ describe("convert", () => {
   });
 });
 
-describe("roundToLoadable", () => {
-  it("goes to the nearest step, a tie rounding up", () => {
-    expect(roundToLoadable(132.28, 5)).toBe(130);
-    expect(roundToLoadable(220.46, 5)).toBe(220);
-    expect(roundToLoadable(61.23, 2.5)).toBe(60);
-    expect(roundToLoadable(132.5, 5)).toBe(135);
-    expect(roundToLoadable(26.25, 2.5)).toBe(27.5);
+describe("roundDownToLoadable", () => {
+  it("goes to the largest step at or below the weight", () => {
+    expect(roundDownToLoadable(137.79, 5)).toBe(135);
+    expect(roundDownToLoadable(220.46, 5)).toBe(220);
+    expect(roundDownToLoadable(132.28, 5)).toBe(130);
+    expect(roundDownToLoadable(61.23, 2.5)).toBe(60);
+    expect(roundDownToLoadable(26.25, 2.5)).toBe(25);
+  });
+  it("keeps a weight on the step when conversion noise puts it a hair below", () => {
+    expect(roundDownToLoadable(134.99999999999997, 5)).toBe(135);
+    expect(roundDownToLoadable(convert(convert(135, "lb", "kg"), "kg", "lb"), 5)).toBe(135);
+  });
+  it("leaves 0 at 0", () => {
+    expect(roundDownToLoadable(0, 5)).toBe(0);
   });
 });
 
 describe("loadableIn", () => {
   const lb5 = toKg(5, "lb");
-  it("converts a weight saved in the other unit and rounds it to the Jump", () => {
+  it("converts a weight saved in the other unit and rounds it down to the Jump", () => {
+    expect(loadableIn({ value: 62.5, unit: "kg" }, "lb", lb5)).toBe(135);
+    expect(loadableIn({ value: 24, unit: "kg" }, "lb", lb5)).toBe(50);
     expect(loadableIn({ value: 100, unit: "kg" }, "lb", lb5)).toBe(220);
     expect(loadableIn({ value: 60, unit: "kg" }, "lb", lb5)).toBe(130);
     expect(loadableIn({ value: 135, unit: "lb" }, "kg", 2.5)).toBe(60);
   });
+  it("lands on the grid point when the conversion is exact: 61.23496995 kg (135 lb) is 135 lb", () => {
+    expect(loadableIn({ value: toKg(135, "lb"), unit: "kg" }, "lb", lb5)).toBe(135);
+    expect(loadableIn({ value: toKg(45, "lb"), unit: "kg" }, "lb", lb5)).toBe(45);
+  });
   it("returns a weight saved in the same unit exactly, off the Jump's grid or not", () => {
     expect(loadableIn({ value: 61.25, unit: "kg" }, "kg", 2.5)).toBe(61.25);
     expect(loadableIn({ value: 137, unit: "lb" }, "lb", lb5)).toBe(137);
+  });
+  it("leaves bodyweight 0 at 0", () => {
+    expect(loadableIn({ value: 0, unit: "kg" }, "lb", lb5)).toBe(0);
+  });
+});
+
+describe("a routine exercise's Jump (jumpIn, jumpKgFor)", () => {
+  const untouched = { stepKg: null, stepLb: null };
+  it("is 2.5 kg in kg and 5 lb in lb while the lifter has not set one", () => {
+    expect(jumpIn(untouched, "kg")).toBe(2.5);
+    expect(jumpIn(untouched, "lb")).toBe(5);
+    expect(jumpKgFor(untouched, "kg")).toBe(2.5);
+    expect(jumpKgFor(untouched, "lb")).toBe(5 * KG_PER_LB);
+  });
+  it("uses a saved kg step in kg and ignores it in lb: 1 kg in kg, the 5 lb default in lb", () => {
+    const oneKg = { stepKg: 1, stepLb: null };
+    expect(jumpKgFor(oneKg, "kg")).toBe(1);
+    expect(jumpIn(oneKg, "lb")).toBe(5);
+    expect(jumpKgFor(oneKg, "lb")).toBe(5 * KG_PER_LB);
+  });
+  it("uses a saved lb step, saved in lb, in lb only: 2.5 lb in lb, the 2.5 kg default in kg", () => {
+    const twoAndAHalfLb = { stepKg: null, stepLb: 2.5 };
+    expect(jumpIn(twoAndAHalfLb, "lb")).toBe(2.5);
+    expect(jumpKgFor(twoAndAHalfLb, "lb")).toBe(2.5 * KG_PER_LB);
+    expect(jumpKgFor(twoAndAHalfLb, "kg")).toBe(2.5);
+  });
+  it("is the default when the routine exercise is gone (null)", () => {
+    expect(jumpKgFor(null, "kg")).toBe(2.5);
+    expect(jumpIn(null, "lb")).toBe(5);
   });
 });
 
@@ -140,5 +186,32 @@ describe("weightKg", () => {
     const heavier = [{ value: 100, unit: "kg" as const }, { value: 225, unit: "lb" as const }].reduce((a, b) => (weightKg(b) > weightKg(a) ? b : a));
     expect(heavier).toEqual({ value: 225, unit: "lb" });
     expect(weightKg(heavier)).toBeCloseTo(102.06, 2);
+  });
+});
+
+describe("jumpChoices (Add each time)", () => {
+  it("offers only real kg plate steps in kg", () => {
+    expect(jumpChoices("kg")).toEqual([0.5, 1, 1.25, 2, 2.5, 5, 10]);
+  });
+  it("offers only real lb plate steps in lb", () => {
+    expect(jumpChoices("lb")).toEqual([1.25, 2.5, 5, 10, 15, 20]);
+  });
+  it("keeps a saved step that is off the ladder (from an old backup) in order, so it can still be selected", () => {
+    expect(jumpChoices("kg", 3)).toEqual([0.5, 1, 1.25, 2, 2.5, 3, 5, 10]);
+    expect(jumpChoices("kg", 2)).toEqual([0.5, 1, 1.25, 2, 2.5, 5, 10]);
+  });
+});
+
+describe("jumpPatch (saving Add each time)", () => {
+  it("writes only the kg step when saved in kg", () => {
+    expect(jumpPatch("kg", 2)).toEqual({ stepKg: 2 });
+  });
+  it("writes only the lb step when saved in lb", () => {
+    expect(jumpPatch("lb", 10)).toEqual({ stepLb: 10 });
+  });
+  it("a curl set to 2 kg in kg steps by 2 kg in kg and keeps lb at its own 5 lb default", () => {
+    const curl = { stepKg: null, stepLb: null, ...jumpPatch("kg", 2) };
+    expect(jumpIn(curl, "kg")).toBe(2);
+    expect(jumpIn(curl, "lb")).toBe(5);
   });
 });

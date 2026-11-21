@@ -3,7 +3,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { View } from "react-native";
 
 import { Button, RoundButton, ScreenHeader } from "@/components";
-import { defaultRule } from "@/engine";
+import { db } from "@/db/client";
+import { defaultRule, type OverloadRule } from "@/engine";
 import { ExerciseBrowser } from "@/library/ExerciseBrowser";
 import { exerciseMeta } from "@/library/exerciseMeta";
 import { useExercises, type LibraryExercise } from "@/library/exerciseQueries";
@@ -13,6 +14,8 @@ import { addRoutineExercise, loadRoutineExercises } from "@/routines/routineQuer
 import { newExerciseSetup, type ExerciseSetup } from "@/routines/routineSetup";
 import { useDefaultRest } from "@/settings";
 import { spacing, useColors } from "@/theme";
+import type { Jumps } from "@/units";
+import { pastExercises } from "@/workout/workoutQueries";
 
 export default function AddExercisesScreen() {
   const colors = useColors();
@@ -31,15 +34,17 @@ export default function AddExercisesScreen() {
   }, [routineId]);
 
   const rule = useMemo(() => defaultRule(picked?.loadType ?? "weighted"), [picked]);
+  // Finished workouts of this exercise in this routine (one removed and added back), for the rule panel's preview.
+  const past = useMemo(() => (picked ? pastExercises(db, routineId, picked.id) : []), [picked, routineId]);
 
-  function onSubmit(setup: ExerciseSetup) {
+  function onSubmit(setup: ExerciseSetup, jumps: Partial<Jumps>, saved?: OverloadRule) {
     // The ref blocks a second tap before state has re-rendered.
     if (!picked || addingRef.current) return;
     addingRef.current = true;
     setAdding(true);
     try {
       // False means the exercise was already in the routine; it is marked added either way.
-      addRoutineExercise(routineId, picked.id, picked.loadType, setup);
+      addRoutineExercise(routineId, picked.id, picked.loadType, setup, jumps, saved ?? rule);
       setAddedIds((prev) => new Set(prev).add(picked.id));
       setOpen(false);
     } finally {
@@ -78,6 +83,8 @@ export default function AddExercisesScreen() {
         subtitle={picked ? exerciseMeta(picked) : ""}
         initial={newExerciseSetup(defaultRestS)}
         rule={rule}
+        loadType={picked?.loadType ?? "weighted"}
+        past={past}
         primaryLabel="Add to routine"
         busy={adding}
         onSubmit={onSubmit}

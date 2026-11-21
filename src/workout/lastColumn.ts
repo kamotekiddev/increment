@@ -24,7 +24,7 @@ export function lastColumn(last: PastExercise | null, rowCount: number): (LastSe
 
 /**
  * One cell of the Last column: "60 × 8" in the unit on screen, or "–". A set saved in that unit shows exactly; one
- * saved in the other unit is a weight to load, so it is converted and rounded to the Jump (`jumpKg`): 100 kg is
+ * saved in the other unit is a weight to load, so it is converted and rounded down to the Jump (`jumpKg`): 100 kg is
  * "220 × 8" with a 5 lb Jump. A bodyweight exercise has no weight, so it shows reps only, even for a set logged
  * with added weight before the split.
  */

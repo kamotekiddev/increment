@@ -1,4 +1,4 @@
-import { nearestMultiple, sameWeight } from "./rounding";
+import { sameWeight, snapDown } from "./rounding";
 import type { HistorySession, LoggedSet, NextTargetInput, Outcome, Planned } from "./types";
 
 /** The lifter's current unit and its Jump: what a Target set in the other unit was shown as. */
@@ -7,12 +7,13 @@ export type JudgeIn = Pick<NextTargetInput, "unit" | "jumpKg">;
 /**
  * The weight a set must reach. A set logged in the Target's unit is judged against the Target as stored. A set
  * logged in the current unit after a mid-workout switch was lifted against the Target as shown on that unit's
- * grid, so it is judged against that: a 100 kg Target lifted as the 220 lb shown (99.79 kg) meets it.
+ * grid (rounded down to the Jump), so it is judged against that: a 62.5 kg Target lifted as the 135 lb shown
+ * (61.23 kg) meets it.
  */
 function barKg(set: LoggedSet, session: HistorySession, judgeIn: JudgeIn | undefined): number {
   const targetKg = session.target!.weightKg;
   const shownInOtherUnit = judgeIn && set.unit && set.unit === judgeIn.unit && set.unit !== (session.targetUnit ?? "kg");
-  return shownInOtherUnit ? nearestMultiple(targetKg, judgeIn.jumpKg) : targetKg;
+  return shownInOtherUnit ? snapDown(targetKg, judgeIn.jumpKg) : targetKg;
 }
 
 /**

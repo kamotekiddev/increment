@@ -68,3 +68,65 @@ describe("migration 0009: sets store the weight as typed", () => {
     expect(sqlite.prepare("SELECT target_weight_kg AS kg FROM workout_exercises WHERE id = 1").get()).toEqual({ kg: 140 * KG_PER_LB });
   });
 });
+
+/** Migration 0010: a step per routine exercise (kg and lb), and the per-equipment Jumps dropped without copying. */
+describe("migration 0010: a step per routine exercise", () => {
+  const rule = {
+    v: 1,
+    step: "both",
+    repStep: 2,
+    sessionsToEarn: 2,
+    miss: { after: 2, action: { kind: "drop", percent: 10 } },
+    deload: { everyWeeks: 6, percent: 20 },
+  };
+  const curlRule = { v: 1, step: "weight", repStep: 1, sessionsToEarn: 3 };
+
+  function migratedDb() {
+    const { sqlite, migrateTo } = createDbAtMigration(9);
+    // A lifter who changed every Jump, in lb, with the Workout settings off their defaults.
+    sqlite
+      .prepare(
+        `INSERT INTO user_settings (id, unit, jump_barbell_kg, jump_dumbbell_kg, jump_machine_kg, jump_cable_kg, jump_bodyweight_kg,
+          default_rest_s, show_previous_set, keep_screen_awake) VALUES (1, 'lb', 5, 1, 10, 1.25, 0.5, 120, 0, 0)`,
+      )
+      .run();
+    sqlite.prepare("INSERT INTO exercises (id, name, equipment, load_type) VALUES (1, 'Bench press', 'barbell', 'weighted')").run();
+    sqlite.prepare("INSERT INTO exercises (id, name, equipment, load_type) VALUES (2, 'Dumbbell curl', 'dumbbell', 'weighted')").run();
+    sqlite.prepare("INSERT INTO routines (id, name, days, position) VALUES (1, 'Push', 5, 0)").run();
+    const insert = sqlite.prepare(
+      "INSERT INTO routine_exercises (id, routine_id, exercise_id, position, sets, rep_min, rep_max, rest_s, rule) VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?)",
+    );
+    insert.run(1, 1, 0, 3, 8, 10, 120, JSON.stringify(rule));
+    insert.run(2, 2, 1, 4, 10, 12, 60, JSON.stringify(curlRule));
+    migrateTo(10);
+    return sqlite;
+  }
+
+  it("keeps every routine exercise and its rule as it was", () => {
+    const sqlite = migratedDb();
+    const rows = sqlite
+      .prepare("SELECT id, routine_id, exercise_id, position, sets, rep_min, rep_max, rest_s, rule FROM routine_exercises ORDER BY id")
+      .all();
+    expect(rows).toEqual([
+      { id: 1, routine_id: 1, exercise_id: 1, position: 0, sets: 3, rep_min: 8, rep_max: 10, rest_s: 120, rule: JSON.stringify(rule) },
+      { id: 2, routine_id: 1, exercise_id: 2, position: 1, sets: 4, rep_min: 10, rep_max: 12, rest_s: 60, rule: JSON.stringify(curlRule) },
+    ]);
+  });
+
+  it("leaves both steps empty on every routine exercise, so each starts at 2.5 kg / 5 lb", () => {
+    const sqlite = migratedDb();
+    expect(sqlite.prepare("SELECT id, step_kg, step_lb FROM routine_exercises ORDER BY id").all()).toEqual([
+      { id: 1, step_kg: null, step_lb: null },
+      { id: 2, step_kg: null, step_lb: null },
+    ]);
+  });
+
+  it("drops the Jump columns from the settings row and keeps the rest of it", () => {
+    const sqlite = migratedDb();
+    const columns = (sqlite.prepare("PRAGMA table_info(user_settings)").all() as { name: string }[]).map((c) => c.name);
+    expect(columns.filter((c) => c.startsWith("jump_"))).toEqual([]);
+    expect(sqlite.prepare("SELECT * FROM user_settings").all()).toEqual([
+      { id: 1, unit: "lb", default_rest_s: 120, show_previous_set: 0, keep_screen_awake: 0 },
+    ]);
+  });
+});

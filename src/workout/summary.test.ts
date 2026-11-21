@@ -211,15 +211,15 @@ describe("buildSummary in lb", () => {
     expect(summary.header.volumeKg).toBe(1800);
   });
 
-  it("offers one Jump above the snapped Target when the Target was set in kg: Stay 140 lb, Go up 145 lb", () => {
+  it("offers one Jump above the rounded-down Target when the Target was set in kg: Stay 135 lb, Go up 140 lb", () => {
     const LB = 0.45359237;
     const t = { weightKg: 62.5, reps: 10 };
     const history = ["2026-11-17", "2026-11-10", "2026-11-03"].map((d) => session(d, t, [10, 10, 10], { unit: "kg" }));
     const summary = build([exercise(history, {}, { jumpKg: 5 * LB })], 45, "lb");
     const inLb = (kg: number) => Number((kg / LB).toFixed(2));
-    expect(inLb(summary.cards[0].next!.weightKg)).toBe(140);
+    expect(inLb(summary.cards[0].next!.weightKg)).toBe(135);
     const offer = summary.offers[0];
-    expect([inLb(offer.current.weightKg), inLb(offer.stepped.weightKg)]).toEqual([140, 145]);
+    expect([inLb(offer.current.weightKg), inLb(offer.stepped.weightKg)]).toEqual([135, 140]);
   });
 });
 

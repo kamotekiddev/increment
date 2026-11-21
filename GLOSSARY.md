@@ -13,7 +13,7 @@ The per-exercise setting that decides how a Target changes once progression is E
 _Avoid_: Plan, algorithm, progression type
 
 **Jump**:
-The smallest amount of weight added in one step of progression. It is set per equipment (for example barbell or dumbbell). In the other unit it shows as the nearest real step.
+The smallest amount of weight added in one step of progression ("Add each time"). It is set per Routine exercise, one in kg and one in lb, and is 2.5 kg / 5 lb until the lifter sets it. Progression uses the one for the lifter's current Unit; switching Unit never changes either. Stored as the routine exercise's `step_kg` and `step_lb`.
 _Avoid_: Increment (the app's name), step size, plate
 
 **Rep range**:
@@ -29,7 +29,7 @@ The number of consecutive workouts in which the lifter hit the Target for an exe
 _Avoid_: Run, chain
 
 **Earned**:
-The state in which a Streak has reached the number of sessions the lifter set, so the app can propose a higher Target. The lifter still chooses whether to accept it.
+The state in which a Streak has reached 3 Clean workouts (fixed), so the app can propose a higher Target. The lifter still chooses whether to accept it.
 _Avoid_: Unlocked, due, ready
 
 **Record**:
@@ -49,7 +49,7 @@ The question the app asks after a workout once progression is Earned: move up to
 _Avoid_: Proposal, suggestion, level up
 
 **Rep step**:
-The number of reps added to the Target in one Step (1 to 3).
+The number of reps added to the Target in one Step (fixed at 1).
 _Avoid_: Rep increment
 
 **Clean**:
@@ -81,7 +81,7 @@ A named workout the lifter repeats, with an ordered list of exercises and the da
 _Avoid_: Plan, program, split, template
 
 **Routine exercise**:
-One exercise within a Routine, holding its planned sets, Rep range, rest length and Overload rule. A Streak and a Target belong to a Routine exercise, so the same exercise in two Routines progresses separately.
+One exercise within a Routine, holding its planned sets, Rep range, rest length, Overload rule and Jump. A Streak and a Target belong to a Routine exercise, so the same exercise in two Routines progresses separately.
 _Avoid_: Slot, entry
 
 **Default rest**:
