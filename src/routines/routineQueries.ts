@@ -3,8 +3,12 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 
 import { db } from "@/db/client";
-import { defaultRule, type OverloadRule } from "@/engine";
+import { defaultRule, type LoadType, type OverloadRule } from "@/engine";
+import type { Steps } from "@/units";
 import { exercises, routineExercises, routines, workouts } from "@/db/schema";
+
+import type { PastExercise } from "@/workout/historyInputs";
+import { pastExercises } from "@/workout/workoutQueries";
 
 import type { ExerciseSetup } from "./routineSetup";
 
@@ -122,7 +126,11 @@ export interface RoutineExerciseItem extends ExerciseSetup {
   muscles: string[];
   equipment: string;
   position: number;
+  loadType: LoadType;
   rule: OverloadRule;
+  /** "Add each time", one per unit, each in its own unit; null until the lifter sets it (2.5 kg / 5 lb). */
+  stepKg: number | null;
+  stepLb: number | null;
 }
 
 /** A routine's exercises in order, with names. */
@@ -139,7 +147,10 @@ export async function loadRoutineExercises(routineId: number): Promise<RoutineEx
       repMin: routineExercises.repMin,
       repMax: routineExercises.repMax,
       restS: routineExercises.restS,
+      loadType: exercises.loadType,
       rule: routineExercises.rule,
+      stepKg: routineExercises.stepKg,
+      stepLb: routineExercises.stepLb,
     })
     .from(routineExercises)
     .innerJoin(exercises, eq(exercises.id, routineExercises.exerciseId))
@@ -168,13 +179,15 @@ export function useRoutineExercises(routineId: number, version = 0): RoutineExer
 /**
  * Adds an exercise at the end of a routine with the default rule for its load type. One row per
  * exercise per routine (a unique index enforces it): returns false and changes nothing when it is
- * already there. Position and insert run in one synchronous transaction.
+ * already there. Position and insert run in one synchronous transaction. `steps` holds only the step the lifter
+ * saved in the Overload rule panel (`stepPatch`); a step never set stays null.
  */
 export function addRoutineExercise(
   routineId: number,
   exerciseId: number,
   loadType: typeof exercises.$inferSelect.loadType,
   setup: ExerciseSetup,
+  steps: Partial<Steps> = {},
 ): boolean {
   return db.transaction((tx) => {
     const [{ n }] = tx
@@ -184,7 +197,7 @@ export function addRoutineExercise(
       .all();
     const inserted = tx
       .insert(routineExercises)
-      .values({ routineId, exerciseId, position: n, ...setup, rule: defaultRule(loadType) })
+      .values({ routineId, exerciseId, position: n, ...setup, ...steps, rule: defaultRule(loadType) })
       .onConflictDoNothing()
       .returning({ id: routineExercises.id })
       .all();
@@ -192,9 +205,21 @@ export function addRoutineExercise(
   });
 }
 
-/** Saves new sets, rep range and rest on this routine exercise row only. */
-export async function updateRoutineExercise(routineExerciseId: number, setup: ExerciseSetup): Promise<void> {
-  await db.update(routineExercises).set(setup).where(eq(routineExercises.id, routineExerciseId));
+/**
+ * Saves new sets, rep range and rest on this routine exercise row only, and the step saved in the Overload rule
+ * panel (`stepPatch`: only that unit's column, so the other unit's step is untouched).
+ */
+export async function updateRoutineExercise(
+  routineExerciseId: number,
+  setup: ExerciseSetup,
+  steps: Partial<Steps> = {},
+): Promise<void> {
+  await db.update(routineExercises).set({ ...setup, ...steps }).where(eq(routineExercises.id, routineExerciseId));
+}
+
+/** This routine exercise's finished workouts, newest first: the history Start reads, for the rule panel's preview. */
+export function loadPastExercises(routineId: number, exerciseId: number): PastExercise[] {
+  return pastExercises(db, routineId, exerciseId);
 }
 
 /**

@@ -39,10 +39,10 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Edit routine | Start workout, name, days, exercise rows; Reorder; ⋯ → Delete confirmation (no menu step) |
 | Edit routine (locked) | While its workout is in progress: edit and delete disabled, Resume workout shown |
 | Routines tab, workout in progress | An "in progress" bar above the tab bar (on every tab) reopens the workout |
-| Exercise setup | Sheet: sets, reps, rest, rule (read-only until Pro); used to add and to edit; Remove from routine |
+| Exercise setup | Sheet: sets, reps, rest and a Progression row describing the rule (no Pro badge); tapping it opens the Overload rule panel in the same sheet. Used to add and to edit; the primary button (Add to routine / Save) saves the setup with any step saved in the panel; Remove from routine |
 | Reorder routine | ▲ ▼ per row; Done saves, Cancel discards |
 | Remove exercise | Confirmation |
-| Overload rule panel (Pro) | Custom rule with a live preview |
+| Overload rule panel | Free for everyone. "Add each time" offers the current unit's plate steps (kg 0.5, 1, 1.25, 2, 2.5, 5, 10; lb 1.25, 2.5, 5, 10, 15, 20) with the saved step, or 2.5 kg / 5 lb, selected (hidden for bodyweight exercises). A live preview from the engine: "Next session: 62.5 kg × 6–8. Hit 8 on every set and it becomes 65 kg." (with "3 workouts in a row" when the rule needs more than one clean workout), or with no past workout "Your first session sets the starting weight. Each step adds 2 kg.". Save rule keeps that unit's step only (the other unit's is untouched) and returns to the setup; Close returns without it. Targets use the new step from the next Start. Rule type, misses and Deload weeks come next |
 | 2 free routines used | Limit pop-up (no upgrade button in Phase 1; links to the Paywall from Phase 3) |
 | Delete routine | Confirmation |
 

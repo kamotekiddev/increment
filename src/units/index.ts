@@ -88,6 +88,33 @@ export function stepIn(steps: Steps | null, unit: Unit): number {
   return saved ?? DEFAULT_STEP[unit];
 }
 
+/**
+ * The steps "Add each time" offers, one ladder per unit, in that unit: only steps real plates make.
+ * kg 0.5, 1, 1.25, 2, 2.5, 5, 10 and lb 1.25, 2.5, 5, 10, 15, 20.
+ */
+export const STEP_LADDER: Record<Unit, readonly number[]> = {
+  kg: [0.5, 1, 1.25, 2, 2.5, 5, 10],
+  lb: [1.25, 2.5, 5, 10, 15, 20],
+};
+
+/**
+ * The choices "Add each time" shows in `unit`: that unit's ladder, plus `selected` in order when it is off the
+ * ladder (a step restored from an old backup), so the saved step can always be shown as selected.
+ */
+export function stepChoices(unit: Unit, selected?: number): number[] {
+  const ladder = [...STEP_LADDER[unit]];
+  if (selected === undefined || ladder.includes(selected)) return ladder;
+  return [...ladder, selected].sort((a, b) => a - b);
+}
+
+/**
+ * The columns "Add each time" saves for a step chosen in `unit`: only that unit's step, so saving in kg never
+ * touches the lb step (and the other way round).
+ */
+export function stepPatch(unit: Unit, step: number): Partial<Steps> {
+  return unit === "kg" ? { stepKg: step } : { stepLb: step };
+}
+
 /** `stepIn` as kg: the Jump the engine and the rounding take (`jumpKg`). 5 lb is 2.26796185 kg. */
 export function stepKgFor(steps: Steps | null, unit: Unit): number {
   return toKg(stepIn(steps, unit), unit);

@@ -10,8 +10,10 @@ import {
   loggedWeightText,
   loggedWeightWithUnit,
   roundDownToLoadable,
+  stepChoices,
   stepIn,
   stepKgFor,
+  stepPatch,
   toKg,
   weightKg,
 } from "./index";
@@ -184,5 +186,32 @@ describe("weightKg", () => {
     const heavier = [{ value: 100, unit: "kg" as const }, { value: 225, unit: "lb" as const }].reduce((a, b) => (weightKg(b) > weightKg(a) ? b : a));
     expect(heavier).toEqual({ value: 225, unit: "lb" });
     expect(weightKg(heavier)).toBeCloseTo(102.06, 2);
+  });
+});
+
+describe("stepChoices (Add each time)", () => {
+  it("offers only real kg plate steps in kg", () => {
+    expect(stepChoices("kg")).toEqual([0.5, 1, 1.25, 2, 2.5, 5, 10]);
+  });
+  it("offers only real lb plate steps in lb", () => {
+    expect(stepChoices("lb")).toEqual([1.25, 2.5, 5, 10, 15, 20]);
+  });
+  it("keeps a saved step that is off the ladder (from an old backup) in order, so it can still be selected", () => {
+    expect(stepChoices("kg", 3)).toEqual([0.5, 1, 1.25, 2, 2.5, 3, 5, 10]);
+    expect(stepChoices("kg", 2)).toEqual([0.5, 1, 1.25, 2, 2.5, 5, 10]);
+  });
+});
+
+describe("stepPatch (saving Add each time)", () => {
+  it("writes only the kg step when saved in kg", () => {
+    expect(stepPatch("kg", 2)).toEqual({ stepKg: 2 });
+  });
+  it("writes only the lb step when saved in lb", () => {
+    expect(stepPatch("lb", 10)).toEqual({ stepLb: 10 });
+  });
+  it("a curl set to 2 kg in kg steps by 2 kg in kg and keeps lb at its own 5 lb default", () => {
+    const curl = { stepKg: null, stepLb: null, ...stepPatch("kg", 2) };
+    expect(stepIn(curl, "kg")).toBe(2);
+    expect(stepIn(curl, "lb")).toBe(5);
   });
 });

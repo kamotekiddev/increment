@@ -9,10 +9,11 @@ import { exerciseMeta } from "@/library/exerciseMeta";
 import { useExercises, type LibraryExercise } from "@/library/exerciseQueries";
 import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { ExerciseSetupSheet } from "@/routines/ExerciseSetupSheet";
-import { addRoutineExercise, loadRoutineExercises } from "@/routines/routineQueries";
+import { addRoutineExercise, loadPastExercises, loadRoutineExercises } from "@/routines/routineQueries";
 import { newExerciseSetup, type ExerciseSetup } from "@/routines/routineSetup";
 import { useDefaultRest } from "@/settings";
 import { spacing, useColors } from "@/theme";
+import type { Steps } from "@/units";
 
 export default function AddExercisesScreen() {
   const colors = useColors();
@@ -31,15 +32,17 @@ export default function AddExercisesScreen() {
   }, [routineId]);
 
   const rule = useMemo(() => defaultRule(picked?.loadType ?? "weighted"), [picked]);
+  // Finished workouts of this exercise in this routine (one removed and added back), for the rule panel's preview.
+  const past = useMemo(() => (picked ? loadPastExercises(routineId, picked.id) : []), [picked, routineId]);
 
-  function onSubmit(setup: ExerciseSetup) {
+  function onSubmit(setup: ExerciseSetup, steps: Partial<Steps>) {
     // The ref blocks a second tap before state has re-rendered.
     if (!picked || addingRef.current) return;
     addingRef.current = true;
     setAdding(true);
     try {
       // False means the exercise was already in the routine; it is marked added either way.
-      addRoutineExercise(routineId, picked.id, picked.loadType, setup);
+      addRoutineExercise(routineId, picked.id, picked.loadType, setup, steps);
       setAddedIds((prev) => new Set(prev).add(picked.id));
       setOpen(false);
     } finally {
@@ -78,6 +81,8 @@ export default function AddExercisesScreen() {
         subtitle={picked ? exerciseMeta(picked) : ""}
         initial={newExerciseSetup(defaultRestS)}
         rule={rule}
+        loadType={picked?.loadType ?? "weighted"}
+        past={past}
         primaryLabel="Add to routine"
         busy={adding}
         onSubmit={onSubmit}

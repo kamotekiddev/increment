@@ -1,16 +1,22 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Pressable, View } from "react-native";
 
-import { BottomSheet, Button, Pill, RoundButton, Text } from "@/components";
-import type { OverloadRule } from "@/engine";
-import { fontSize, minTouch, radius, spacing, useColors } from "@/theme";
+import { BottomSheet, RoundButton, Button, Text } from "@/components";
+import type { LoadType, OverloadRule } from "@/engine";
+import { useUnit } from "@/settings";
+import { fontSize, minTouch, opacity, radius, useColors, spacing } from "@/theme";
+import { stepIn, stepPatch, type Steps } from "@/units";
+import { toHistory, type PastExercise } from "@/workout/historyInputs";
 
 import { adjustSetup, canAdjust, type SetupField } from "./adjustSetup";
 import { describeRule } from "./describeRule";
+import { RulePanel } from "./RulePanel";
 import type { ExerciseSetup } from "./routineSetup";
 import { SetupStepper } from "./SetupStepper";
 import { restLabel } from "./setupText";
+
+const NO_STEPS: Steps = { stepKg: null, stepLb: null };
 
 export interface ExerciseSetupSheetProps {
   visible: boolean;
@@ -20,25 +26,41 @@ export interface ExerciseSetupSheetProps {
   subtitle: string;
   /** The steppers start here each time the sheet opens. */
   initial: ExerciseSetup;
-  /** Shown read-only with a Pro badge; there is no way to change it before Pro. */
+  /** Described on the Progression row and used by the rule panel's preview. */
   rule: OverloadRule;
+  loadType: LoadType;
+  /** The routine exercise's saved steps ("Add each time"); none when adding. */
+  steps?: Steps;
+  /** This routine exercise's finished workouts, newest first (`loadPastExercises`), for the rule panel's preview. */
+  past?: PastExercise[];
   /** The primary button, for example "Add to routine" or "Save". */
   primaryLabel: string;
   /** Disables the primary button while a save is in flight. */
   busy?: boolean;
-  onSubmit: (setup: ExerciseSetup) => void;
+  /**
+   * The setup, and the step saved in the rule panel as only that unit's column (`stepPatch`); empty when the
+   * lifter did not save a step, so an unset step stays null.
+   */
+  onSubmit: (setup: ExerciseSetup, steps: Partial<Steps>) => void;
   onDismiss: () => void;
   /** Editing only: shows a red Remove from routine action that calls this. */
   onRemove?: () => void;
 }
 
-/** Sets, reps (min and max) and rest steppers, the read-only progression rule and one primary button. */
+/**
+ * Sets, reps (min and max) and rest steppers, the Progression row and one primary button. Tapping Progression
+ * swaps the sheet's content for the Overload rule panel; Save rule there stages the step, and the primary button
+ * saves it with the rest.
+ */
 export function ExerciseSetupSheet({
   visible,
   exerciseName,
   subtitle,
   initial,
   rule,
+  loadType,
+  steps = NO_STEPS,
+  past,
   primaryLabel,
   busy = false,
   onSubmit,
@@ -46,14 +68,23 @@ export function ExerciseSetupSheet({
   onRemove,
 }: ExerciseSetupSheetProps) {
   const colors = useColors();
+  const { unit } = useUnit();
   const [setup, setSetup] = useState<ExerciseSetup>(initial);
+  const [editingRule, setEditingRule] = useState(false);
+  const [stepChange, setStepChange] = useState<Partial<Steps>>({});
 
   // Start from the given values every time the sheet opens (reset during render, not in an effect).
   const [wasVisible, setWasVisible] = useState(visible);
   if (visible !== wasVisible) {
     setWasVisible(visible);
-    if (visible) setSetup(initial);
+    if (visible) {
+      setSetup(initial);
+      setEditingRule(false);
+      setStepChange({});
+    }
   }
+
+  const history = useMemo(() => toHistory(past ?? [], setup.sets), [past, setup.sets]);
 
   const stepper = (field: SetupField, label: string, valueText: string) => (
     <SetupStepper
@@ -65,6 +96,27 @@ export function ExerciseSetupSheet({
       onIncrease={() => setSetup((s) => adjustSetup(s, field, 1))}
     />
   );
+
+  if (editingRule) {
+    return (
+      <BottomSheet visible={visible} onDismiss={onDismiss}>
+        <RulePanel
+          exerciseName={exerciseName}
+          rule={rule}
+          planned={setup}
+          loadType={loadType}
+          history={history}
+          unit={unit}
+          initialStep={stepIn({ ...steps, ...stepChange }, unit)}
+          onSave={(step) => {
+            setStepChange((change) => ({ ...change, ...stepPatch(unit, step) }));
+            setEditingRule(false);
+          }}
+          onClose={() => setEditingRule(false)}
+        />
+      </BottomSheet>
+    );
+  }
 
   return (
     <BottomSheet visible={visible} onDismiss={onDismiss}>
@@ -89,17 +141,23 @@ export function ExerciseSetupSheet({
           {stepper("repMax", "Reps max", String(setup.repMax))}
         </View>
       </View>
-      <View
-        style={{
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`Progression: ${describeRule(rule)}`}
+        accessibilityHint="Opens the overload rule"
+        onPress={() => setEditingRule(true)}
+        style={({ pressed }) => ({
           flexDirection: "row",
           alignItems: "center",
           gap: 10,
+          minHeight: minTouch,
           paddingVertical: spacing.md,
           paddingHorizontal: 14,
           borderRadius: radius.inset,
           borderWidth: 1,
           borderColor: colors.line,
-        }}
+          opacity: pressed ? opacity.pressed : 1,
+        })}
       >
         <View
           style={{
@@ -111,7 +169,7 @@ export function ExerciseSetupSheet({
             backgroundColor: colors.sunk,
           }}
         >
-          <Ionicons name="lock-closed-outline" size={15} color={colors.inkMuted} />
+          <Ionicons name="trending-up" size={15} color={colors.inkMuted} />
         </View>
         <View style={{ flex: 1 }}>
           <Text variant="caption" tone="muted">
@@ -121,12 +179,9 @@ export function ExerciseSetupSheet({
             {describeRule(rule)}
           </Text>
         </View>
-        <Pill label="Pro" tone="solid" />
-      </View>
-      <Text variant="caption" tone="muted" style={{ fontSize: fontSize.caption, paddingHorizontal: 2 }}>
-        Set your own rule with Pro.
-      </Text>
-      <Button label={primaryLabel} large disabled={busy} onPress={() => onSubmit(setup)} />
+        <Ionicons name="chevron-forward" size={18} color={colors.iconFaint} />
+      </Pressable>
+      <Button label={primaryLabel} large disabled={busy} onPress={() => onSubmit(setup, stepChange)} />
       {onRemove ? (
         <Pressable
           accessibilityRole="button"
