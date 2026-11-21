@@ -4,7 +4,7 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** built
 
 - [ ] Each rule type maps to the engine's existing rule (step weight, both, or reps) and saves with the rule's version number
 - [ ] The miss rule and Deload weeks save and load; off by default as today
