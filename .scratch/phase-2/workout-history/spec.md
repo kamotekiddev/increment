@@ -10,9 +10,9 @@ Once a lifter taps Finish and leaves the Workout summary, the workout is gone fr
 
 ## Solution
 
-A **History** pill in the Progress tab header opens **History**: every finished Workout, newest first, across all Routines, under month headers. Each row shows the date, the Routine, the number of exercises and the duration (`Thu, 12 Nov · Push day A`, `5 exercises · 48 min`). Tapping a row opens **Past workout**: the Routine name, date and duration, then one card per exercise with its name, the Target it had, a grey Deload pill when it was one, and the done Working sets as chips in the lifter's Unit. Both screens are read-only, free for everyone, and store nothing.
+A **History** pill in the Progress tab header opens **History**: every finished Workout, newest first, across all Routines, under month headers. Each row shows the date, the Routine, the number of exercises and the duration (`Thu, 12 Nov · Push day A`, `5 exercises · 48 min`). Tapping a row opens **Past workout**: the Routine name, date and duration, then the exercises as rows with dividers inside one white card, each with its name, the Target it had, a grey Deload pill at the right end of the name row when it was one, and the done Working sets as chips in the lifter's Unit. Both screens are read-only, free for everyone, and store nothing.
 
-The screens are drawn on the design canvas (`Progress.dc.html` for the pill, `WorkoutHistory.dc.html`, `WorkoutHistoryEmpty.dc.html`, `PastWorkout.dc.html`). The build differs from `Progress.dc.html`: only the title row and the History pill are built, with no "Last 8" dropdown and none of the body (that is feature 6).
+The screens are drawn on the design canvas (`Progress.dc.html` for the pill, `WorkoutHistory.dc.html`, `WorkoutHistoryEmpty.dc.html`, `PastWorkout.dc.html`). The build differs from `Progress.dc.html`: only the title row and the History pill are built, with no "Last 8" dropdown and none of the body (that is feature 6). `PastWorkout.dc.html` draws no Deload pill; the build puts it at the right end of the exercise's name row.
 
 ## User Stories
 
@@ -37,9 +37,9 @@ The screens are drawn on the design canvas (`Progress.dc.html` for the pill, `Wo
 19. As a lifter, I want to tap a row to open that Workout, so that I can see what I did.
 20. As a lifter, I want Back on History to return to Progress, and Back on Past workout to return to History, so that navigation is predictable.
 21. As a lifter, I want Past workout's header to show the Routine name, with the date and duration under it (`Thu, 12 Nov · 48 min`), so that I know which session I'm reading.
-22. As a lifter, I want one card per exercise in the order they had in that workout, so that it reads like the session I did.
-23. As a lifter, I want each card to show the exercise name, so that I know what it was.
-24. As a lifter, I want each card to show the Target that workout had (`Target 62.5 × 8`), so that I can compare what was asked with what I did.
+22. As a lifter, I want one row per exercise, in one white card with dividers, in the order they had in that workout, so that it reads like the session I did.
+23. As a lifter, I want each exercise row to show the exercise name, so that I know what it was.
+24. As a lifter, I want each exercise row to show the Target that workout had (`Target 62.5 × 8`), so that I can compare what was asked with what I did.
 25. As a lifter on a bodyweight exercise, I want the Target in reps (`Target 10 reps`), so that it matches how the exercise progresses.
 26. As a lifter, I want no Target text on an exercise's first workout, so that the app does not show a Target that never existed.
 27. As a lifter, I want a grey "Deload" pill on an exercise done as a Deload, so that a lighter session does not look like a regression.
@@ -60,20 +60,21 @@ The screens are drawn on the design canvas (`Progress.dc.html` for the pill, `Wo
 
 - **One history read module, two functions, finished display text out.** It lives outside the routes folder, beside the other feature modules, and is the only place that reads the database for these screens.
   - *Workout history* (unit) → month sections, newest first, each with a title (`November 2026`) and rows. A row has the Workout id, the date label (`Thu, 12 Nov`), the Routine label, and the detail line (`5 exercises · 48 min`).
-  - *Past workout* (id, unit) → a header (Routine label, `Thu, 12 Nov · 48 min`) and exercise cards. Each card has the exercise name, the Target text or none, whether it is a Deload, and the chip texts in order. Returns nothing for an unknown id or a Workout in progress.
+  - *Past workout* (id, unit) → a header (Routine label, `Thu, 12 Nov · 48 min`) and exercise cards (one per Workout exercise; the screen draws each as a row). Each card has the exercise name, the Target text or none, whether it is a Deload, and the chip texts in order. Returns nothing for an unknown id or a Workout in progress.
   - Screens only render what these return; any internal helpers stay private to the module.
 - **Which Workouts:** finished ones only (`in_progress` false). Ordered by start time, newest first, so two on one day keep their order. No limit, no paging.
 - **Month and date:** from the Workout's stored local `date` (the day it was started), split by hand rather than parsed as UTC; the weekday comes from a local date built from those parts. Month and weekday names come from fixed English arrays. The year is on the month header only, never on the row.
 - **Routine label:** the Routine's current name, read by join on the Routine id. A Workout with no Routine reads `Workout`. (Deleting a Routine deletes its Workouts, ADR 0002, so a missing Routine only means a Workout saved with none.)
 - **Exercise count:** the Workout exercises kept on the Workout. Finish already removes skipped exercises, so no extra filter. `1 exercise` / `N exercises`.
 - **Duration:** finish time minus start time, floored to whole minutes, the same rule as the Workout summary, with no cap. Formatted `48 min` under an hour, `1 h` on an exact hour, `1 h 12 min` above it; `0 min` for under a minute.
-- **Exercise cards:** in the Workout exercise's position order.
+- **Exercise cards:** in the Workout exercise's position order, drawn as rows on Past workout.
 - **Target text:** from the Workout exercise's stored Target. A bodyweight exercise (by Load type) reads `Target 10 reps`. A weighted one reads `Target <weight> × <reps>`, the weight converted to the current Unit with the existing display conversion (rounded to 0.01, trailing zeros dropped), never snapped to the Jump grid. No Target stored reads as none.
 - **Deload pill:** shown when the Workout exercise is flagged as a Deload; the neutral pill.
 - **Chips:** sets of the Workout exercise that are done and not warm-ups, in set index order. `<weight> × <reps>` with the same display conversion when the stored weight is above 0, otherwise the existing reps text (`9 reps`). This keeps added weight logged on a bodyweight exercise visible, unlike the Last column (owner decision 2026-11-20).
 - **No Clean / Hold / Miss, no record pills** (records are feature 5).
 - **Routes:** two stack screens outside the tab group, History and Past workout (by Workout id), pushed from the Progress pill and from a History row. Back pops. Both reload on focus and read the Unit from the existing unit hook, so a Workout finished or a unit switched elsewhere shows on return.
 - **History screen:** one sectioned list: the back button and "History" title as header, month titles as section headers, each month's rows in one white card with dividers and a chevron, the empty card ("No workouts yet", "Finish a workout and it shows up here.", the history icon, no button) as the empty component.
+- **Past workout screen:** the back button, the Routine label as title with the date and duration line under it, then one white card holding the exercises as rows with dividers between them (not a card per exercise, as in `PastWorkout.dc.html`). Each row: the name with the Target muted beside it, the neutral Deload pill at the right end of that name row, and the chips wrapping below. An unknown id or a Workout in progress shows an empty screen with Back.
 - **Progress tab:** title row with the white History pill (history icon, "History") on the right, and the muted line "Your records will appear here." below. No "Last 8" dropdown and nothing else until feature 6.
 - **Words:** copy says "workouts", never "sessions".
 - **No schema change, nothing stored** (data rule 2), no new dependency, no ADR, no glossary change ("Workout history" already reads correctly; "Past workout" is a screen name).
