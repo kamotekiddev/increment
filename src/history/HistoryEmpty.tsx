@@ -32,7 +32,7 @@ export function HistoryEmpty() {
       >
         <MaterialCommunityIcons name="history" size={26} color={colors.accent} />
       </View>
-      <Text variant="label" accessibilityRole="header" style={{ marginTop: spacing.xs, fontSize: fontSize.action, lineHeight: 22 }}>
+      <Text variant="label" accessibilityRole="header" style={{ marginTop: spacing.xs, fontSize: fontSize.action, lineHeight: lineHeight.action }}>
         No workouts yet
       </Text>
       <Text tone="muted" style={{ fontSize: fontSize.label, lineHeight: lineHeight.body, textAlign: "center" }}>

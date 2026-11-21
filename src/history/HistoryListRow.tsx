@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View } from "react-native";
 
 import { Text } from "@/components";
-import { fontSize, opacity, radius, spacing, useColors } from "@/theme";
+import { fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
 
 import type { HistoryRow } from "./historyQueries";
 
@@ -36,7 +36,7 @@ export function HistoryListRow({ row, first, last, onPress }: HistoryListRowProp
     >
       <View
         style={{
-          minHeight: 64,
+          minHeight: size.historyRow,
           paddingVertical: 10,
           flexDirection: "row",
           alignItems: "center",
@@ -47,14 +47,14 @@ export function HistoryListRow({ row, first, last, onPress }: HistoryListRowProp
       >
         <View style={{ flex: 1, gap: 2 }}>
           <View style={{ flexDirection: "row", alignItems: "baseline", gap: spacing.sm }}>
-            <Text variant="label" style={{ lineHeight: 20 }}>
+            <Text variant="label" style={{ lineHeight: lineHeight.label }}>
               {row.dateLabel}
             </Text>
             <Text tone="muted" style={{ flexShrink: 1, fontSize: fontSize.caption }} numberOfLines={1}>
               {row.routineLabel}
             </Text>
           </View>
-          <Text tone="muted" style={{ fontSize: fontSize.caption, lineHeight: 17 }}>
+          <Text tone="muted" style={{ fontSize: fontSize.caption, lineHeight: lineHeight.detail }}>
             {row.detail}
           </Text>
         </View>

@@ -6,7 +6,7 @@ import { HistoryEmpty } from "@/history/HistoryEmpty";
 import { HistoryListRow } from "@/history/HistoryListRow";
 import { useWorkoutHistory } from "@/history/useWorkoutHistory";
 import { ScreenHeader } from "@/routines/ScreenHeader";
-import { fontSize, spacing, useColors } from "@/theme";
+import { fontSize, lineHeight, spacing, useColors } from "@/theme";
 
 /** Every finished Workout, newest first, under month titles. Read-only; a row opens Past workout. */
 export default function HistoryScreen() {
@@ -20,7 +20,7 @@ export default function HistoryScreen() {
         stickySectionHeadersEnabled={false}
         contentContainerStyle={{ paddingBottom: spacing.xxl * 2 }}
         ListHeaderComponent={
-          <ScreenHeader left={<RoundButton icon="chevron-back" label="Back" onPress={() => router.back()} />} title="History" />
+          <ScreenHeader left={<RoundButton icon="chevron-back" label="Back to progress" onPress={() => router.back()} />} title="History" />
         }
         ListEmptyComponent={sections === undefined ? undefined : <HistoryEmpty />}
         renderSectionHeader={({ section }) => (
@@ -33,7 +33,7 @@ export default function HistoryScreen() {
               marginBottom: spacing.md,
               marginHorizontal: spacing.xl + spacing.xs,
               fontSize: fontSize.small,
-              lineHeight: 18,
+              lineHeight: lineHeight.subtitle,
             }}
           >
             {section.title}

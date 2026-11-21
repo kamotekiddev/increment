@@ -84,6 +84,8 @@ export const size = {
   stepper: 36,
   /** The least width of a Jump value between − and +, so the row does not shift as the value changes. */
   jumpValue: 62,
+  /** A History row (one finished Workout). */
+  historyRow: 64,
 } as const;
 
 /** Border widths. */
@@ -121,11 +123,23 @@ export const opacity = { pressed: 0.85, disabled: 0.4, onAccentSoft: 0.85 } as c
 
 /** Line heights for text that sets its own size. */
 export const lineHeight = {
+  /** A chip's text at `fontSize.caption` (a Past workout set chip). */
+  caption: 16,
+  /** A detail line at `fontSize.caption` (a History row's `5 exercises · 48 min`). */
+  detail: 17,
+  /** A muted subtitle or section title at `fontSize.small` (a header's subtitle, a History month). */
+  subtitle: 18,
   /** A note or caption at `fontSize.small`. */
   small: 19,
+  /** A row's main line at `fontSize.label` (a History date, a Past workout exercise name). */
+  label: 20,
   /** A paragraph at `fontSize.body`. */
   body: 21,
+  /** An empty state's heading at `fontSize.action`. */
+  action: 22,
   title: 24,
+  /** The large title of an in-page screen header at `fontSize.screen`. */
+  screenHeader: 30,
   screen: 38,
 } as const;
 

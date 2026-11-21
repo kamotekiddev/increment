@@ -58,12 +58,12 @@ const at = (y: number, m: number, d: number, h = 18) => new Date(y, m - 1, d, h)
 
 describe("workoutHistory", () => {
   it("returns no sections when no Workout is finished", () => {
-    expect(workoutHistory("kg")).toEqual([]);
+    expect(workoutHistory()).toEqual([]);
   });
 
   it("shows a finished Workout under its month with date, Routine, exercise count and duration", () => {
     const id = saveWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12), minutes: 48, exercises: 5 });
-    expect(workoutHistory("kg")).toEqual([
+    expect(workoutHistory()).toEqual([
       {
         title: "November 2026",
         data: [{ workoutId: id, dateLabel: "Thu, 12 Nov", routineLabel: "Push day A", detail: "5 exercises · 48 min" }],
@@ -75,7 +75,7 @@ describe("workoutHistory", () => {
     const legs = routine("Legs");
     const done = saveWorkout({ routineId: legs, date: "2026-11-11", startedAt: at(2026, 11, 11) });
     saveWorkout({ routineId: legs, date: "2026-11-12", startedAt: at(2026, 11, 12), inProgress: true });
-    const rows = workoutHistory("kg").flatMap((s) => s.data);
+    const rows = workoutHistory().flatMap((s) => s.data);
     expect(rows.map((r) => r.workoutId)).toEqual([done]);
   });
 
@@ -85,7 +85,7 @@ describe("workoutHistory", () => {
     const morning = saveWorkout({ routineId: legs, date: "2026-11-12", startedAt: at(2026, 11, 12, 7) });
     const older = saveWorkout({ routineId: push, date: "2026-11-09", startedAt: at(2026, 11, 9) });
     const evening = saveWorkout({ routineId: push, date: "2026-11-12", startedAt: at(2026, 11, 12, 19) });
-    const rows = workoutHistory("kg").flatMap((s) => s.data);
+    const rows = workoutHistory().flatMap((s) => s.data);
     expect(rows.map((r) => [r.workoutId, r.dateLabel, r.routineLabel])).toEqual([
       [evening, "Thu, 12 Nov", "Push day A"],
       [morning, "Thu, 12 Nov", "Legs"],
@@ -99,17 +99,29 @@ describe("workoutHistory", () => {
     saveWorkout({ routineId: push, date: "2026-01-02", startedAt: at(2026, 1, 2) });
     saveWorkout({ routineId: push, date: "2026-02-01", startedAt: at(2026, 2, 1) });
     saveWorkout({ routineId: push, date: "2026-01-05", startedAt: at(2026, 1, 5) });
-    expect(workoutHistory("kg").map((s) => [s.title, s.data.map((r) => r.dateLabel)])).toEqual([
+    expect(workoutHistory().map((s) => [s.title, s.data.map((r) => r.dateLabel)])).toEqual([
       ["February 2026", ["Sun, 1 Feb"]],
       ["January 2026", ["Mon, 5 Jan", "Fri, 2 Jan"]],
       ["December 2025", ["Tue, 30 Dec"]],
     ]);
   });
 
+  it("shows each month once even when a Workout's date and start time disagree on the order", () => {
+    // Stored on 31 Oct but stamped on 3 Nov (say, a device clock or time zone change): start-time order is Nov, Oct, Nov.
+    const legs = routine("Legs");
+    saveWorkout({ routineId: legs, date: "2026-11-05", startedAt: at(2026, 11, 5) });
+    saveWorkout({ routineId: legs, date: "2026-10-31", startedAt: at(2026, 11, 3) });
+    saveWorkout({ routineId: legs, date: "2026-11-01", startedAt: at(2026, 11, 1) });
+    expect(workoutHistory().map((s) => [s.title, s.data.map((r) => r.dateLabel)])).toEqual([
+      ["November 2026", ["Thu, 5 Nov", "Sun, 1 Nov"]],
+      ["October 2026", ["Sat, 31 Oct"]],
+    ]);
+  });
+
   it("keeps a Workout that ran past midnight on the day and month it was started", () => {
     // Started 23:30 on 31 Oct, finished 00:40 on 1 Nov.
     saveWorkout({ routineId: routine("Legs"), date: "2026-10-31", startedAt: new Date(2026, 9, 31, 23, 30).getTime(), minutes: 70 });
-    const [section] = workoutHistory("kg");
+    const [section] = workoutHistory();
     expect([section.title, section.data[0].dateLabel]).toEqual(["October 2026", "Sat, 31 Oct"]);
   });
 
@@ -118,14 +130,22 @@ describe("workoutHistory", () => {
     saveWorkout({ routineId: push, date: "2026-11-10", startedAt: at(2026, 11, 10) });
     saveWorkout({ routineId: null, date: "2026-11-11", startedAt: at(2026, 11, 11) });
     db.update(routines).set({ name: "Push day A" }).where(eq(routines.id, push)).run();
-    expect(workoutHistory("kg")[0].data.map((r) => r.routineLabel)).toEqual(["Workout", "Push day A"]);
+    expect(workoutHistory()[0].data.map((r) => r.routineLabel)).toEqual(["Workout", "Push day A"]);
   });
 
   it("counts the Workout exercises: `1 exercise`, `4 exercises`", () => {
     const legs = routine("Legs");
     saveWorkout({ routineId: legs, date: "2026-11-11", startedAt: at(2026, 11, 11), exercises: 1, minutes: 30 });
     saveWorkout({ routineId: legs, date: "2026-11-10", startedAt: at(2026, 11, 10), exercises: 4, minutes: 30 });
-    expect(workoutHistory("kg")[0].data.map((r) => r.detail)).toEqual(["1 exercise · 30 min", "4 exercises · 30 min"]);
+    expect(workoutHistory()[0].data.map((r) => r.detail)).toEqual(["1 exercise · 30 min", "4 exercises · 30 min"]);
+  });
+
+  it("does not count an exercise whose only done sets are warm-ups", () => {
+    logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12), minutes: 48 }, [
+      { name: "Barbell bench press", position: 0, sets: [{ weightKg: 40, reps: 10, warmup: true }, { weightKg: 60, reps: 8 }, { weightKg: 60, reps: 8 }] },
+      { name: "Overhead press", position: 1, sets: [{ weightKg: 20, reps: 10, warmup: true }, { weightKg: 40, reps: 8, done: false }] },
+    ]);
+    expect(workoutHistory()[0].data.map((r) => r.detail)).toEqual(["1 exercise · 48 min"]);
   });
 
   it("shows the duration floored to minutes, in hours past an hour, with no cap", () => {
@@ -138,7 +158,7 @@ describe("workoutHistory", () => {
       [185, "3 h 5 min"],
     ];
     durations.forEach(([minutes], i) => saveWorkout({ routineId: legs, date: "2026-11-01", startedAt: at(2026, 11, 1, 6 - i), minutes, exercises: 2 }));
-    expect(workoutHistory("kg")[0].data.map((r) => r.detail)).toEqual(durations.map(([, text]) => `2 exercises · ${text}`));
+    expect(workoutHistory()[0].data.map((r) => r.detail)).toEqual(durations.map(([, text]) => `2 exercises · ${text}`));
   });
 });
 
@@ -158,13 +178,14 @@ interface LoggedExercise {
   /** Stored Target `[kg, reps]`, or null for none. */
   target?: [number, number] | null;
   deload?: boolean;
+  /** Defaults to one done Working set: Finish keeps only exercises with a set done. */
   sets?: LoggedSet[];
 }
 
 /** A Workout with exercises in the given shape; returns its id. */
 function logWorkout(workout: SavedWorkout, logged: LoggedExercise[]): number {
   const id = saveWorkout({ ...workout, exercises: 0 });
-  for (const { name, loadType = "weighted", position, target = null, deload = false, sets: loggedSets = [] } of logged) {
+  for (const { name, loadType = "weighted", position, target = null, deload = false, sets: loggedSets = [{ weightKg: 60, reps: 8 }] } of logged) {
     const exercise = db.insert(exercises).values({ name, equipment: "barbell", loadType }).returning().get();
     const we = db
       .insert(workoutExercises)
@@ -248,6 +269,14 @@ describe("pastWorkout", () => {
       },
     ]);
     expect(pastWorkout(id, "kg")?.cards[0].chips).toEqual(["62.5 × 8", "60 × 8", "62.5 × 7"]);
+  });
+
+  it("shows no card for an exercise whose only done sets are warm-ups", () => {
+    const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
+      { name: "Barbell bench press", position: 0, target: [60, 8], sets: [{ weightKg: 40, reps: 10, warmup: true }, { weightKg: 60, reps: 8 }] },
+      { name: "Overhead press", position: 1, target: [40, 8], sets: [{ weightKg: 20, reps: 10, warmup: true }, { weightKg: 40, reps: 8, done: false }] },
+    ]);
+    expect(pastWorkout(id, "kg")?.cards.map((c) => [c.name, c.chips])).toEqual([["Barbell bench press", ["60 × 8"]]]);
   });
 
   it("shows a chip in the current Unit, matching a Target it hit", () => {

@@ -1,9 +1,11 @@
-import { and, asc, count, desc, eq } from "drizzle-orm";
+import { and, asc, countDistinct, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { exercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 import { formatWeight, type Unit } from "@/units";
+import { durationMinutes } from "@/workout/durationMinutes";
 import { repsText } from "@/workout/repsText";
+import { routineLabel } from "@/workout/routineLabel";
 
 /** One month of History: its title (`November 2026`) and its rows, newest first. */
 export interface HistorySection {
@@ -42,9 +44,9 @@ function monthTitle(date: string): string {
   return `${MONTHS[month - 1]} ${year}`;
 }
 
-function durationText(startedAt: number, finishedAt: number): string {
-  // The Workout summary's rule: whole minutes, never negative.
-  const minutes = Math.max(0, Math.floor((finishedAt - startedAt) / 60_000));
+/** `48 min`, `1 h`, `1 h 12 min`: the Workout summary's minutes. A finished Workout always has a finish time. */
+function durationText({ startedAt, finishedAt }: { startedAt: number; finishedAt: number | null }): string {
+  const minutes = durationMinutes(startedAt, finishedAt ?? startedAt);
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
@@ -55,11 +57,8 @@ function exerciseCount(n: number): string {
   return `${n} ${n === 1 ? "exercise" : "exercises"}`;
 }
 
-/**
- * Every finished Workout across all Routines, newest first, under month sections, as finished display text.
- * The unit is taken now so the signature matches Past workout; the list itself shows no weights.
- */
-export function workoutHistory(_unit: Unit): HistorySection[] {
+/** Every finished Workout across all Routines, newest first, under month sections, as finished display text. */
+export function workoutHistory(): HistorySection[] {
   const rows = db
     .select({
       id: workouts.id,
@@ -67,32 +66,35 @@ export function workoutHistory(_unit: Unit): HistorySection[] {
       startedAt: workouts.startedAt,
       finishedAt: workouts.finishedAt,
       routineName: routines.name,
-      exercises: count(workoutExercises.id),
+      // Only Workout exercises with a done Working set count; a warm-up-only exercise was not trained.
+      exercises: countDistinct(sets.workoutExerciseId),
     })
     .from(workouts)
     .leftJoin(routines, eq(routines.id, workouts.routineId))
     .leftJoin(workoutExercises, eq(workoutExercises.workoutId, workouts.id))
+    .leftJoin(sets, and(eq(sets.workoutExerciseId, workoutExercises.id), eq(sets.done, true), eq(sets.isWarmup, false)))
     .where(eq(workouts.inProgress, false))
     .groupBy(workouts.id)
     .orderBy(desc(workouts.startedAt), desc(workouts.id))
     .all();
 
-  const sections: HistorySection[] = [];
+  // Keyed by title, so a month shows once even if a row's date and start time disagree on the order.
+  const sections = new Map<string, HistorySection>();
   for (const row of rows) {
     const title = monthTitle(row.date);
-    let section = sections[sections.length - 1];
-    if (section?.title !== title) {
+    let section = sections.get(title);
+    if (!section) {
       section = { title, data: [] };
-      sections.push(section);
+      sections.set(title, section);
     }
     section.data.push({
       workoutId: row.id,
       dateLabel: dateLabel(row.date),
-      routineLabel: row.routineName ?? "Workout",
-      detail: `${exerciseCount(row.exercises)} · ${durationText(row.startedAt, row.finishedAt ?? row.startedAt)}`,
+      routineLabel: routineLabel(row.routineName),
+      detail: `${exerciseCount(row.exercises)} · ${durationText(row)}`,
     });
   }
-  return sections;
+  return [...sections.values()];
 }
 
 /** One finished Workout on Past workout, as display text. */
@@ -101,7 +103,7 @@ export interface PastWorkout {
   routineLabel: string;
   /** `Thu, 12 Nov · 48 min` */
   detail: string;
-  /** One per Workout exercise, in the Workout's order. */
+  /** One per Workout exercise with a done Working set, in the Workout's order. */
   cards: PastExerciseCard[];
 }
 
@@ -167,14 +169,21 @@ export function pastWorkout(id: number, unit: Unit): PastWorkout | null {
   }
 
   return {
-    routineLabel: workout.routineName ?? "Workout",
-    detail: `${dateLabel(workout.date)} · ${durationText(workout.startedAt, workout.finishedAt ?? workout.startedAt)}`,
-    cards: rows.map((row) => ({
-      workoutExerciseId: row.workoutExerciseId,
-      name: row.name,
-      target: targetText(row.loadType, row.targetWeightKg, row.targetReps, unit),
-      deload: row.deload,
-      chips: chips.get(row.workoutExerciseId) ?? [],
-    })),
+    routineLabel: routineLabel(workout.routineName),
+    detail: `${dateLabel(workout.date)} · ${durationText(workout)}`,
+    // Only exercises with a done Working set get a card; a warm-up-only exercise was not trained.
+    cards: rows.flatMap((row) => {
+      const done = chips.get(row.workoutExerciseId);
+      if (!done) return [];
+      return [
+        {
+          workoutExerciseId: row.workoutExerciseId,
+          name: row.name,
+          target: targetText(row.loadType, row.targetWeightKg, row.targetReps, unit),
+          deload: row.deload,
+          chips: done,
+        },
+      ];
+    }),
   };
 }

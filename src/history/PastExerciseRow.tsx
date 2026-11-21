@@ -1,7 +1,7 @@
 import { View } from "react-native";
 
 import { Pill, Text } from "@/components";
-import { fontFamily, fontSize, radius, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, lineHeight, radius, spacing, useColors } from "@/theme";
 
 import type { PastExerciseCard } from "./historyQueries";
 
@@ -25,7 +25,7 @@ export function PastExerciseRow({ card, first }: PastExerciseRowProps) {
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.sm }}>
         <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap", alignItems: "baseline", columnGap: spacing.sm }}>
-          <Text variant="label" style={{ lineHeight: 20 }}>
+          <Text variant="label" style={{ lineHeight: lineHeight.label }}>
             {card.name}
           </Text>
           {card.target !== null && (
@@ -43,7 +43,7 @@ export function PastExerciseRow({ card, first }: PastExerciseRowProps) {
               key={index}
               style={{ paddingVertical: spacing.xs, paddingHorizontal: 10, borderRadius: radius.pill, backgroundColor: colors.sunk }}
             >
-              <Text variant="caption" tone="soft" style={{ fontFamily: fontFamily.medium, lineHeight: 16 }}>
+              <Text variant="caption" tone="soft" style={{ fontFamily: fontFamily.medium, lineHeight: lineHeight.caption }}>
                 {chip}
               </Text>
             </View>
