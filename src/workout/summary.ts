@@ -2,6 +2,7 @@ import { classify, inCurrentUnit, nextTarget, stepUp, withoutAddedWeight } from 
 import type { HistorySession, LoadType, LoggedSet, NextTargetInput, OverloadRule, Outcome, Planned, Target } from "../engine";
 import type { Unit } from "../units";
 import { cardLine } from "./cardLine";
+import { durationMinutes } from "./durationMinutes";
 
 /** One exercise of the finished workout, as plain inputs. */
 export interface SummaryExercise {
@@ -144,7 +145,7 @@ export function buildSummary({ startedAt, finishedAt, exercises, unit }: Summary
   const built = worked.map((ex) => buildCard(withoutPreSplitWeight(ex), unit));
   return {
     header: {
-      durationMinutes: Math.max(0, Math.floor((finishedAt - startedAt) / 60_000)),
+      durationMinutes: durationMinutes(startedAt, finishedAt),
       sets: all.length,
       volumeKg,
       totalReps: all.reduce((sum, s) => sum + s.reps, 0),

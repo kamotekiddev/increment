@@ -3,7 +3,7 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackHandler, Pressable, ScrollView, View } from "react-native";
 
-import { Button, RoundButton, Text } from "@/components";
+import { Button, RoundButton, ScreenHeader, Text } from "@/components";
 import { exerciseMeta } from "@/library/exerciseMeta";
 import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { DayPicker } from "@/routines/DayPicker";
@@ -32,7 +32,6 @@ import {
   useRoutineExercises,
 } from "@/routines/routineQueries";
 import type { ExerciseSetup } from "@/routines/routineSetup";
-import { ScreenHeader } from "@/routines/ScreenHeader";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontFamily, fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
 import { useInProgressOnFocus } from "@/workout/inProgressQueries";

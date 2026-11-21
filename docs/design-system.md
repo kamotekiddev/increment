@@ -38,7 +38,7 @@ Other accent shades explored: `#7C3AED`, `#6D28D9`, `#9333EA`. A dark theme is d
 ## Type
 - **Sora** for everything. Large numbers (weights, reps) use heavy weights with tight tracking.
 
-Line heights that a component sets itself come from `lineHeight` in `src/theme` (`lineHeight.title` = 24, for the title-size header glyph; `lineHeight.body` = 21 for a paragraph at body size; `lineHeight.small` = 19 for a note at small size). Tracking a component sets itself comes from `letterSpacing` (`letterSpacing.value` = -0.3, for a weight shown as a value).
+Line heights that a component sets itself come from `lineHeight` in `src/theme` (`lineHeight.title` = 24, for the title-size header glyph; `lineHeight.body` = 21 for a paragraph at body size; `lineHeight.small` = 19 for a note at small size; `lineHeight.screenHeader` = 30 for the large title of an in-page screen header; `lineHeight.action` = 22 for an empty state's heading; `lineHeight.label` = 20 for a row's main line at label size; `lineHeight.subtitle` = 18 for a muted subtitle or month title at small size; `lineHeight.detail` = 17 for a detail line at caption size; `lineHeight.caption` = 16 for a chip's text). Tracking a component sets itself comes from `letterSpacing` (`letterSpacing.value` = -0.3, for a weight shown as a value).
 
 ## Components
 - **Button**: pill-shaped; the primary uses the accent fill, the secondary is white, `danger` is the red destructive action and `dashed` is the outlined "add" action. `large` stretches it to full width at 56 pt (the main action of a screen).
@@ -50,4 +50,5 @@ Line heights that a component sets itself come from `lineHeight` in `src/theme` 
 - **Bottom sheet**: `bg` colour (not white), with rounded top corners, over a dimmed backdrop. Used for pop-ups, confirmations and pickers. Its React Native content sits in an `RNHostView` (never a `Host`) inside the native sheet.
 - **Routine screens**: in-page headers with round buttons instead of the native header, white cards on `bg`, and the main action fixed at the bottom. Sizes come from `size` in `src/theme`.
 - **Settings rows and the Weight jumps − / +**: sizes come from `size` too (`size.settingsRow`, `size.stepper`, `size.jumpValue`); the 36 pt − / + reach 44 pt with hitSlop.
+- **History rows**: a History row is at least `size.historyRow` (64 pt) tall.
 - Touch targets are at least 44 pt.
