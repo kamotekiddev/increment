@@ -29,7 +29,7 @@ The number of consecutive workouts in which the lifter hit the Target for an exe
 _Avoid_: Run, chain
 
 **Earned**:
-The state in which a Streak has reached the number of sessions the lifter set, so the app can propose a higher Target. The lifter still chooses whether to accept it.
+The state in which a Streak has reached 3 Clean workouts (fixed), so the app can propose a higher Target. The lifter still chooses whether to accept it.
 _Avoid_: Unlocked, due, ready
 
 **Record**:
@@ -49,7 +49,7 @@ The question the app asks after a workout once progression is Earned: move up to
 _Avoid_: Proposal, suggestion, level up
 
 **Rep step**:
-The number of reps added to the Target in one Step (1 to 3).
+The number of reps added to the Target in one Step (fixed at 1).
 _Avoid_: Rep increment
 
 **Clean**:
