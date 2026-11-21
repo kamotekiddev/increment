@@ -188,6 +188,11 @@ describe("pastWorkout", () => {
     expect(pastWorkout(id, "kg")).toMatchObject({ routineLabel: "Push day A", detail: "Thu, 12 Nov · 1 h 12 min" });
   });
 
+  it("heads a Workout with no Routine `Workout`", () => {
+    const id = logWorkout({ routineId: null, date: "2026-11-09", startedAt: at(2026, 11, 9), minutes: 48 }, []);
+    expect(pastWorkout(id, "kg")).toMatchObject({ routineLabel: "Workout", detail: "Mon, 9 Nov · 48 min" });
+  });
+
   it("shows one card per Workout exercise, in the order they had in the Workout", () => {
     const id = logWorkout({ routineId: routine("Push day A"), date: "2026-11-12", startedAt: at(2026, 11, 12) }, [
       { name: "Overhead press", position: 1 },
