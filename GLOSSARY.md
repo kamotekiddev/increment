@@ -36,6 +36,10 @@ _Avoid_: Unlocked, due, ready
 A best the lifter has reached on one exercise (heaviest set, estimated 1-rep max, most volume; for an exercise with no weight, most reps in a set and most reps in a workout). Always worked out from logged sets, never saved on its own.
 _Avoid_: PR, personal best (unless shown to the lifter as a label)
 
+**Top set**:
+The heaviest done Working set of one exercise in one workout, with more reps winning a tie. For an exercise with no weight, the set with the most reps. Progress shows the top set of the last workout.
+_Avoid_: Best set, main set
+
 **Pro**:
 The one-time purchase that unlocks the paid features. It works offline.
 _Avoid_: Premium, subscription, paid plan
