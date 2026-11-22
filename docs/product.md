@@ -44,7 +44,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - Targets round to a multiple of your Jump: a step goes up to the next one, and a drop or deload down. After you switch unit, a Target set in the other unit moves down to a multiple of your Jump so you can load it (62.5 kg with a 5 lb Jump is 135 lb, not 140 lb), and Go up is one Jump above that. Pre-filled rows and the Last column round down the same way. Changing a Jump never moves a Target you already have.
 
 ### Units (kg / lb)
-- A global preference, chosen in onboarding and changeable in Settings. There is no switch on the live workout screen, so a workout is logged in one unit.
+- A global preference, chosen in onboarding and changeable in Settings, where tapping the other unit asks you to confirm before it saves. There is no switch on the live workout screen, so a workout is logged in one unit.
 - Every weight is stored once, in kg, along with the unit it was entered in. Switching converts the display only, so switching back and forth never changes stored values.
 
 ### Progress
