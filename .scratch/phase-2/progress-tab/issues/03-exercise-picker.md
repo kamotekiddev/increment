@@ -4,11 +4,11 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] Picker list order, one entry per exercise, "Not done yet" for never-done ones; discarded and open workouts do not make an exercise done
-- [ ] Search appears only when the list has more than 8 exercises
-- [ ] The pick survives a tab switch and is dropped on an app restart
-- [ ] Finishing a workout clears the pick
-- [ ] Tests at the Progress read module cover the picker list and ordering
-- [ ] Type check, lint and tests pass
+- [x] Picker list order, one entry per exercise, "Not done yet" for never-done ones; discarded and open workouts do not make an exercise done
+- [x] Search appears only when the list has more than 8 exercises
+- [x] The pick survives a tab switch and is dropped on an app restart
+- [x] Finishing a workout clears the pick
+- [x] Tests at the Progress read module cover the picker list and ordering
+- [x] Type check, lint and tests pass
