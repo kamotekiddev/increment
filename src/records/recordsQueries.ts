@@ -77,6 +77,15 @@ function heavierThan(a: CountedSet, b: CountedSet): boolean {
 }
 
 /**
+ * Whether a done Working set counts: a set with no reps never does, and a weighted exercise ignores a set with no
+ * weight (a blank weight is stored as 0). Records, Top set and Progress's "done" all use this one rule.
+ */
+export function isCountedSet(set: { reps: number; weight: number }, loadType: "weighted" | "bodyweight"): boolean {
+  if (set.reps <= 0) return false;
+  return loadType === "bodyweight" || set.weight > 0;
+}
+
+/**
  * Every counted set of the exercise, grouped per finished Workout, earliest start first (History's order).
  * Only done Working sets of finished Workouts count, across all Routines. A set with no reps never counts, and a
  * weighted exercise ignores a set with no weight (a blank weight is stored as 0).
@@ -101,8 +110,7 @@ function sessionsOf(exerciseId: number, loadType: "weighted" | "bodyweight"): Se
 
   const sessions = new Map<number, Session>();
   for (const row of rows) {
-    if (row.reps <= 0) continue;
-    if (loadType === "weighted" && row.weight <= 0) continue;
+    if (!isCountedSet(row, loadType)) continue;
     let session = sessions.get(row.workoutId);
     if (!session) {
       session = {

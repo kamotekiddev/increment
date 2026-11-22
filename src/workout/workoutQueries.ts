@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
 import { nextTarget, type LoadType, type Target, type WeightUnit } from "@/engine";
+import { pickStore } from "@/progress/pickStore";
 import { jumpKgFor, type Jumps, type Unit } from "@/units";
 
 import { toHistory, type PastExercise } from "./historyInputs";
@@ -313,6 +314,8 @@ export function finishWorkout(id: number, now: Date = new Date()): void {
     }
     tx.update(workouts).set({ finishedAt: now.getTime(), inProgress: false }).where(eq(workouts.id, id)).run();
   });
+  // Progress opens on the default exercise again, so the new records are in front of the lifter.
+  pickStore.getState().clear();
 }
 
 /** Discards the workout in progress, then starts the routine. Returns the new workout id (null when the routine is empty). */

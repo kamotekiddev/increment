@@ -31,8 +31,8 @@ A list of the lifter's finished Workouts, newest first (date, Routine name). Ope
 ### 5 · Records (built)
 Heaviest set, estimated 1-rep max and most volume, worked out from logged sets and never stored (data rule 2); a bodyweight exercise has Most reps in a set and Most reps in a workout instead. Shown as short "New" pills on Past workout and on the workout summary (owner decision 2026-11-22; not on the History list rows). Spec and tickets: `records/`.
 
-### 6 · Progress tab
-Exercise picker, top set and a records list. Free users see a chart preview only; charts and All records arrive with Pro in Phase 3. Designed 2026-11-22 (canvas: Progress, Progress no workout yet, Progress bodyweight exercise; see `docs/screens.md`).
+### 6 · Progress tab (built)
+Exercise picker, top set and a records list. Free users see a chart preview only; charts and All records arrive with Pro in Phase 3. Designed 2026-11-22 (canvas: Progress, Progress no workout yet, Progress bodyweight exercise; see `docs/screens.md`). Spec and tickets: `progress-tab/`.
 
 ### 7 · Reminders
 Workout reminders in Settings, with the notification permission asked there. Reuses the rest timer's one-time permission ask, so a denial there is not asked again.
