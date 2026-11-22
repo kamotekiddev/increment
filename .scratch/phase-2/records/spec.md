@@ -50,6 +50,9 @@ The designs are on the canvas: `Progress.dc.html`, `ProgressEmpty.dc.html` and `
 - **Units:** every set is converted to kg in memory (`src/units`) to compare and add; stored sets are never changed. Equality uses a tiny tolerance so float noise never makes a tie into a record.
 - **Display:** on Progress (feature 6) the Heaviest set reads like History (`62.5 × 8`, or `≈61.2 × 5` from the other unit; `loggedWeightText`), and the Estimated 1-rep max and Most volume are whole numbers (`79 kg`, `1,920 kg`). This replaces the one-decimal line in `docs/architecture.md`. The pills show names only, so no number rounding is needed on Past workout or the summary.
 - **Pills on screens:** Past workout shows a pill per tag at the right end of the exercise's name row, beside the Deload pill; the Workout summary shows them in the exercise card's header, beside the outcome pill, wrapping to a second line when there are several. Accent-tint pill (the style of "New record" on Progress), 12 px, weight 600.
+- **Zero reps:** a done set with 0 reps counts for no Record (Epley of 0 reps would return the full weight).
+- **Zero weight:** a weighted exercise ignores a set with weight 0 or less (a blank weight is stored as 0); a bodyweight exercise ignores weight and counts reps.
+- **No 1-rep max:** when every counted set is above 12 reps, `estimatedOneRepMax` is `null`, not 0.
 - **Words:** "record" and "New", never "PR".
 - **No ADR** (nothing hard to reverse), no new dependency. Glossary: **Record** is updated (done).
 

@@ -76,7 +76,7 @@ function ExerciseCard({ card, records }: { card: SummaryCard; records: RecordNam
           {card.name}
         </Text>
         {/* The outcome pill and any record pills share one wrapping, right-aligned group. */}
-        <View style={{ flex: 1, flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: spacing.xs }}>
+        <View style={{ flexShrink: 1, maxWidth: "55%", flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: spacing.xs }}>
           {records.map((name) => (
             <Pill key={name} label={name} />
           ))}

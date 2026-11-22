@@ -284,6 +284,43 @@ describe("exerciseRecords", () => {
     });
   });
 
+  it("ignores a done set with 0 reps on a weighted exercise", () => {
+    const bench = exercise("Bench");
+    const first = save({ day: 0, lifts: [{ exerciseId: bench, sets: [{ w: 60, r: 8 }] }] });
+    // 100 x 0 would be a full-weight 1-rep max and Heaviest set if it counted.
+    const second = save({ day: 2, lifts: [{ exerciseId: bench, sets: [{ w: 100, r: 0 }, { w: 60, r: 8 }] }] });
+    expect(workoutRecordTags(second.id)).toEqual({});
+    expect(exerciseRecords(bench, "kg")).toMatchObject({
+      heaviestSet: { text: "60 × 8", date: "2026-11-01" },
+      estimatedOneRepMax: { value: 76, date: "2026-11-01" },
+    });
+    expect(first.id).toBeGreaterThan(0);
+  });
+
+  it("ignores a set with no weight on a weighted exercise", () => {
+    const bench = exercise("Bench");
+    save({ day: 0, lifts: [{ exerciseId: bench, sets: [{ w: 60, r: 8 }] }] });
+    // A blank weight is stored as 0: 0 x 20 must not take Most volume or the 1-rep max.
+    const second = save({ day: 2, lifts: [{ exerciseId: bench, sets: [{ w: 0, r: 20 }, { w: 0, r: 5 }] }] });
+    expect(workoutRecordTags(second.id)).toEqual({});
+    expect(exerciseRecords(bench, "kg")).toMatchObject({ heaviestSet: { date: "2026-11-01" } });
+    // A Workout with only blank-weight sets has nothing to count.
+    const other = exercise("Row");
+    save({ day: 4, lifts: [{ exerciseId: other, sets: [{ w: 0, r: 10 }] }] });
+    expect(exerciseRecords(other, "kg")).toBeNull();
+  });
+
+  it("has no 1-rep max when every counted set is above 12 reps", () => {
+    const bench = exercise("Bench");
+    save({ day: 0, lifts: [{ exerciseId: bench, sets: [{ w: 40, r: 20 }] }] });
+    expect(exerciseRecords(bench, "kg")).toEqual({
+      loadType: "weighted",
+      heaviestSet: { text: "40 × 20", date: "2026-11-01" },
+      estimatedOneRepMax: null,
+      mostVolume: { value: 800, date: "2026-11-01" },
+    });
+  });
+
   it("keeps a tied record on the earliest Workout", () => {
     const bench = exercise("Bench");
     save({ day: 0, lifts: [{ exerciseId: bench, sets: [{ w: 60, r: 8 }] }] });
