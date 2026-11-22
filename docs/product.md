@@ -49,7 +49,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 
 ### Progress
 - Records worked out from logged sets: heaviest set, estimated 1-rep max, most volume. They are never stored separately, so they can't drift.
-- Free: top set, record pills and a records list. Pro: charts and an All records screen.
+- Free: top set, record pills and a records list. Pro: charts and an All records screen. The Progress tab shows one exercise at a time (an exercise picker): its top set, a locked chart preview and a Records card with its records. A bodyweight exercise has no weight, so it shows Most reps in a set and Most reps in a workout instead of Heaviest set and Estimated 1-rep max.
 - Workout history, from a History button on Progress: the lifter's finished Workouts, newest first, under month headers; each opens to its exercises, the Target each had and their done sets, in the lifter's unit. Read-only and free. Record tags arrive with Records (Phase 2).
 
 ### Today
