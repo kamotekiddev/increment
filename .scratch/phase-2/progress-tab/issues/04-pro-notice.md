@@ -4,8 +4,8 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] Both spots open the same sheet and OK closes it
-- [ ] The sheet is one component, so Phase 3 replaces it in one place
-- [ ] Type check, lint and tests pass
+- [x] Both spots open the same sheet and OK closes it
+- [x] The sheet is one component, so Phase 3 replaces it in one place
+- [x] Type check, lint and tests pass

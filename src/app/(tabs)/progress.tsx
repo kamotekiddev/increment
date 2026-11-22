@@ -1,10 +1,12 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
+import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components";
 import { ExercisePicker } from "@/progress/ExercisePicker";
+import { ProNoticeSheet } from "@/progress/ProNoticeSheet";
 import { ProgressHero } from "@/progress/ProgressHero";
 import { RecordsCard } from "@/progress/RecordsCard";
 import { useExerciseProgress } from "@/progress/useExerciseProgress";
@@ -15,6 +17,7 @@ export default function ProgressScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const progress = useExerciseProgress();
+  const [proNotice, setProNotice] = useState(false);
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
@@ -53,13 +56,14 @@ export default function ProgressScreen() {
         {progress ? (
           <>
             <ExercisePicker exerciseId={progress.exerciseId} name={progress.name} equipment={progress.equipment} />
-            {progress.hero ? <ProgressHero hero={progress.hero} /> : null}
-            {progress.records ? <RecordsCard exerciseName={progress.name} rows={progress.records} /> : null}
+            {progress.hero ? <ProgressHero hero={progress.hero} onProPress={() => setProNotice(true)} /> : null}
+            {progress.records ? <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={() => setProNotice(true)} /> : null}
           </>
         ) : progress === null ? (
           <Text tone="muted">No workouts yet.</Text>
         ) : null}
       </ScrollView>
+      <ProNoticeSheet visible={proNotice} onDismiss={() => setProNotice(false)} />
     </View>
   );
 }
