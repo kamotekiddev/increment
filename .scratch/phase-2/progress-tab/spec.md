@@ -1,4 +1,4 @@
-Status: ready-for-agent
+Status: built (device check left to the owner)
 
 # Phase 2 · Feature 6 · Progress tab
 
