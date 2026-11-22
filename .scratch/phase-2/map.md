@@ -28,7 +28,7 @@ Default rest, show previous set and keep screen awake. Each one is wired to the 
 ### 4 · Workout history (built)
 A list of the lifter's finished Workouts, newest first (date, Routine name). Opening one shows each of its exercises with the done Working sets in the lifter's unit. No record tags yet. A History button on the Progress tab opens it (owner decision 2026-11-20), one list across all Routines. Each row: date, Routine name, number of exercises and duration (`Thu, 12 Nov · Push day A`, `5 exercises · 48 min`), under month headers. A row opens Past workout: Routine name, date and duration, then the exercises as rows with dividers in one white card, each with its name, the Target it had (`Target 62.5 × 8`, none on a first workout), a grey Deload pill at the right end of the name row when it was one, and the done Working sets as chips (`62.5 × 8`, or `9 reps` with no weight). No Clean / Hold / Miss label. The History button is always on Progress; with no finished Workout the list shows a "No workouts yet" card. Exercise detail has no History tab: it shows How to only. Spec and tickets: `workout-history/`.
 
-### 5 · Records
+### 5 · Records (built)
 Heaviest set, estimated 1-rep max and most volume, worked out from logged sets and never stored (data rule 2); a bodyweight exercise has Most reps in a set and Most reps in a workout instead. Shown as short "New" pills on Past workout and on the workout summary (owner decision 2026-11-22; not on the History list rows). Spec and tickets: `records/`.
 
 ### 6 · Progress tab
