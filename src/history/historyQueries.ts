@@ -34,10 +34,16 @@ function dateParts(date: string): { year: number; month: number; day: number } {
   return { year, month, day };
 }
 
+/** `12 Nov`: a date label without its weekday. */
+export function shortDateLabel(date: string): string {
+  const { month, day } = dateParts(date);
+  return `${day} ${MONTHS[month - 1].slice(0, 3)}`;
+}
+
 export function dateLabel(date: string): string {
   const { year, month, day } = dateParts(date);
   const weekday = new Date(year, month - 1, day).getDay();
-  return `${WEEKDAYS[weekday]}, ${day} ${MONTHS[month - 1].slice(0, 3)}`;
+  return `${WEEKDAYS[weekday]}, ${shortDateLabel(date)}`;
 }
 
 function monthTitle(date: string): string {

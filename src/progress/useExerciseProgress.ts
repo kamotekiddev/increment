@@ -17,8 +17,11 @@ export function useExerciseProgress(): ExerciseProgress | null | undefined {
   const [progress, setProgress] = useState<ExerciseProgress | null | undefined>(undefined);
   useFocusEffect(
     useCallback(() => {
-      const id = picked ?? defaultExerciseId();
-      setProgress(id === null ? null : exerciseProgress(id, unit) ?? exerciseProgress(defaultExerciseId() ?? -1, unit));
+      const fallback = defaultExerciseId();
+      const id = picked ?? fallback;
+      // A picked exercise that is gone falls back to the default one.
+      const shown = id === null ? null : (exerciseProgress(id, unit) ?? (fallback === null ? null : exerciseProgress(fallback, unit)));
+      setProgress(shown);
     }, [unit, picked]),
   );
   return progress;

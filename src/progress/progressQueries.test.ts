@@ -112,6 +112,19 @@ describe("pickerExercises", () => {
     expect(pickerExercises()).toEqual([]);
   });
 
+  it("does not count a set with no reps, or no weight on a weighted exercise, as done", () => {
+    const bench = exercise("Bench");
+    const squat = exercise("Squat");
+    const pullUp = exercise("Pull-up", "bodyweight");
+    routine("A", [bench, squat, pullUp]);
+    save({ day: 0, lifts: [{ exerciseId: bench, sets: [one(60, 0)] }, { exerciseId: squat, sets: [one(0, 5)] }, { exerciseId: pullUp, sets: [one(0, 8)] }] });
+    expect(pickerExercises().map((e) => [e.name, e.lastDoneLabel])).toEqual([
+      ["Pull-up", "Sun, 1 Nov"],
+      ["Bench", null],
+      ["Squat", null],
+    ]);
+  });
+
   it("is empty with no routines and no finished workout", () => {
     exercise("Bench");
     expect(pickerExercises()).toEqual([]);
@@ -126,6 +139,14 @@ describe("defaultExerciseId", () => {
     save({ day: 0, lifts: [{ exerciseId: squat, sets: [one(80, 5)] }] });
     save({ day: 2, lifts: [{ exerciseId: bench, sets: [one(60, 8)] }, { exerciseId: fly, sets: [one(10, 12)] }] });
     expect(defaultExerciseId()).toBe(fly);
+  });
+
+  it("skips an exercise whose only done set has no reps", () => {
+    const bench = exercise("Bench");
+    const squat = exercise("Squat");
+    save({ day: 0, lifts: [{ exerciseId: squat, sets: [one(80, 5)] }] });
+    save({ day: 1, lifts: [{ exerciseId: bench, sets: [one(60, 0)] }] });
+    expect(defaultExerciseId()).toBe(squat);
   });
 
   it("is the first routine exercise when nothing is finished, else null", () => {

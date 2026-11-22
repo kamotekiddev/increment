@@ -52,7 +52,7 @@ function ChartPreview({ onPress }: { onPress: () => void }) {
 export function ProgressHero({ hero, onProPress }: { hero: Hero; onProPress: () => void }) {
   const colors = useColors();
   return (
-    <View style={{ gap: spacing.md, padding: 20, borderRadius: radius.lg + 6, backgroundColor: colors.card }}>
+    <View style={{ gap: spacing.md, padding: 20, borderRadius: radius.hero, backgroundColor: colors.card }}>
       <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
         <View style={{ flexShrink: 1, gap: 2 }}>
           <Text tone="muted" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.small }}>
