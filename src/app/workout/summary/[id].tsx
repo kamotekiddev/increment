@@ -1,8 +1,10 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
+import { useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, Card, Pill, Text } from "@/components";
+import { workoutRecordTags, type RecordName } from "@/records/recordsQueries";
 import { useUnit } from "@/settings";
 import { fontFamily, fontSize, radius, spacing, useColors } from "@/theme";
 import { formatWeight } from "@/units";
@@ -65,15 +67,21 @@ function HeaderCard({ title, header }: { title: string; header: SummaryHeader })
   );
 }
 
-function ExerciseCard({ card }: { card: SummaryCard }) {
+function ExerciseCard({ card, records }: { card: SummaryCard; records: RecordName[] }) {
   const { unit } = useUnit();
   return (
     <Card style={{ borderRadius: radius.card, gap: spacing.md }}>
-      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.md }}>
+      <View style={{ flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: spacing.md }}>
         <Text variant="label" style={{ flex: 1, fontSize: fontSize.body }}>
           {card.name}
         </Text>
-        <Pill label={outcomeLabel[card.outcome]} tone={card.outcome === "clean" ? "progress" : "neutral"} />
+        {/* The outcome pill and any record pills share one wrapping, right-aligned group. */}
+        <View style={{ flexShrink: 1, maxWidth: "55%", flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: spacing.xs }}>
+          {records.map((name) => (
+            <Pill key={name} label={name} />
+          ))}
+          <Pill label={outcomeLabel[card.outcome]} tone={card.outcome === "clean" ? "progress" : "neutral"} />
+        </View>
       </View>
       <Text tone="muted" style={{ fontSize: fontSize.small }}>
         {card.line}
@@ -96,6 +104,8 @@ export default function WorkoutSummaryScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { unit } = useUnit();
   const loaded = useSummary(Number(id), unit);
+  // Finish has already written the finish timestamps, so the Workout counts as finished here. Nothing is stored.
+  const tags = useMemo(() => workoutRecordTags(Number(id)), [id]);
 
   /** Returns to where the workout started (the root when there is nowhere to go back to). */
   function done() {
@@ -117,7 +127,7 @@ export default function WorkoutSummaryScreen() {
         >
           <HeaderCard title={routineLabel(loaded.title)} header={loaded.summary.header} />
           {loaded.summary.cards.map((card) => (
-            <ExerciseCard key={card.workoutExerciseId} card={card} />
+            <ExerciseCard key={card.workoutExerciseId} card={card} records={tags[card.workoutExerciseId] ?? []} />
           ))}
         </ScrollView>
       ) : (

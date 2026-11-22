@@ -33,7 +33,7 @@ The state in which a Streak has reached 3 Clean workouts (fixed), so the app can
 _Avoid_: Unlocked, due, ready
 
 **Record**:
-A best the lifter has reached (heaviest set, estimated 1-rep max, most volume). Always worked out from logged sets, never saved on its own.
+A best the lifter has reached on one exercise (heaviest set, estimated 1-rep max, most volume; for an exercise with no weight, most reps in a set and most reps in a workout). Always worked out from logged sets, never saved on its own.
 _Avoid_: PR, personal best (unless shown to the lifter as a label)
 
 **Pro**:

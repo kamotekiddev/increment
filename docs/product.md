@@ -34,7 +34,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - After Finish, each exercise whose progression is Earned gets its own Offer screen, one at a time in workout order: a progress bar and count, the current Target → stepped-up Target, and only two buttons, Go up and Stay. A tap saves the answer and opens the next screen. Answers are final, and back and swipe are disabled so no Offer is skipped. If the app is killed mid-way, unanswered Offers count as Stay, and a Stay returns the Offer after the next Clean workout. There is no Offer on a Deload workout.
 - Then the summary shows duration, sets and volume (total reps when volume is 0), and one card per exercise with how it went and the next Target. It only reports. These screens cannot be reopened; a killed app reopens on the normal tab.
 - Rest timer: marking a set done starts a countdown from that exercise's Rest length, shown as a panel pinned to the bottom of the screen with a progress ring, the time as m:ss, a "Next up" line (the next open set, e.g. "Set 3 · 62.5 kg × 8", or the next exercise with an open set once this one is finished) and -15s, +15s and Skip. There is only one timer: marking another set restarts it, unmarking the set that started it cancels it, and no rest starts after the last open set of the workout. -15s and +15s change this rest only, never the stored Rest length. At zero the phone buzzes and the panel hides; if the exercise is finished and the lifter is still on it, the screen moves to the next exercise with an open set (wrapping past the end). The timer is an end time, so it stays right while the app is minimized or the phone is locked, and a rest that ended while away resolves without a buzz. While the app is in the background a local "Rest over" notification arrives at zero. Finish and Discard clear the timer. The timer is not saved: after a killed app no rest is running and its "Rest over" alert is cancelled.
-- Not yet (later phases): notes, records on the summary (Phase 2).
+- Records show as accent pills on the Workout summary cards. Not yet (later phases): notes.
 
 ### Progressive overload
 - **Default rule**: an exercise added to a routine starts with a rule chosen from its load type. Weighted exercises add the Jump, and bodyweight exercises add reps. Progression is Earned after 3 clean workouts in a row, then the app asks the lifter whether to progress.
@@ -49,7 +49,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 
 ### Progress
 - Records worked out from logged sets: heaviest set, estimated 1-rep max, most volume. They are never stored separately, so they can't drift.
-- Free: top set, record pills and a records list. Pro: charts and an All records screen.
+- Free: top set, record pills and a records list. Pro: charts and an All records screen. The Progress tab shows one exercise at a time (an exercise picker): its top set, a locked chart preview and a Records card with its records. A bodyweight exercise has no weight, so it shows Most reps in a set and Most reps in a workout instead of Heaviest set and Estimated 1-rep max.
 - Workout history, from a History button on Progress: the lifter's finished Workouts, newest first, under month headers; each opens to its exercises, the Target each had and their done sets, in the lifter's unit. Read-only and free. Record tags arrive with Records (Phase 2).
 
 ### Today

@@ -28,11 +28,11 @@ Default rest, show previous set and keep screen awake. Each one is wired to the 
 ### 4 · Workout history (built)
 A list of the lifter's finished Workouts, newest first (date, Routine name). Opening one shows each of its exercises with the done Working sets in the lifter's unit. No record tags yet. A History button on the Progress tab opens it (owner decision 2026-11-20), one list across all Routines. Each row: date, Routine name, number of exercises and duration (`Thu, 12 Nov · Push day A`, `5 exercises · 48 min`), under month headers. A row opens Past workout: Routine name, date and duration, then the exercises as rows with dividers in one white card, each with its name, the Target it had (`Target 62.5 × 8`, none on a first workout), a grey Deload pill at the right end of the name row when it was one, and the done Working sets as chips (`62.5 × 8`, or `9 reps` with no weight). No Clean / Hold / Miss label. The History button is always on Progress; with no finished Workout the list shows a "No workouts yet" card. Exercise detail has no History tab: it shows How to only. Spec and tickets: `workout-history/`.
 
-### 5 · Records
-Heaviest set, estimated 1-rep max and most volume, worked out from logged sets and never stored (data rule 2). Shown as record pills on Workout history and as records on the workout summary.
+### 5 · Records (built)
+Heaviest set, estimated 1-rep max and most volume, worked out from logged sets and never stored (data rule 2); a bodyweight exercise has Most reps in a set and Most reps in a workout instead. Shown as short "New" pills on Past workout and on the workout summary (owner decision 2026-11-22; not on the History list rows). Spec and tickets: `records/`.
 
 ### 6 · Progress tab
-Exercise picker, top set and a records list. Free users see a chart preview only; charts and All records arrive with Pro in Phase 3.
+Exercise picker, top set and a records list. Free users see a chart preview only; charts and All records arrive with Pro in Phase 3. Designed 2026-11-22 (canvas: Progress, Progress no workout yet, Progress bodyweight exercise; see `docs/screens.md`).
 
 ### 7 · Reminders
 Workout reminders in Settings, with the notification permission asked there. Reuses the rest timer's one-time permission ask, so a denial there is not asked again.
@@ -48,6 +48,8 @@ Workout reminders in Settings, with the notification permission asked there. Reu
 - Feature 4 (2026-11-20): history is per Workout, not per exercise. Exercise history (a History tab on Exercise detail) was built on PR #19, then dropped: the engine's Target, the live workout's Last column and the Progress tab's exercise picker already answer "what did I lift on this exercise", while nothing showed what was done in a past Workout. Its spec stays in `exercise-history/` as `wontfix`.
 - Feature 4 (2026-11-21): the Progress tab gets only its title row and the History pill until feature 6 (no "Last 8"). Duration is finish minus start, floored, as on the summary, read `48 min` / `1 h` / `1 h 12 min`, no cap. A past Target converts to the current Unit like its sets, never snapped. Past workout is read-only. Tests go through one seam, the history read module, against an in-memory database.
 - Set units (2026-11-21): a set stores the number typed and its unit (ADR 0003, superseding ADR 0001 for sets); the unit is display only; only weights about to be lifted are rounded to the Jump, and only when they came from the other unit; history shows "≈" and one decimal. See `set-units/spec.md`.
+
+- Feature 5 and 6 (2026-11-22, owner decision): records are per exercise. The Progress tab is redesigned around a Records card (Heaviest set, Estimated 1-rep max, Most volume) with a locked chart preview for free users; the "Last 8" dropdown and the weight / est. max / volume toggle are dropped for free users. A bodyweight exercise shows Most reps in a set and Most reps in a workout instead. Feature 5 decisions (2026-11-22): pills on Past workout and the summary; the first workout of an exercise sets a silent baseline; Heaviest set is the highest weight, with more reps at the same weight also counting; Estimated 1-rep max is Epley with sets over 12 reps ignored; Most volume is per exercise per workout; Heaviest set shown as in History, 1-rep max and volume as whole numbers; only done Working sets of finished workouts count. See `records/spec.md`.
 
 ## Open
 - Resolved 2026-11-19: "Your gym's plates" moves to Phase 3 with the plate calculator; feature 2 covers the Jump only.
