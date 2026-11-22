@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** built
 
 - [x] Top set: heaviest weight, more reps wins a tie; warm-up, unchecked, discarded and open sets never count
 - [x] Hero line cases: up, down (a Deload is not special-cased), same, reps only, first workout; a set from the other unit is compared in kg and shown with "≈"
