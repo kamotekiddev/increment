@@ -3,16 +3,20 @@ import { View } from "react-native";
 import { Pill, Text } from "@/components";
 import { fontFamily, fontSize, lineHeight, radius, spacing, useColors } from "@/theme";
 
+import type { RecordName } from "@/records/recordsQueries";
+
 import type { PastExerciseCard } from "./historyQueries";
 
 export interface PastExerciseRowProps {
   card: PastExerciseCard;
+  /** The Records this exercise set in the workout, one pill each. */
+  records: RecordName[];
   /** Every row but the first draws a divider above. */
   first: boolean;
 }
 
-/** One exercise of a Past workout: its name and Target, a Deload pill when it was one, and a chip per done Working set. */
-export function PastExerciseRow({ card, first }: PastExerciseRowProps) {
+/** One exercise of a Past workout: its name and Target, a Deload pill and a pill per Record, and a chip per done Working set. */
+export function PastExerciseRow({ card, records, first }: PastExerciseRowProps) {
   const colors = useColors();
   return (
     <View
@@ -34,7 +38,14 @@ export function PastExerciseRow({ card, first }: PastExerciseRowProps) {
             </Text>
           )}
         </View>
-        {card.deload && <Pill label="Deload" tone="neutral" />}
+        {(card.deload || records.length > 0) && (
+          <View style={{ flexShrink: 1, maxWidth: "55%", flexDirection: "row", flexWrap: "wrap", justifyContent: "flex-end", gap: 6 }}>
+            {card.deload && <Pill label="Deload" tone="neutral" />}
+            {records.map((record) => (
+              <Pill key={record} label={record} />
+            ))}
+          </View>
+        )}
       </View>
       {card.chips.length > 0 && (
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
