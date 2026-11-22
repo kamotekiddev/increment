@@ -1,8 +1,8 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { View } from "react-native";
+import { Pressable, View } from "react-native";
 
 import { Pill, Text } from "@/components";
-import { fontFamily, fontSize, lineHeight, radius, size, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
 
 import type { RecordName } from "@/records/recordsQueries";
 
@@ -19,7 +19,7 @@ const ICONS: Record<RecordName, IconName> = {
 };
 
 /** The white Records card: one row per Record with its icon, date and value, and a "New" pill when the last workout set it. */
-export function RecordsCard({ exerciseName, rows }: { exerciseName: string; rows: RecordRow[] }) {
+export function RecordsCard({ exerciseName, rows, onProPress }: { exerciseName: string; rows: RecordRow[]; onProPress: () => void }) {
   const colors = useColors();
   return (
     <View style={{ paddingHorizontal: spacing.lg, paddingVertical: spacing.xs, borderRadius: radius.card, backgroundColor: colors.card }}>
@@ -72,16 +72,19 @@ export function RecordsCard({ exerciseName, rows }: { exerciseName: string; rows
           </View>
         </View>
       ))}
-      {/* Not tappable until ticket 04 adds the Pro notice. */}
-      <View
-        style={{
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="See all records, Pro"
+        onPress={onProPress}
+        style={({ pressed }) => ({
+          opacity: pressed ? opacity.pressed : 1,
           flexDirection: "row",
           alignItems: "center",
           gap: spacing.sm,
           height: 52,
           borderTopWidth: 1,
           borderTopColor: colors.line,
-        }}
+        })}
       >
         <Text tone="accent" style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.label }}>
           See all records
@@ -89,7 +92,7 @@ export function RecordsCard({ exerciseName, rows }: { exerciseName: string; rows
         <View style={{ marginLeft: "auto" }}>
           <Pill label="Pro" tone="neutral" />
         </View>
-      </View>
+      </Pressable>
     </View>
   );
 }
