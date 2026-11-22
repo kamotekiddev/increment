@@ -2,8 +2,8 @@ import { and, asc, eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
-import { dateLabel } from "@/history/historyQueries";
-import { exerciseRecords, workoutRecordTags, type ExerciseRecords, type RecordName } from "@/records/recordsQueries";
+import { dateLabel, shortDateLabel } from "@/history/historyQueries";
+import { exerciseRecords, isCountedSet, workoutRecordTags, type ExerciseRecords, type RecordName } from "@/records/recordsQueries";
 import { convert, formatNumber, loggedWeightText, weightKg, type Unit } from "@/units";
 import { repsText } from "@/workout/repsText";
 
@@ -20,7 +20,8 @@ export interface PickerExercise {
 /**
  * The exercises Progress can show: every exercise with a finished workout, most recently done first (the later
  * exercise of one workout first), then the exercises in a routine that were never done, in routine order. One entry
- * per library exercise, so a weighted twin is its own entry. Only done Working sets of finished workouts count.
+ * per library exercise, so a weighted twin is its own entry. Only counted sets (`isCountedSet`) of finished workouts
+ * make an exercise "done", the same rule the hero's top set and the Records use.
  */
 export function pickerExercises(): PickerExercise[] {
   const doneRows = db
@@ -28,6 +29,9 @@ export function pickerExercises(): PickerExercise[] {
       exerciseId: exercises.id,
       name: exercises.name,
       equipment: exercises.equipment,
+      loadType: exercises.loadType,
+      weight: sets.weight,
+      reps: sets.reps,
       date: workouts.date,
       startedAt: workouts.startedAt,
       workoutId: workouts.id,
@@ -42,6 +46,7 @@ export function pickerExercises(): PickerExercise[] {
 
   const latest = new Map<number, (typeof doneRows)[number]>();
   for (const row of doneRows) {
+    if (!isCountedSet(row, row.loadType)) continue;
     const best = latest.get(row.exerciseId);
     if (!best || isLater(row, best)) latest.set(row.exerciseId, row);
   }
@@ -107,9 +112,7 @@ function topSets(exerciseId: number, loadType: LoadType): TopSet[] {
 
   const tops = new Map<number, TopSet>();
   for (const row of rows) {
-    // The same sets the Records count: no reps never counts, and a weighted exercise ignores a blank weight.
-    if (row.reps <= 0) continue;
-    if (loadType === "weighted" && row.weight <= 0) continue;
+    if (!isCountedSet(row, loadType)) continue;
     const set: TopSet = { ...row, kg: weightKg({ value: row.weight, unit: row.unit }) };
     const top = tops.get(row.workoutId);
     if (!top || beats(set, top, loadType)) tops.set(row.workoutId, set);
@@ -174,34 +177,55 @@ function thousands(n: number): string {
   return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-function recordRows(records: ExerciseRecords, unit: Unit, newNames: RecordName[]): RecordRow[] {
-  const row = (name: RecordName, label: string, value: string | null, date: string | null): RecordRow => ({
-    name,
-    label,
-    value,
-    dateLabel: date === null ? null : dateLabel(date),
-    isNew: value !== null && newNames.includes(name),
+/** The Records card rows of each load type: the record's pill name and its row title, declared once. */
+const RECORD_ROWS: Record<LoadType, { name: RecordName; label: string }[]> = {
+  weighted: [
+    { name: "Heaviest set", label: "Heaviest set" },
+    { name: "1-rep max", label: "Estimated 1-rep max" },
+    { name: "Most volume", label: "Most volume" },
+  ],
+  bodyweight: [
+    { name: "Most reps in a set", label: "Most reps in a set" },
+    { name: "Most reps in a workout", label: "Most reps in a workout" },
+  ],
+};
+
+type RecordValue = { value: string | null; date: string | null };
+
+/** The rows with their values, in order; a record with no entry in `values` is empty ("– – –"). */
+function rowsOf(loadType: LoadType, values: Partial<Record<RecordName, RecordValue>>, newNames: RecordName[]): RecordRow[] {
+  return RECORD_ROWS[loadType].map(({ name, label }) => {
+    const { value, date } = values[name] ?? { value: null, date: null };
+    return { name, label, value, dateLabel: date === null ? null : dateLabel(date), isNew: value !== null && newNames.includes(name) };
   });
+}
+
+function recordRows(records: ExerciseRecords, unit: Unit, newNames: RecordName[]): RecordRow[] {
   if (records.loadType === "bodyweight") {
-    return [
-      row("Most reps in a set", "Most reps in a set", repsText(records.mostRepsInSet.value), records.mostRepsInSet.date),
-      row("Most reps in a workout", "Most reps in a workout", repsText(records.mostRepsInWorkout.value), records.mostRepsInWorkout.date),
-    ];
+    return rowsOf(
+      "bodyweight",
+      {
+        "Most reps in a set": { value: repsText(records.mostRepsInSet.value), date: records.mostRepsInSet.date },
+        "Most reps in a workout": { value: repsText(records.mostRepsInWorkout.value), date: records.mostRepsInWorkout.date },
+      },
+      newNames,
+    );
   }
   const max = records.estimatedOneRepMax;
-  return [
-    row("Heaviest set", "Heaviest set", records.heaviestSet.text, records.heaviestSet.date),
-    row("1-rep max", "Estimated 1-rep max", max && `${thousands(max.value)} ${unit}`, max?.date ?? null),
-    row("Most volume", "Most volume", `${thousands(records.mostVolume.value)} ${unit}`, records.mostVolume.date),
-  ];
+  return rowsOf(
+    "weighted",
+    {
+      "Heaviest set": { value: records.heaviestSet.text, date: records.heaviestSet.date },
+      "1-rep max": { value: max && `${thousands(max.value)} ${unit}`, date: max?.date ?? null },
+      "Most volume": { value: `${thousands(records.mostVolume.value)} ${unit}`, date: records.mostVolume.date },
+    },
+    newNames,
+  );
 }
 
 /** The rows of an exercise nothing has been done with: every value empty. */
 function emptyRecordRows(loadType: LoadType): RecordRow[] {
-  const row = (name: RecordName, label: string): RecordRow => ({ name, label, value: null, dateLabel: null, isNew: false });
-  return loadType === "bodyweight"
-    ? [row("Most reps in a set", "Most reps in a set"), row("Most reps in a workout", "Most reps in a workout")]
-    : [row("Heaviest set", "Heaviest set"), row("1-rep max", "Estimated 1-rep max"), row("Most volume", "Most volume")];
+  return rowsOf(loadType, {}, []);
 }
 
 /** The Records the workout set for this exercise, from the records module's tags (never from dates). */
@@ -215,11 +239,6 @@ function newRecordNames(workoutId: number, exerciseId: number): RecordName[] {
   return ids.flatMap(({ id }) => tags[id] ?? []);
 }
 
-/** `29 Oct`: a date label without its weekday. */
-function shortDate(date: string): string {
-  return dateLabel(date).split(", ")[1];
-}
-
 function topSetText(top: TopSet, loadType: LoadType, unit: Unit): HeroTopSet {
   if (loadType === "bodyweight") return { text: repsText(top.reps), unit: null };
   return { text: `${loggedWeightText({ value: top.weight, unit: top.unit }, unit)} × ${top.reps}`, unit };
@@ -227,7 +246,7 @@ function topSetText(top: TopSet, loadType: LoadType, unit: Unit): HeroTopSet {
 
 /** The comparison with the workout before: `up 2.5 kg since 29 Oct`, `same as 29 Oct`, `up 2 reps since 29 Oct`. */
 function changeText(last: TopSet, prev: TopSet, loadType: LoadType, unit: Unit): string {
-  const since = shortDate(prev.date);
+  const since = shortDateLabel(prev.date);
   const kgDiff = last.kg - prev.kg;
   if (loadType === "weighted" && Math.abs(kgDiff) > TOLERANCE_KG) {
     // Exact when both sets were logged in the lifter's unit, else one decimal with "≈" (as History shows a set).

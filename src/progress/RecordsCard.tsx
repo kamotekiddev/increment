@@ -2,11 +2,12 @@ import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { Pressable, View } from "react-native";
 
 import { Pill, Text } from "@/components";
-import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, letterSpacing, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
 
 import type { RecordName } from "@/records/recordsQueries";
 
 import type { RecordRow } from "./progressQueries";
+import { RecordsFrame, RecordsRowFrame } from "./RecordsFrame";
 
 type IconName = React.ComponentProps<typeof MaterialCommunityIcons>["name"];
 
@@ -22,29 +23,13 @@ const ICONS: Record<RecordName, IconName> = {
 export function RecordsCard({ exerciseName, rows, onProPress }: { exerciseName: string; rows: RecordRow[]; onProPress: () => void }) {
   const colors = useColors();
   return (
-    <View style={{ paddingHorizontal: spacing.lg, paddingVertical: spacing.xs, borderRadius: radius.card, backgroundColor: colors.card }}>
-      <View style={{ flexDirection: "row", alignItems: "baseline", justifyContent: "space-between", gap: spacing.md, paddingTop: 14, paddingBottom: 6 }}>
-        <Text accessibilityRole="header" style={{ fontFamily: fontFamily.bold, fontSize: fontSize.body, letterSpacing: -0.15 }}>
-          Records
-        </Text>
-        <Text tone="muted" numberOfLines={1} style={{ flexShrink: 1, fontSize: fontSize.small }}>
-          {exerciseName}
-        </Text>
-      </View>
+    <RecordsFrame exerciseName={exerciseName}>
       {rows.map((row, i) => (
-        <View
+        <RecordsRowFrame
           key={row.name}
-          accessible
+          first={i === 0}
+          minHeight={size.row}
           accessibilityLabel={[row.label, row.value ?? "none yet", row.dateLabel, row.isNew ? "new" : null].filter(Boolean).join(", ")}
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: spacing.md,
-            minHeight: 68,
-            paddingVertical: spacing.sm,
-            borderTopWidth: i === 0 ? 0 : 1,
-            borderTopColor: colors.line,
-          }}
         >
           <View
             style={{
@@ -67,10 +52,10 @@ export function RecordsCard({ exerciseName, rows, onProPress }: { exerciseName: 
             ) : null}
           </View>
           <View style={{ alignItems: "flex-end", gap: spacing.xs }}>
-            <Text style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.action, letterSpacing: -0.35 }}>{row.value ?? "– – –"}</Text>
+            <Text style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.action, letterSpacing: letterSpacing.value }}>{row.value ?? "– – –"}</Text>
             {row.isNew ? <Pill label="New" /> : null}
           </View>
-        </View>
+        </RecordsRowFrame>
       ))}
       <Pressable
         accessibilityRole="button"
@@ -93,6 +78,6 @@ export function RecordsCard({ exerciseName, rows, onProPress }: { exerciseName: 
           <Pill label="Pro" tone="neutral" />
         </View>
       </Pressable>
-    </View>
+    </RecordsFrame>
   );
 }

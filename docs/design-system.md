@@ -35,6 +35,9 @@ Other accent shades explored: `#7C3AED`, `#6D28D9`, `#9333EA`. A dark theme is d
 | `opacity.pressed` | 0.85 | A filled control while pressed |
 | `opacity.disabled` | 0.4 | Any disabled or unavailable control or row (one value everywhere) |
 
+## Radius
+`radius` in `src/theme` holds the corner radii. `radius.card` (26) is a list card; `radius.hero` (30) is the larger card of an empty state or a hero (Progress).
+
 ## Type
 - **Sora** for everything. Large numbers (weights, reps) use heavy weights with tight tracking.
 
