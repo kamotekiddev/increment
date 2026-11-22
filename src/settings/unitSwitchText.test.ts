@@ -6,7 +6,7 @@ describe("unitSwitchText", () => {
   it("kg to lb", () => {
     expect(unitSwitchText("kg", "lb", false)).toEqual({
       title: "Switch to pounds?",
-      body: "Weights you're about to lift show in lb, rounded down to each exercise's lb step (62.5 kg becomes 135 lb). Sets you logged stay exactly as you typed them. You can switch back any time.",
+      body: "Weights you're about to lift are rounded down to each exercise's lb step, so every converted weight is one you can still load (62.5 kg becomes 135 lb). Sets you logged stay exactly as you typed them. You can switch back any time.",
       confirm: "Switch to pounds",
       cancel: "Cancel",
     });
@@ -14,7 +14,7 @@ describe("unitSwitchText", () => {
   it("lb to kg", () => {
     expect(unitSwitchText("lb", "kg", false)).toEqual({
       title: "Switch to kilograms?",
-      body: "Weights you're about to lift show in kg, rounded down to each exercise's kg step (135 lb becomes 60 kg). Sets you logged stay exactly as you typed them. You can switch back any time.",
+      body: "Weights you're about to lift are rounded down to each exercise's kg step, so every converted weight is one you can still load (135 lb becomes 60 kg). Sets you logged stay exactly as you typed them. You can switch back any time.",
       confirm: "Switch to kilograms",
       cancel: "Cancel",
     });

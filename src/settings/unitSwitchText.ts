@@ -14,7 +14,7 @@ const EXAMPLE: Record<Unit, string> = { lb: "62.5 kg becomes 135 lb", kg: "135 l
 
 /** Pure: copy for the confirmation sheet that opens when the lifter taps the other unit in Settings. */
 export function unitSwitchText(_from: Unit, to: Unit, workoutInProgress: boolean): UnitSwitchText {
-  const base = `Weights you're about to lift show in ${to}, rounded down to each exercise's ${to} step (${EXAMPLE[to]}). Sets you logged stay exactly as you typed them. You can switch back any time.`;
+  const base = `Weights you're about to lift are rounded down to each exercise's ${to} step, so every converted weight is one you can still load (${EXAMPLE[to]}). Sets you logged stay exactly as you typed them. You can switch back any time.`;
   return {
     title: `Switch to ${NAMES[to]}?`,
     body: workoutInProgress ? `${base} In your workout, sets you haven't typed or checked switch to ${to} too.` : base,
