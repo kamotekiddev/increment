@@ -6,10 +6,10 @@
 
 **Status:** ready-for-agent
 
-- [ ] Top set: heaviest weight, more reps wins a tie; warm-up, unchecked, discarded and open sets never count
-- [ ] Hero line cases: up, down (a Deload is not special-cased), same, reps only, first workout; a set from the other unit is compared in kg and shown with "≈"
-- [ ] "New record" and "New" come from the last workout's record tags; a first workout shows none; an equal workout shows none
-- [ ] Default exercise: most recently done, else first routine exercise
-- [ ] Hero and Records card match the `Progress` board for a weighted exercise
-- [ ] Tests at the Progress read module against an in-memory database cover the cases in `../spec.md`
-- [ ] Type check, lint and tests pass
+- [x] Top set: heaviest weight, more reps wins a tie; warm-up, unchecked, discarded and open sets never count
+- [x] Hero line cases: up, down (a Deload is not special-cased), same, reps only, first workout; a set from the other unit is compared in kg and shown with "≈"
+- [x] "New record" and "New" come from the last workout's record tags; a first workout shows none; an equal workout shows none
+- [x] Default exercise: most recently done, else first routine exercise
+- [x] Hero and Records card match the `Progress` board for a weighted exercise
+- [x] Tests at the Progress read module against an in-memory database cover the cases in `../spec.md`
+- [x] Type check, lint and tests pass

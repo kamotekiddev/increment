@@ -34,7 +34,7 @@ function dateParts(date: string): { year: number; month: number; day: number } {
   return { year, month, day };
 }
 
-function dateLabel(date: string): string {
+export function dateLabel(date: string): string {
   const { year, month, day } = dateParts(date);
   const weekday = new Date(year, month - 1, day).getDay();
   return `${WEEKDAYS[weekday]}, ${day} ${MONTHS[month - 1].slice(0, 3)}`;
