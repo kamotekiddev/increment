@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import type { ComponentProps, ReactNode } from "react";
 import { View } from "react-native";
 
-import { fontSize, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, spacing, useColors } from "@/theme";
 import { BottomSheet } from "./BottomSheet";
 import { Text } from "./Text";
 
@@ -15,12 +15,14 @@ export interface PromptSheetProps {
   tone?: "accent" | "danger";
   title: string;
   body: string;
+  /** A phrase inside `body` to set in bold. Ignored when `body` does not contain it. */
+  emphasis?: string;
   /** The buttons, top to bottom. Give each `large` or `stretch` so it fills the width. */
   children: ReactNode;
 }
 
 /** The top of a prompt: a round tinted icon, then a centered title and text. Use inside a sheet you already have. */
-export function PromptHeader({ icon, tone = "accent", title, body }: Pick<PromptSheetProps, "icon" | "tone" | "title" | "body">) {
+export function PromptHeader({ icon, tone = "accent", title, body, emphasis }: Pick<PromptSheetProps, "icon" | "tone" | "title" | "body" | "emphasis">) {
   const colors = useColors();
   const iconColor = tone === "danger" ? colors.danger : colors.accent;
   return (
@@ -41,7 +43,17 @@ export function PromptHeader({ icon, tone = "accent", title, body }: Pick<Prompt
         {title}
       </Text>
       <Text tone="muted" style={{ textAlign: "center" }}>
-        {body}
+        {emphasis && body.includes(emphasis) ? (
+          <>
+            {body.slice(0, body.indexOf(emphasis))}
+            <Text tone="ink" style={{ fontFamily: fontFamily.semibold }}>
+              {emphasis}
+            </Text>
+            {body.slice(body.indexOf(emphasis) + emphasis.length)}
+          </>
+        ) : (
+          body
+        )}
       </Text>
     </View>
   );

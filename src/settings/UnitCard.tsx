@@ -43,7 +43,7 @@ export function UnitCard() {
           </Text>
         </View>
       </Card>
-      <PromptSheet visible={pending !== null} onDismiss={close} icon="swap-horizontal-outline" tone="accent" title={text.title} body={text.body}>
+      <PromptSheet visible={pending !== null} onDismiss={close} icon="swap-horizontal-outline" tone="accent" title={text.title} body={text.body} emphasis={text.emphasis}>
         <Button
           label={text.confirm}
           large

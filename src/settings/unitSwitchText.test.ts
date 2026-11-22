@@ -7,6 +7,7 @@ describe("unitSwitchText", () => {
     expect(unitSwitchText("kg", "lb", false)).toEqual({
       title: "Switch to pounds?",
       body: "Weights you're about to lift are rounded down to each exercise's lb step, so every converted weight is one you can still load (62.5 kg becomes 135 lb). Sets you logged stay exactly as you typed them. You can switch back any time.",
+      emphasis: "so every converted weight is one you can still load",
       confirm: "Switch to pounds",
       cancel: "Cancel",
     });
@@ -15,9 +16,16 @@ describe("unitSwitchText", () => {
     expect(unitSwitchText("lb", "kg", false)).toEqual({
       title: "Switch to kilograms?",
       body: "Weights you're about to lift are rounded down to each exercise's kg step, so every converted weight is one you can still load (135 lb becomes 60 kg). Sets you logged stay exactly as you typed them. You can switch back any time.",
+      emphasis: "so every converted weight is one you can still load",
       confirm: "Switch to kilograms",
       cancel: "Cancel",
     });
+  });
+  it("the emphasised phrase is part of the body", () => {
+    for (const to of ["kg", "lb"] as const) {
+      const t = unitSwitchText(to === "kg" ? "lb" : "kg", to, true);
+      expect(t.body).toContain(t.emphasis);
+    }
   });
   it("adds the workout sentence last when a workout is in progress", () => {
     expect(unitSwitchText("kg", "lb", true).body.endsWith(" In your workout, sets you haven't typed or checked switch to lb too.")).toBe(true);
