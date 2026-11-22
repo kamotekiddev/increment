@@ -1,4 +1,3 @@
-import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -6,15 +5,15 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components";
-import { equipmentIcon } from "@/library/exerciseMeta";
+import { ExercisePicker } from "@/progress/ExercisePicker";
 import { EmptyRecordsCard, FirstRecordCard } from "@/progress/FirstRecordCard";
 import { ProNoticeSheet } from "@/progress/ProNoticeSheet";
 import { ProgressHero } from "@/progress/ProgressHero";
 import { RecordsCard } from "@/progress/RecordsCard";
 import { useExerciseProgress } from "@/progress/useExerciseProgress";
-import { fontFamily, fontSize, minTouch, opacity, radius, size, spacing, textStyle, useColors } from "@/theme";
+import { fontSize, minTouch, opacity, radius, size, spacing, textStyle, useColors } from "@/theme";
 
-/** The Progress tab: the exercise pill, its hero card and its Records card. The picker and empty states come later. */
+/** The Progress tab: the exercise pill, its hero card and its Records card. */
 export default function ProgressScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -57,28 +56,7 @@ export default function ProgressScreen() {
         </View>
         {progress ? (
           <>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: spacing.md,
-                height: 60,
-                paddingLeft: 10,
-                paddingRight: 18,
-                borderRadius: radius.pill,
-                backgroundColor: colors.card,
-              }}
-            >
-              <View
-                style={{ width: size.tile, height: size.tile, borderRadius: radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: colors.sunk }}
-              >
-                <MaterialCommunityIcons name={equipmentIcon(progress.equipment)} size={size.icon} color={colors.ink} />
-              </View>
-              <Text numberOfLines={1} style={{ flex: 1, fontFamily: fontFamily.semibold }}>
-                {progress.name}
-              </Text>
-              <Ionicons name="chevron-down" size={18} color={colors.iconFaint} />
-            </View>
+            <ExercisePicker exerciseId={progress.exerciseId} name={progress.name} equipment={progress.equipment} />
             {progress.hero ? (
               <>
                 <ProgressHero hero={progress.hero} onProPress={() => setProNotice(true)} />
