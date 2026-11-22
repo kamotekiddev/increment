@@ -22,7 +22,7 @@ Increment is an offline mobile workout tracker for iOS and Android, built around
 |---|---|---|
 | Exercise library | ✓ | ✓ |
 | Log workouts | Unlimited | Unlimited |
-| Routines | 3 | Unlimited |
+| Routines | 2 | Unlimited |
 | Charts and records | – | ✓ |
 | Custom exercises | – | ✓ |
 | Move to a new phone (backup and restore) | – | ✓ |
