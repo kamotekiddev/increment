@@ -4,11 +4,11 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] Bodyweight hero, line and Records rows match the board
-- [ ] Empty card uses the full exercise name
-- [ ] No routines and no workouts shows "No workouts yet."
-- [ ] A missing 1-rep max shows "– – –", not 0
-- [ ] Tests at the Progress read module cover bodyweight and no-workout cases
-- [ ] Type check, lint and tests pass
+- [x] Bodyweight hero, line and Records rows match the board
+- [x] Empty card uses the full exercise name
+- [x] No routines and no workouts shows "No workouts yet."
+- [x] A missing 1-rep max shows "– – –", not 0
+- [x] Tests at the Progress read module cover bodyweight and no-workout cases
+- [x] Type check, lint and tests pass

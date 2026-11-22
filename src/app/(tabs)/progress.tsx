@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components";
 import { equipmentIcon } from "@/library/exerciseMeta";
+import { EmptyRecordsCard, FirstRecordCard } from "@/progress/FirstRecordCard";
 import { ProgressHero } from "@/progress/ProgressHero";
 import { RecordsCard } from "@/progress/RecordsCard";
 import { useExerciseProgress } from "@/progress/useExerciseProgress";
@@ -75,8 +76,17 @@ export default function ProgressScreen() {
               </Text>
               <Ionicons name="chevron-down" size={18} color={colors.iconFaint} />
             </View>
-            {progress.hero ? <ProgressHero hero={progress.hero} /> : null}
-            {progress.records ? <RecordsCard exerciseName={progress.name} rows={progress.records} /> : null}
+            {progress.hero ? (
+              <>
+                <ProgressHero hero={progress.hero} />
+                <RecordsCard exerciseName={progress.name} rows={progress.records} />
+              </>
+            ) : (
+              <>
+                <FirstRecordCard exerciseName={progress.name} bodyweight={progress.loadType === "bodyweight"} />
+                <EmptyRecordsCard exerciseName={progress.name} rows={progress.records} />
+              </>
+            )}
           </>
         ) : progress === null ? (
           <Text tone="muted">No workouts yet.</Text>
