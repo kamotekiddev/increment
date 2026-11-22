@@ -291,8 +291,15 @@ describe("exerciseProgress records and New", () => {
     ]);
   });
 
-  it("has no Records for an exercise with no finished workout", () => {
-    const id = exercise("Bench");
-    expect(exerciseProgress(id, "kg")?.records).toBeNull();
+  it("has empty Records rows for an exercise with no finished workout, by load type", () => {
+    const empty = (name: string, label = name) => ({ name, label, value: null, dateLabel: null, isNew: false });
+    const bench = exercise("Barbell bench press");
+    expect(exerciseProgress(bench, "kg")?.records).toEqual([
+      empty("Heaviest set"),
+      empty("1-rep max", "Estimated 1-rep max"),
+      empty("Most volume"),
+    ]);
+    const pullUp = exercise("Pull-up", "bodyweight");
+    expect(exerciseProgress(pullUp, "kg")?.records).toEqual([empty("Most reps in a set"), empty("Most reps in a workout")]);
   });
 });

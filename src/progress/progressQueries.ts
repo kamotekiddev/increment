@@ -151,8 +151,8 @@ export interface ExerciseProgress {
   loadType: LoadType;
   /** Null while the exercise has no finished workout with a counted set. */
   hero: Hero | null;
-  /** The Records card rows, in display order; null while the exercise has no finished workout. */
-  records: RecordRow[] | null;
+  /** The Records card rows, in display order; with no finished workout every value is null ("– – –"). */
+  records: RecordRow[];
 }
 
 /** One row of the Records card. */
@@ -194,6 +194,14 @@ function recordRows(records: ExerciseRecords, unit: Unit, newNames: RecordName[]
     row("1-rep max", "Estimated 1-rep max", max && `${thousands(max.value)} ${unit}`, max?.date ?? null),
     row("Most volume", "Most volume", `${thousands(records.mostVolume.value)} ${unit}`, records.mostVolume.date),
   ];
+}
+
+/** The rows of an exercise nothing has been done with: every value empty. */
+function emptyRecordRows(loadType: LoadType): RecordRow[] {
+  const row = (name: RecordName, label: string): RecordRow => ({ name, label, value: null, dateLabel: null, isNew: false });
+  return loadType === "bodyweight"
+    ? [row("Most reps in a set", "Most reps in a set"), row("Most reps in a workout", "Most reps in a workout")]
+    : [row("Heaviest set", "Heaviest set"), row("1-rep max", "Estimated 1-rep max"), row("Most volume", "Most volume")];
 }
 
 /** The Records the workout set for this exercise, from the records module's tags (never from dates). */
@@ -247,12 +255,12 @@ export function exerciseProgress(exerciseId: number, unit: Unit): ExerciseProgre
   const tops = topSets(exerciseId, loadType);
   const last = tops[tops.length - 1];
   let hero: Hero | null = null;
-  let records: RecordRow[] | null = null;
+  let records = emptyRecordRows(loadType);
   if (last) {
     const prev = tops[tops.length - 2];
     const newNames = newRecordNames(last.workoutId, exerciseId);
     const current = exerciseRecords(exerciseId, unit);
-    records = current && recordRows(current, unit, newNames);
+    if (current) records = recordRows(current, unit, newNames);
     hero = {
       dateLabel: dateLabel(last.date),
       topSet: topSetText(last, loadType, unit),
