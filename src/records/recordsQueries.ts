@@ -22,8 +22,8 @@ export type ExerciseRecords =
       loadType: "weighted";
       /** As History shows a set: `62.5 × 8`, or `≈61.2 × 5` from the other unit. */
       heaviestSet: { text: string; date: string };
-      /** Whole number in the asked unit. */
-      estimatedOneRepMax: DatedValue;
+      /** Whole number in the asked unit; null when every counted set is above 12 reps. */
+      estimatedOneRepMax: DatedValue | null;
       /** Whole number in the asked unit. */
       mostVolume: DatedValue;
     }
@@ -78,9 +78,10 @@ function heavierThan(a: CountedSet, b: CountedSet): boolean {
 
 /**
  * Every counted set of the exercise, grouped per finished Workout, earliest start first (History's order).
- * Only done Working sets of finished Workouts count, across all Routines.
+ * Only done Working sets of finished Workouts count, across all Routines. A set with no reps never counts, and a
+ * weighted exercise ignores a set with no weight (a blank weight is stored as 0).
  */
-function sessionsOf(exerciseId: number): Session[] {
+function sessionsOf(exerciseId: number, loadType: "weighted" | "bodyweight"): Session[] {
   const rows = db
     .select({
       workoutId: workouts.id,
@@ -100,6 +101,8 @@ function sessionsOf(exerciseId: number): Session[] {
 
   const sessions = new Map<number, Session>();
   for (const row of rows) {
+    if (row.reps <= 0) continue;
+    if (loadType === "weighted" && row.weight <= 0) continue;
     let session = sessions.get(row.workoutId);
     if (!session) {
       session = {
@@ -164,7 +167,7 @@ export function workoutRecordTags(workoutId: number): WorkoutRecordTags {
 
   const result: WorkoutRecordTags = {};
   for (const exerciseId of exerciseIds) {
-    const sessions = sessionsOf(exerciseId);
+    const sessions = sessionsOf(exerciseId, loadTypes.get(exerciseId) === "bodyweight" ? "bodyweight" : "weighted");
     const index = sessions.findIndex((s) => s.workoutId === workoutId);
     // No counted set in this Workout, or nothing earlier to beat.
     if (index <= 0) continue;
@@ -207,7 +210,7 @@ function bodyweightTags(current: Session, earlier: Session[]): RecordName[] {
 export function exerciseRecords(exerciseId: number, unit: Unit): ExerciseRecords | null {
   const loadType = loadTypeOf(exerciseId);
   if (!loadType) return null;
-  const sessions = sessionsOf(exerciseId);
+  const sessions = sessionsOf(exerciseId, loadType);
   if (sessions.length === 0) return null;
 
   if (loadType === "bodyweight") {
@@ -240,11 +243,8 @@ export function exerciseRecords(exerciseId: number, unit: Unit): ExerciseRecords
       text: `${loggedWeightText({ value: top.weight, unit: top.unit }, unit)} × ${top.reps}`,
       date: heaviest.date,
     },
-    // A weighted exercise whose every counted set is above 12 reps has no 1-rep max; show its Heaviest set's day at 0.
-    estimatedOneRepMax: {
-      value: Math.round(fromKg(oneRepMax?.oneRepMaxKg ?? 0, unit)),
-      date: (oneRepMax ?? heaviest).date,
-    },
+    estimatedOneRepMax:
+      oneRepMax?.oneRepMaxKg == null ? null : { value: Math.round(fromKg(oneRepMax.oneRepMaxKg, unit)), date: oneRepMax.date },
     mostVolume: { value: Math.round(fromKg(volume.volumeKg, unit)), date: volume.date },
   };
 }
