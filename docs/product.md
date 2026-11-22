@@ -37,11 +37,11 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - Not yet (later phases): notes, records on the summary (Phase 2).
 
 ### Progressive overload
-- **Free**: one simple rule, chosen from the exercise's load type. Weighted exercises add the Jump, and bodyweight exercises add reps. Progression is Earned after 3 clean workouts in a row, then the app asks the lifter whether to progress.
-- **Pro**: your own rule per exercise. Choose the step (add weight, add reps, or both), the rep step, how many clean workouts in a row earn progression (1–5), what happens after misses ("if you miss twice in a row: keep the weight / drop 10%"), and deload weeks (off unless you turn them on). A live preview shows the result before you save, e.g. "hit 8 on every set and it becomes 65 kg".
-- **Weight jumps** (free, Settings): one Jump per equipment (Barbell and EZ bar, Dumbbell and kettlebell, Machine, Cable, "Bodyweight, added weight"), set with − / + through real plate steps. Pro's rule panel sets how and when progression happens, and still uses these Jumps.
-- **Bodyweight and weighted twins**: an exercise done both with and without added weight is two exercises (Pull-up and Weighted pull-up). A bodyweight exercise steps by reps and has no weight box in the live workout; the weighted twin steps by weight with the "Bodyweight, added weight" Jump. Lifters who logged belt weight on the plain exercise switch their routine to the twin to keep stepping by weight; their history stays where it was.
-- Targets round to a multiple of your Jump: a step goes up to the next one, and a drop or deload down. After you switch unit, a Target set in the other unit moves to the nearest multiple of your Jump so you can load it (10 kg with a 5 lb Jump is 20 lb), and Go up is one Jump above that. Changing a Jump never moves a Target you already have.
+- **Default rule**: an exercise added to a routine starts with a rule chosen from its load type. Weighted exercises add the Jump, and bodyweight exercises add reps. Progression is Earned after 3 clean workouts in a row, then the app asks the lifter whether to progress.
+- **Your own rule per exercise, free for everyone**: the Overload rule panel (from the Exercise setup sheet) sets how it progresses (Weight first adds the Jump, Double progression adds the Jump and a rep, Reps only adds a rep), "Add each time", what happens after two misses in a row (keep the weight / drop 10%), and Deload weeks (off unless you turn them on: every 6 weeks, one workout at 60%). The rep step (1) and the clean workouts that earn progression (3) are not editable. A bodyweight exercise steps by reps only, so its panel shows only the preview. A live preview shows the result before you save, e.g. "Hit 8 on every set and it becomes 65 kg". A due Deload is marked on the workout, so it does not count toward the Streak and the next one counts its weeks from there.
+- **Jump per routine exercise**: each exercise in a routine has its own Jump ("Add each time"), one for kg and one for lb, 2.5 kg / 5 lb until you change it, so a 5 kg leg press or a 1 kg overhead press only changes that exercise. Switching unit uses the other unit's Jump and never changes either. There is no Weight jumps screen.
+- **Bodyweight and weighted twins**: an exercise done both with and without added weight is two exercises (Pull-up and Weighted pull-up). A bodyweight exercise steps by reps and has no weight box in the live workout; the weighted twin steps by weight with its own Jump. Lifters who logged belt weight on the plain exercise switch their routine to the twin to keep stepping by weight; their history stays where it was.
+- Targets round to a multiple of your Jump: a step goes up to the next one, and a drop or deload down. After you switch unit, a Target set in the other unit moves down to a multiple of your Jump so you can load it (62.5 kg with a 5 lb Jump is 135 lb, not 140 lb), and Go up is one Jump above that. Pre-filled rows and the Last column round down the same way. Changing a Jump never moves a Target you already have.
 
 ### Units (kg / lb)
 - A global preference, chosen in onboarding and changeable in Settings. There is no switch on the live workout screen, so a workout is logged in one unit.
@@ -58,7 +58,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - States for no routine yet and for routines with no days set (a card with a Plan your week button). No settings gear until Phase 2, no ready-made plans or empty workout (see `.scratch/phase-1/today/spec.md`).
 
 ### Settings
-- Units, smallest weight jumps by equipment, default rest, show previous set, keep screen awake, light and dark theme, reminders.
+- Units, default rest, show previous set, keep screen awake, light and dark theme, reminders.
 - **Default rest** (15 s to 10:00, default 1:30) is the rest a newly added exercise starts with; exercises already in a routine never change. **Show previous set** (on by default) shows the Last column in the live workout. **Keep screen awake** (on by default) keeps the screen lit while a live workout is open.
 - Your data: backup, automatic backups, export, delete all data (with a typed confirmation).
 
@@ -76,7 +76,6 @@ Welcome → Goal → Experience → Schedule → Equipment → Units → Your pl
 | Exercise library | ✓ | ✓ |
 | Log workouts | Unlimited | Unlimited |
 | Routines | 2 | Unlimited |
-| Overload rules | 1 simple (by load type) | Your own |
 | Charts and records | – | ✓ |
 | Custom exercises | – | ✓ |
 | Move to a new phone | – | ✓ |

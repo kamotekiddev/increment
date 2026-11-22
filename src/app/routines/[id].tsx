@@ -1,9 +1,10 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BackHandler, Pressable, ScrollView, View } from "react-native";
 
 import { Button, RoundButton, ScreenHeader, Text } from "@/components";
+import { db } from "@/db/client";
 import { exerciseMeta } from "@/library/exerciseMeta";
 import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { DayPicker } from "@/routines/DayPicker";
@@ -34,9 +35,12 @@ import {
 import type { ExerciseSetup } from "@/routines/routineSetup";
 import { setupSubtitle } from "@/routines/setupText";
 import { fontFamily, fontSize, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
+import type { OverloadRule } from "@/engine";
+import type { Jumps } from "@/units";
 import { useInProgressOnFocus } from "@/workout/inProgressQueries";
 import { isRoutineLocked, LOCK_MESSAGE } from "@/workout/routineLock";
 import { openWorkout, useStartWorkout } from "@/workout/useStartWorkout";
+import { pastExercises } from "@/workout/workoutQueries";
 
 type Loaded = Awaited<ReturnType<typeof loadRoutine>>;
 
@@ -135,9 +139,12 @@ export default function EditRoutineScreen() {
     await setRoutineDays(id, next);
   }
 
-  async function saveExercise(setup: ExerciseSetup) {
+  // The edited exercise's finished workouts in this routine, for the rule panel's preview.
+  const editingPast = useMemo(() => (editing ? pastExercises(db, id, editing.exerciseId) : []), [editing, id]);
+
+  async function saveExercise(setup: ExerciseSetup, jumps: Partial<Jumps>, rule?: OverloadRule) {
     if (!editing) return;
-    await updateRoutineExercise(editing.id, setup);
+    await updateRoutineExercise(editing.id, setup, jumps, rule);
     setEditing(null);
     setExerciseVersion((v) => v + 1);
   }
@@ -363,6 +370,9 @@ export default function EditRoutineScreen() {
             subtitle={exerciseMeta(editing)}
             initial={editing}
             rule={editing.rule}
+            loadType={editing.loadType}
+            jumps={editing}
+            past={editingPast}
             primaryLabel="Save"
             onSubmit={saveExercise}
             onDismiss={() => setEditing(null)}

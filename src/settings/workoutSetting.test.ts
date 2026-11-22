@@ -1,7 +1,6 @@
 import { userSettings } from "@/db/schema";
 
 import { createTestDb } from "../../test-support/testDb";
-import { readJumps, writeJump } from "./jumpSetting";
 import { readUnit, writeUnit } from "./unitSetting";
 import { readWorkoutSettings, writeDefaultRest, writeKeepScreenAwake, writeShowPreviousSet } from "./workoutSetting";
 
@@ -13,13 +12,11 @@ describe("Workout settings", () => {
   it("a write reads back and touches no other column", () => {
     const db = createTestDb();
     writeUnit(db, "lb");
-    writeJump(db, "barbell", 5);
     writeDefaultRest(db, 120);
     writeShowPreviousSet(db, false);
     writeKeepScreenAwake(db, false);
     expect(readWorkoutSettings(db)).toEqual({ defaultRestS: 120, showPreviousSet: false, keepScreenAwake: false });
     expect(readUnit(db)).toBe("lb");
-    expect(readJumps(db).barbell).toBe(5);
   });
 
   it("one write leaves the other two Workout settings alone", () => {

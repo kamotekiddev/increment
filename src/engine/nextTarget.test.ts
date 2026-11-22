@@ -59,7 +59,7 @@ describe("nextTarget: first workouts", () => {
   });
 });
 
-describe("nextTarget: earning progression (free rule, 3 clean in a row)", () => {
+describe("nextTarget: earning progression (default rule, 3 clean in a row)", () => {
   const clean = (d: string) => session(d, T, [8, 8, 8]);
 
   it("two clean workouts is not earned", () => {
@@ -165,7 +165,7 @@ describe("nextTarget: steps", () => {
   });
 });
 
-describe("nextTarget: a Target set in the other unit snaps to the nearest multiple of the Jump", () => {
+describe("nextTarget: a Target set in the other unit rounds down to a multiple of the Jump", () => {
   const LB = 0.45359237;
   const lb = (n: number) => n * LB;
   const inLb = (kg: number) => Number((kg / LB).toFixed(2));
@@ -178,8 +178,13 @@ describe("nextTarget: a Target set in the other unit snaps to the nearest multip
     expect(r.reason).toBe("on-track");
     expect(inLb(r.target!.weightKg)).toBe(20);
   });
-  it("62.5 kg (137.79 lb) with a 5 lb Jump shows 140 lb", () => {
-    expect(inLb(nextTarget(input(onTrack(62.5), {}, inLbWith(5))).target!.weightKg)).toBe(140);
+  it("62.5 kg (137.79 lb) with a 5 lb Jump shows 135 lb, not 140", () => {
+    expect(inLb(nextTarget(input(onTrack(62.5), {}, inLbWith(5))).target!.weightKg)).toBe(135);
+  });
+  it("rounds down, never to the nearest: 24 kg is 50 lb, 100 kg is 220 lb, 60 kg is 130 lb", () => {
+    expect(inLb(nextTarget(input(onTrack(24), {}, inLbWith(5))).target!.weightKg)).toBe(50);
+    expect(inLb(nextTarget(input(onTrack(100), {}, inLbWith(5))).target!.weightKg)).toBe(220);
+    expect(inLb(nextTarget(input(onTrack(60), {}, inLbWith(5))).target!.weightKg)).toBe(130);
   });
   it("50 kg (110.23 lb) with a 10 lb Jump shows 110 lb", () => {
     expect(inLb(nextTarget(input(onTrack(50), {}, inLbWith(10))).target!.weightKg)).toBe(110);
@@ -187,13 +192,19 @@ describe("nextTarget: a Target set in the other unit snaps to the nearest multip
   it("lb to kg snaps the same way: 135 lb (61.23 kg) with a 2.5 kg Jump shows 60 kg", () => {
     expect(nextTarget(input(onTrack(lb(135), "lb"), {}, { unit: "kg", jumpKg: 2.5 })).target).toEqual({ weightKg: 60, reps: 8 });
   });
-  it("an exact tie rounds up, in either direction", () => {
-    expect(inLb(nextTarget(input(onTrack(lb(22.5)), {}, inLbWith(5))).target!.weightKg)).toBe(25);
-    expect(nextTarget(input(onTrack(61.25, "lb"), {}, { unit: "kg", jumpKg: 2.5 })).target).toEqual({ weightKg: 62.5, reps: 8 });
+  it("a weight halfway between two steps rounds down, in either direction", () => {
+    expect(inLb(nextTarget(input(onTrack(lb(22.5)), {}, inLbWith(5))).target!.weightKg)).toBe(20);
+    expect(nextTarget(input(onTrack(61.25, "lb"), {}, { unit: "kg", jumpKg: 2.5 })).target).toEqual({ weightKg: 60, reps: 8 });
   });
   it("a Target already on the new grid is left exactly as it is", () => {
     expect(nextTarget(input(onTrack(60, "lb"), {}, { unit: "kg", jumpKg: 2.5 })).target!.weightKg).toBe(60);
     expect(nextTarget(input(onTrack(lb(135)), {}, inLbWith(5))).target!.weightKg).toBe(lb(135));
+  });
+  it("a Target on the grid but a float hair below it does not drop a whole step: 135 lb stays 135 lb", () => {
+    // 135 × 0.45359237 ÷ (5 × 0.45359237) is 26.999999999999996, which a plain floor would make 130 lb.
+    for (const n of [25, 50, 75, 100, 130, 135]) {
+      expect(inLb(nextTarget(input(onTrack(lb(n)), {}, inLbWith(5))).target!.weightKg)).toBe(n);
+    }
   });
   it("a Target set in the current unit never snaps, even after the Jump changed", () => {
     expect(nextTarget(input(onTrack(62.5), {}, { unit: "kg", jumpKg: 5 })).target).toEqual({ weightKg: 62.5, reps: 8 });
@@ -205,19 +216,19 @@ describe("nextTarget: a Target set in the other unit snaps to the nearest multip
     expect(r.reason).toBe("hold");
     expect(inLb(r.target!.weightKg)).toBe(20);
   });
-  it("an accepted Target set in kg snaps to the lb grid: 62.5 kg is 140 lb", () => {
+  it("an accepted Target set in kg rounds down to the lb grid: 62.5 kg is 135 lb", () => {
     const t = { weightKg: 60, reps: 8 };
     const accepted = { ...session("2026-01-26", t, [8, 8, 8], { accepted: true }), acceptedTarget: { weightKg: 62.5, reps: 8 } };
     const r = nextTarget(input([accepted, session("2026-01-19", t, [8, 8, 8]), session("2026-01-12", t, [8, 8, 8])], {}, inLbWith(5)));
     expect(r.reason).toBe("progressed");
-    expect(inLb(r.target!.weightKg)).toBe(140);
+    expect(inLb(r.target!.weightKg)).toBe(135);
   });
   it("a baseline uses the unit its sets were logged in", () => {
     const baseline = (unit: "kg" | "lb") => [session("2026-01-05", null, [8, 8, 8], { weightKg: 12.5, unit })];
     // A kg-only lifter's 12.5 kg with a 2 kg Jump stays 12.5.
     expect(nextTarget(input(baseline("kg"), {}, { unit: "kg", jumpKg: 2 })).target).toEqual({ weightKg: 12.5, reps: 8 });
-    // Logged in kg, now in lb: 12.5 kg (27.56 lb) is 30 lb on a 5 lb grid.
-    expect(inLb(nextTarget(input(baseline("kg"), {}, inLbWith(5))).target!.weightKg)).toBe(30);
+    // Logged in kg, now in lb: 12.5 kg (27.56 lb) is 25 lb on a 5 lb grid.
+    expect(inLb(nextTarget(input(baseline("kg"), {}, inLbWith(5))).target!.weightKg)).toBe(25);
   });
   it("a snapped Target is a changed Target, so the Streak restarts", () => {
     const at = (date: string, weightKg: number, unit: "kg" | "lb") => session(date, { weightKg, reps: 8 }, [8, 8, 8], { unit });
@@ -226,15 +237,26 @@ describe("nextTarget: a Target set in the other unit snaps to the nearest multip
     expect(r.proposal).toBeNull();
     expect(inLb(r.target!.weightKg)).toBe(20);
   });
-  it("a step up goes one Jump above the snapped Target: Stay 140 lb, Go up 145 lb", () => {
+  it("a step up goes one Jump above the rounded-down Target: Stay 135 lb, Go up 140 lb", () => {
     const earned = (weightKg: number) =>
       ["2026-01-26", "2026-01-19", "2026-01-12"].map((d) => session(d, { weightKg, reps: 8 }, [8, 8, 8], { unit: "kg" }));
     const r = nextTarget(input(earned(62.5), {}, inLbWith(5)));
     expect(r.reason).toBe("earned");
-    expect(inLb(r.target!.weightKg)).toBe(140);
-    expect(inLb(r.proposal!.weightKg)).toBe(145);
+    expect(inLb(r.target!.weightKg)).toBe(135);
+    expect(inLb(r.proposal!.weightKg)).toBe(140);
     const ten = nextTarget(input(earned(10), {}, inLbWith(5)));
     expect([inLb(ten.target!.weightKg), inLb(ten.proposal!.weightKg)]).toEqual([20, 25]);
+  });
+  it("a drop after misses and a deload still round down from the rounded-down Target", () => {
+    const miss = (d: string) => session(d, { weightKg: 62.5, reps: 8 }, [8, 8, 6], { unit: "kg" });
+    const dropped = nextTarget(input([miss("2026-01-19"), miss("2026-01-12")], { miss: { after: 2, action: { kind: "drop", percent: 10 } } }, inLbWith(5)));
+    // 135 lb less 10% is 121.5 lb, which rounds down to 120 lb.
+    expect(dropped.reason).toBe("miss-drop");
+    expect(inLb(dropped.target!.weightKg)).toBe(120);
+    const weeks = ["2026-01-26", "2026-01-19", "2026-01-12"].map((d) => session(d, { weightKg: 62.5, reps: 8 }, [8, 8, 6], { unit: "kg" }));
+    const deload = nextTarget(input(weeks, { deload: { everyWeeks: 3, percent: 10 } }, inLbWith(5)));
+    expect(deload.reason).toBe("deload");
+    expect(inLb(deload.target!.weightKg)).toBe(120);
   });
   it("a bodyweight Target stays at 0", () => {
     const bw = session("2026-01-12", { weightKg: 0, reps: 8 }, [8, 8, 8], { unit: "kg" });
