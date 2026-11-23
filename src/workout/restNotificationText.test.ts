@@ -1,12 +1,4 @@
-import { restNotificationContent, secondsUntil, shouldAskPermission } from "./restNotificationText";
-
-describe("shouldAskPermission", () => {
-  it("asks only when undetermined", () => {
-    expect(shouldAskPermission("undetermined")).toBe(true);
-    expect(shouldAskPermission("granted")).toBe(false);
-    expect(shouldAskPermission("denied")).toBe(false);
-  });
-});
+import { restNotificationContent, secondsUntil } from "./restNotificationText";
 
 describe("restNotificationContent", () => {
   it("uses the next-up line as the body", () => {

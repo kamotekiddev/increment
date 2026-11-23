@@ -9,11 +9,12 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
-import { View } from "react-native";
+import { AppState, View } from "react-native";
 
 import { Text } from "@/components";
+import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
-import { loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
+import { loadReminderSettingsOnce, loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
 import { spacing, useColors } from "@/theme";
 import { setupRestNotifications } from "@/workout/restNotification";
 
@@ -34,7 +35,8 @@ export default function RootLayout() {
   // Once the database is ready, read the saved unit and Workout settings before any screen renders.
   const unitError = dbReady ? loadUnitOnce() : null;
   const workoutError = dbReady ? loadWorkoutSettingsOnce() : null;
-  const dbError = openError ?? unitError ?? workoutError;
+  const reminderError = dbReady ? loadReminderSettingsOnce() : null;
+  const dbError = openError ?? unitError ?? workoutError ?? reminderError;
 
   const fontsDone = fontsLoaded || fontError != null;
   const done = fontsDone && (dbReady || dbError != null);
@@ -42,6 +44,16 @@ export default function RootLayout() {
   useEffect(() => {
     if (done) SplashScreen.hideAsync();
   }, [done]);
+
+  // Reminders are rescheduled at app start (once the database is ready) and each time the app returns to the foreground.
+  useEffect(() => {
+    if (!dbReady || dbError) return;
+    void refreshReminders();
+    const sub = AppState.addEventListener("change", (state) => {
+      if (state === "active") void refreshReminders();
+    });
+    return () => sub.remove();
+  }, [dbReady, dbError]);
 
   if (!done) return null;
 

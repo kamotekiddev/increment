@@ -2,8 +2,10 @@ import * as Notifications from "expo-notifications";
 import { AndroidImportance } from "expo-notifications";
 import { Platform } from "react-native";
 
+import { ensurePermission } from "@/notifications";
+
 import { useRestStore } from "./restStore";
-import { restNotificationContent, secondsUntil, shouldAskPermission } from "./restNotificationText";
+import { restNotificationContent, secondsUntil } from "./restNotificationText";
 
 /** Thin wrapper over expo-notifications for the rest-over alert. Every call is guarded: a failure never breaks the timer. */
 
@@ -14,21 +16,6 @@ const REST_NOTIFICATION_ID = "rest-over";
 let scheduledId: string | null = null;
 /** Bumped on every schedule or cancel, so a schedule that was waiting on the permission prompt can tell it was overtaken. */
 let generation = 0;
-
-/** The permission check and request, made once per app session so rescheduling never repeats or doubles the prompt. */
-let permission: Promise<boolean> | null = null;
-
-function ensurePermission(): Promise<boolean> {
-  permission ??= (async () => {
-    let result = await Notifications.getPermissionsAsync();
-    if (shouldAskPermission(result.status)) result = await Notifications.requestPermissionsAsync();
-    return result.granted;
-  })().catch(() => {
-    permission = null;
-    return false;
-  });
-  return permission;
-}
 
 /** Call once at app start: no banner or sound while the app is open, the Android channel, and cancel when the rest clears. */
 export function setupRestNotifications() {
