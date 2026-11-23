@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { db, type Db } from "@/db/client";
 import { exercises, routineExercises, sets, workoutExercises, workouts } from "@/db/schema";
 import { nextTarget, type LoadType, type Target, type WeightUnit } from "@/engine";
+import { refreshReminders } from "@/reminders";
 import { pickStore } from "@/progress/pickStore";
 import { jumpKgFor, type Jumps, type Unit } from "@/units";
 
@@ -84,6 +85,13 @@ function deleteWorkoutExercise(q: Queryable, workoutExerciseId: number): void {
  * new workout id, or null when the routine has no exercises.
  */
 export function startWorkout(routineId: number, unit: Unit, now: Date = new Date()): number | null {
+  const id = startWorkoutTx(routineId, unit, now);
+  // Today now has a workout, so today's reminder goes. Fire and forget: a failure never breaks Start.
+  if (id !== null) void refreshReminders();
+  return id;
+}
+
+function startWorkoutTx(routineId: number, unit: Unit, now: Date): number | null {
   return db.transaction((tx) => {
     const planned = tx
       .select({
@@ -292,6 +300,8 @@ export function discardWorkout(id: number): void {
     exRows.forEach((ex) => deleteWorkoutExercise(tx, ex.id));
     tx.delete(workouts).where(eq(workouts.id, id)).run();
   });
+  // Today's reminder can come back if its time has not passed.
+  void refreshReminders();
 }
 
 /**
