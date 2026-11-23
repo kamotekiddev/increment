@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import {
   AppState,
   Linking,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Switch,
   View,
+  type ViewStyle,
 } from "react-native";
 
 import { Card, Text } from "@/components";
@@ -20,6 +21,8 @@ import { useRoutines } from "@/routines/routineQueries";
 import {
   fontFamily,
   fontSize,
+  lineHeight,
+  noteRow,
   opacity,
   radius,
   size,
@@ -30,6 +33,36 @@ import {
 import { formatReminderTime } from "./reminderTime";
 import { ReminderTimeSheet } from "./ReminderTimeSheet";
 import { useReminderTime, useRemindersOn } from "./useReminderSettings";
+
+/** A note under a Reminders row: a small icon and its text, on a divider. */
+function NoteRow({
+  icon,
+  iconColor,
+  style,
+  children,
+}: {
+  icon: ComponentProps<typeof Ionicons>["name"];
+  iconColor: string;
+  style: ViewStyle;
+  children: ReactNode;
+}) {
+  return (
+    <View
+      style={[
+        {
+          flexDirection: "row",
+          gap: spacing.sm,
+          paddingTop: spacing.md,
+          paddingBottom: noteRow.paddingBottom,
+        },
+        style,
+      ]}
+    >
+      <Ionicons name={icon} size={noteRow.icon} color={iconColor} style={{ marginTop: noteRow.iconTop }} />
+      {children}
+    </View>
+  );
+}
 
 /**
  * The Reminders card of Settings: the Training day reminders switch and, while it is on, the Time row
@@ -94,7 +127,7 @@ export function ReminderCard() {
     height: size.settingsRow,
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.md - 2,
+    gap: noteRow.rowGap,
   } as const;
   const divider = {
     borderTopWidth: StyleSheet.hairlineWidth,
@@ -114,7 +147,7 @@ export function ReminderCard() {
         style={{
           fontSize: fontSize.small,
           fontFamily: fontFamily.medium,
-          paddingHorizontal: 6,
+          paddingHorizontal: spacing.snug,
         }}
       >
         Reminders
@@ -153,26 +186,10 @@ export function ReminderCard() {
               />
             </Pressable>
             {offNote ? null : (
-              <View
-                style={[
-                  {
-                    flexDirection: "row",
-                    gap: spacing.sm,
-                    paddingTop: spacing.md,
-                    paddingBottom: 14,
-                  },
-                  divider,
-                ]}
-              >
-                <Ionicons
-                  name="calendar-outline"
-                  size={15}
-                  color={colors.inkMuted}
-                  style={{ marginTop: 2 }}
-                />
+              <NoteRow icon="calendar-outline" iconColor={colors.inkMuted} style={divider}>
                 <Text
                   tone="muted"
-                  style={{ flex: 1, fontSize: fontSize.small, lineHeight: 19 }}
+                  style={{ flex: 1, fontSize: fontSize.small, lineHeight: lineHeight.small }}
                 >
                   {days ? (
                     <>
@@ -190,33 +207,17 @@ export function ReminderCard() {
                     "No training days yet. Set days on a Routine."
                   )}
                 </Text>
-              </View>
+              </NoteRow>
             )}
           </>
         ) : null}
         {offNote ? (
-          <View
-            style={[
-              {
-                flexDirection: "row",
-                gap: spacing.sm,
-                paddingTop: spacing.md,
-                paddingBottom: 14,
-              },
-              divider,
-            ]}
-          >
-            <Ionicons
-              name="notifications-off-outline"
-              size={15}
-              color={colors.warn}
-              style={{ marginTop: 2 }}
-            />
+          <NoteRow icon="notifications-off-outline" iconColor={colors.warn} style={divider}>
             <View style={{ flex: 1, gap: spacing.xs }}>
               <Text
                 style={{
                   fontSize: fontSize.small,
-                  lineHeight: 19,
+                  lineHeight: lineHeight.small,
                   fontFamily: fontFamily.semibold,
                 }}
               >
@@ -236,7 +237,7 @@ export function ReminderCard() {
                 <Text
                   style={{
                     fontSize: fontSize.small,
-                    lineHeight: 19,
+                    lineHeight: lineHeight.small,
                     fontFamily: fontFamily.semibold,
                     color: colors.accent,
                   }}
@@ -245,12 +246,12 @@ export function ReminderCard() {
                 </Text>
                 <Ionicons
                   name="chevron-forward"
-                  size={15}
+                  size={noteRow.icon}
                   color={colors.accent}
                 />
               </Pressable>
             </View>
-          </View>
+          </NoteRow>
         ) : null}
       </Card>
       <ReminderTimeSheet

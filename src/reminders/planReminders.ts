@@ -1,4 +1,6 @@
-import { isDaySet } from "../routines/routineDays";
+import { isDaySet } from "@/routines/routineDays";
+
+import { REMINDER_ID_PREFIX } from "./reminderId";
 
 /** How many days the planner looks ahead, today included. */
 export const REMINDER_WINDOW_DAYS = 28;
@@ -51,7 +53,7 @@ export function planReminders({ routines, workoutStartedToday, timeMinutes, now 
     const planned = routines.filter((r) => isDaySet(r.days, bit));
     if (planned.length === 0) continue;
     out.push({
-      id: `reminder-${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`,
+      id: `${REMINDER_ID_PREFIX}${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`,
       at,
       title: `${joinNames(planned.map((r) => r.name))} today`,
       body: bodyFor(planned),

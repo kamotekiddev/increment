@@ -10,16 +10,16 @@ import { loadRoutines } from "@/routines/routineQueries";
 import { readReminderSettings } from "@/settings/reminderSetting";
 
 import { planReminders } from "./planReminders";
+import { REMINDER_ID_PREFIX } from "./reminderId";
 
 /** Thin wrapper over expo-notifications for Training day reminders. */
 
 const CHANNEL_ID = "reminders";
-const ID_PREFIX = "reminder-";
 
 async function cancelAllReminders(): Promise<void> {
   const pending = await Notifications.getAllScheduledNotificationsAsync();
   await Promise.all(
-    pending.filter((n) => n.identifier.startsWith(ID_PREFIX)).map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+    pending.filter((n) => n.identifier.startsWith(REMINDER_ID_PREFIX)).map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
   );
 }
 

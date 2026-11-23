@@ -1,4 +1,4 @@
-import { DAY_LABELS, DISPLAY_ORDER, isDaySet } from "../routines/routineDays";
+import { DAY_LABELS, DISPLAY_ORDER, isDaySet } from "@/routines/routineDays";
 
 /** Pure: the Reminder days for Settings, Sunday first ("Mon, Tue, Thu, Fri"), "Every day", or null when no Routine has days. */
 export function remindersDaysNote(routines: readonly { days: number }[]): string | null {

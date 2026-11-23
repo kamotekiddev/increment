@@ -1,7 +1,12 @@
+import type { PermissionStatus } from "expo-notifications";
+
 /** Pure decisions about the notification permission. No I/O. */
 
+/** The OS permission status as its string value (what `PermissionStatus` holds), so tests can pass plain strings. */
+type PermissionStatusValue = `${PermissionStatus}`;
+
 /** Ask only while the OS has never been asked; a denial is never asked again. */
-export function shouldAskPermission(status: string): boolean {
+export function shouldAskPermission(status: PermissionStatusValue): boolean {
   return status === "undetermined";
 }
 
@@ -15,7 +20,7 @@ export function notificationsOffNote(state: { remindersOn: boolean; granted: boo
 }
 
 /** What turning Training day reminders on does, from the OS permission status. */
-export function remindersSwitchDecision(status: string): "ask" | "on" | "stay-off" {
+export function remindersSwitchDecision(status: PermissionStatusValue): "ask" | "on" | "stay-off" {
   if (shouldAskPermission(status)) return "ask";
   return status === "granted" ? "on" : "stay-off";
 }
