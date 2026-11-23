@@ -15,6 +15,7 @@ import { Text } from "@/components";
 import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
 import { loadReminderSettingsOnce, loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
+import { useReminderTap } from "@/reminders/useReminderTap";
 import { spacing, useColors } from "@/theme";
 import { setupRestNotifications } from "@/workout/restNotification";
 
@@ -23,6 +24,7 @@ setupRestNotifications();
 
 export default function RootLayout() {
   const colors = useColors();
+  useReminderTap();
   // Loaded at runtime so it also works in Expo Go.
   const [fontsLoaded, fontError] = useFonts({
     Sora_400Regular,
