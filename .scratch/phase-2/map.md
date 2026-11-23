@@ -35,7 +35,7 @@ Heaviest set, estimated 1-rep max and most volume, worked out from logged sets a
 Exercise picker, top set and a records list. Free users see a chart preview only; charts and All records arrive with Pro in Phase 3. Designed 2026-11-22 (canvas: Progress, Progress no workout yet, Progress bodyweight exercise; see `docs/screens.md`). Spec and tickets: `progress-tab/`.
 
 ### 7 · Reminders
-Workout reminders in Settings, with the notification permission asked there. Reuses the rest timer's one-time permission ask, so a denial there is not asked again.
+Workout reminders in Settings, with the notification permission asked there. Reuses the rest timer's one-time permission ask, so a denial there is not asked again. A Reminders card between Workout and Data (a Training day reminders switch, off by default, a Time row opening the phone's time picker, default 6:00 PM, and a note with the days), drawn on the canvas as `SettingsReminders`, `SettingsReminderTime`, `SettingsRemindersNoDays` and `SettingsRemindersDenied`. Spec: `reminders/`.
 
 ## Decisions so far
 - Split by what the lifter can use on the device, not by screen.
@@ -50,6 +50,8 @@ Workout reminders in Settings, with the notification permission asked there. Reu
 - Set units (2026-11-21): a set stores the number typed and its unit (ADR 0003, superseding ADR 0001 for sets); the unit is display only; only weights about to be lifted are rounded to the Jump, and only when they came from the other unit; history shows "≈" and one decimal. See `set-units/spec.md`.
 
 - Feature 5 and 6 (2026-11-22, owner decision): records are per exercise. The Progress tab is redesigned around a Records card (Heaviest set, Estimated 1-rep max, Most volume) with a locked chart preview for free users; the "Last 8" dropdown and the weight / est. max / volume toggle are dropped for free users. A bodyweight exercise shows Most reps in a set and Most reps in a workout instead. Feature 5 decisions (2026-11-22): pills on Past workout and the summary; the first workout of an exercise sets a silent baseline; Heaviest set is the highest weight, with more reps at the same weight also counting; Estimated 1-rep max is Epley with sets over 12 reps ignored; Most volume is per exercise per workout; Heaviest set shown as in History, 1-rep max and volume as whole numbers; only done Working sets of finished workouts count. See `records/spec.md`.
+
+- Feature 7 (2026-11-23, owner decisions): reminders fire only on days with at least one Routine planned and follow the Routines' days (no separate day picker); one time for every day, default 6:00 PM; a day with a Workout already started on it, from any Routine, gets none, so reminders are scheduled per date for the next 4 weeks and refreshed at launch, on return to the app, at Start and Discard and on any Routine or setting change; the text is `<Routine> today` / `N exercises planned` (`<A> and <B> today` / `2 workouts planned`), with no Target or Earned line; the switch turns on only with permission, a denial shows "Notifications are off for Increment." with Open settings and never prompts again, and a permission revoked later keeps the saved choice; a tap opens Today and nothing shows while the app is open; off by default. See `reminders/spec.md`.
 
 ## Open
 - Resolved 2026-11-19: "Your gym's plates" moves to Phase 3 with the plate calculator; feature 2 covers the Jump only.

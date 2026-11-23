@@ -120,6 +120,10 @@ _Avoid_: Missed exercise, dropped exercise
 A day of the week on which no Routine is planned. Today shows a rest-day message instead of Routine cards.
 _Avoid_: Off day, day off
 
+**Reminder**:
+A local notification, at one time the lifter picks, on a day of the week on which at least one Routine is planned, never on a Rest day. The days follow the Routines' days, so changing a Routine's days changes the Reminder days. A day on which a Workout has already been started gets no Reminder.
+_Avoid_: Alert, nudge, Rest timer notification
+
 **Workout history**:
 The list of the lifter's finished Workouts, newest first. Each one opens to its Workout exercises and their done Working sets in the lifter's Unit. A Workout in progress is not in it.
 _Avoid_: Log, session history, Exercise history
