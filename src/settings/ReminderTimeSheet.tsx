@@ -28,7 +28,7 @@ export function ReminderTimeSheet({ visible, minutes, onSave, onDismiss }: Remin
 
   return (
     <BottomSheet visible={visible} onDismiss={close}>
-      <View style={{ alignItems: "center", gap: 6, paddingTop: spacing.md }}>
+      <View style={{ alignItems: "center", gap: spacing.snug, paddingTop: spacing.md }}>
         <Text variant="title" style={{ fontSize: fontSize.titleLg }}>
           Reminder time
         </Text>

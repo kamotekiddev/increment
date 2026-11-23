@@ -2,7 +2,7 @@ import { createStore } from "zustand/vanilla";
 
 import type { SelectInsertDb } from "@/db/client";
 
-import { readReminderSettings, writeRemindersOn, writeReminderTime, type ReminderSettings } from "./reminderSetting";
+import { DEFAULT_REMINDER_TIME_MIN, readReminderSettings, writeRemindersOn, writeReminderTime, type ReminderSettings } from "./reminderSetting";
 
 export interface ReminderState extends ReminderSettings {
   /** Reads the saved Reminder settings from the database. Call once the migrations have run. */
@@ -16,7 +16,7 @@ export interface ReminderState extends ReminderSettings {
 export function createReminderStore(db: SelectInsertDb) {
   return createStore<ReminderState>((set) => ({
     remindersOn: false,
-    reminderTimeMin: 1080,
+    reminderTimeMin: DEFAULT_REMINDER_TIME_MIN,
     load: () => set(readReminderSettings(db)),
     setRemindersOn: (on) => {
       writeRemindersOn(db, on);

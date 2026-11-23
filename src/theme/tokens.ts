@@ -27,7 +27,16 @@ export const lightColors = {
 
 export type Colors = { [K in keyof typeof lightColors]: string };
 
-export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const;
+export const spacing = {
+  xs: 4,
+  /** Between xs and sm: a small label inset, a title-to-subtitle gap. */
+  snug: 6,
+  sm: 8,
+  md: 12,
+  lg: 16,
+  xl: 24,
+  xxl: 32,
+} as const;
 
 export const radius = { sm: 10, md: 16, lg: 24, tile: 14, tileLg: 16, inset: 20, row: 22, card: 26, hero: 30, pill: 999 } as const;
 
@@ -91,6 +100,16 @@ export const size = {
   /** A radio circle at the end of a picker row (the Overload rule panel's rule types), and its selected dot. */
   radio: 22,
   radioDot: 8,
+} as const;
+
+/** A note row inside a Settings card (the Reminders days note, the notifications-off note). */
+export const noteRow = {
+  icon: 15,
+  /** Nudges the icon down to the first text line. */
+  iconTop: 2,
+  paddingBottom: 14,
+  /** A Settings row's gap between its label, value and chevron. */
+  rowGap: 10,
 } as const;
 
 /** Border widths. */
