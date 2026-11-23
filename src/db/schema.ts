@@ -153,6 +153,10 @@ export const userSettings = sqliteTable("user_settings", {
   showPreviousSet: integer("show_previous_set", { mode: "boolean" }).notNull().default(true),
   /** Keep screen awake: whether the live workout holds the screen lit. */
   keepScreenAwake: integer("keep_screen_awake", { mode: "boolean" }).notNull().default(true),
+  /** Training day reminders: whether the app schedules a local notification on each Routine day. */
+  remindersOn: integer("reminders_on", { mode: "boolean" }).notNull().default(false),
+  /** Reminder time as minutes after local midnight (1080 = 6:00 PM). Read through a 0 to 1439 clamp. */
+  reminderTimeMin: integer("reminder_time_min").notNull().default(1080),
 });
 
 /**
