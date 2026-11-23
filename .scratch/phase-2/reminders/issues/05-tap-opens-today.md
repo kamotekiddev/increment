@@ -4,10 +4,10 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] A notification response listener (check the SDK 58 `expo-notifications` docs for the current API) handles only ids starting with `reminder-`. The rest-over alert's tap behaves as before
-- [ ] App in the background: the tap routes to Today (the tabs index)
-- [ ] Live workout screen open: the tap does nothing
-- [ ] Cold start from the tap: Today is the first screen as now, and crash resume of a Workout in progress keeps priority
-- [ ] Type check, lint and tests pass
+- [x] A notification response listener (check the SDK 58 `expo-notifications` docs for the current API) handles only ids starting with `reminder-`. The rest-over alert's tap behaves as before
+- [x] App in the background: the tap routes to Today (the tabs index)
+- [x] Live workout screen open: the tap does nothing
+- [x] Cold start from the tap: Today is the first screen as now, and crash resume of a Workout in progress keeps priority
+- [x] Type check, lint and tests pass
