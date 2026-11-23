@@ -5,12 +5,11 @@ import {
   Linking,
   Pressable,
   StyleSheet,
-  Switch,
   View,
   type ViewStyle,
 } from "react-native";
 
-import { Card, Text } from "@/components";
+import { Card, SettingsSwitch, Text } from "@/components";
 import {
   isPermissionGranted,
   notificationsOffNote,
@@ -155,13 +154,7 @@ export function ReminderCard() {
       <Card style={{ borderRadius: radius.card, paddingVertical: 0 }}>
         <View style={rowStyle}>
           <Text style={labelStyle}>Training day reminders</Text>
-          <Switch
-            accessibilityLabel="Training day reminders"
-            value={remindersOn}
-            onValueChange={onToggle}
-            trackColor={{ false: colors.sunk, true: colors.accent }}
-            thumbColor={colors.onAccent}
-          />
+          <SettingsSwitch accessibilityLabel="Training day reminders" value={remindersOn} onValueChange={onToggle} />
         </View>
         {remindersOn ? (
           <>

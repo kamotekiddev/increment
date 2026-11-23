@@ -100,6 +100,11 @@ export const size = {
   /** A radio circle at the end of a picker row (the Overload rule panel's rule types), and its selected dot. */
   radio: 22,
   radioDot: 8,
+  /** The iOS-style Settings switch drawn on Android: track, thumb and the gap between thumb and track edge. */
+  switchTrackWidth: 51,
+  switchTrackHeight: 31,
+  switchThumb: 27,
+  switchInset: 2,
 } as const;
 
 /** A note row inside a Settings card (the Reminders days note, the notifications-off note). */
