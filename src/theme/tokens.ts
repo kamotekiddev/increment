@@ -21,6 +21,8 @@ export const lightColors = {
   danger: "#C62828",
   /** Soft red behind a destructive icon (delete and remove sheets). */
   dangerTint: "#FDECEC",
+  /** Caution mark: the notifications-off note in Settings. */
+  warn: "#B4541A",
 } as const;
 
 export type Colors = { [K in keyof typeof lightColors]: string };
