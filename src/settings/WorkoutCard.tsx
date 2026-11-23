@@ -1,6 +1,6 @@
-import { Pressable, StyleSheet, Switch, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
-import { Card, Text } from "@/components";
+import { Card, SettingsSwitch, Text } from "@/components";
 import { restLabel, stepDefaultRest } from "@/routines";
 import { fontFamily, fontSize, letterSpacing, minTouch, opacity, radius, size, spacing, useColors } from "@/theme";
 
@@ -79,23 +79,11 @@ export function WorkoutCard() {
         </View>
         <View style={rowStyle}>
           <Text style={{ flex: 1, fontSize: fontSize.body, fontFamily: fontFamily.medium }}>Show previous set</Text>
-          <Switch
-            accessibilityLabel="Show previous set"
-            value={showPreviousSet}
-            onValueChange={setShowPreviousSet}
-            trackColor={{ false: colors.sunk, true: colors.accent }}
-            thumbColor={colors.onAccent}
-          />
+          <SettingsSwitch accessibilityLabel="Show previous set" value={showPreviousSet} onValueChange={setShowPreviousSet} />
         </View>
         <View style={rowStyle}>
           <Text style={{ flex: 1, fontSize: fontSize.body, fontFamily: fontFamily.medium }}>Keep screen awake</Text>
-          <Switch
-            accessibilityLabel="Keep screen awake"
-            value={keepScreenAwake}
-            onValueChange={setKeepScreenAwake}
-            trackColor={{ false: colors.sunk, true: colors.accent }}
-            thumbColor={colors.onAccent}
-          />
+          <SettingsSwitch accessibilityLabel="Keep screen awake" value={keepScreenAwake} onValueChange={setKeepScreenAwake} />
         </View>
       </Card>
     </View>

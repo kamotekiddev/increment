@@ -3,6 +3,7 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 
 import { db } from "@/db/client";
+import { refreshReminders } from "@/reminders";
 import { defaultRule, type LoadType, type OverloadRule } from "@/engine";
 import type { Jumps } from "@/units";
 import { exercises, routineExercises, routines, workouts } from "@/db/schema";
@@ -70,11 +71,13 @@ export function useRoutines(): RoutineListItem[] | undefined {
  * transaction. The expo-sqlite driver runs a transaction synchronously, so the callback is not async.
  */
 export function createRoutine(name: string, days: number): number {
-  return db.transaction((tx) => {
+  const id = db.transaction((tx) => {
     const [{ n }] = tx.select({ n: count() }).from(routines).all();
     const row = tx.insert(routines).values({ name, days, position: n }).returning({ id: routines.id }).get();
     return row.id;
   });
+  void refreshReminders();
+  return id;
 }
 
 /** One routine by id, or null when it no longer exists. */
@@ -86,11 +89,13 @@ export async function loadRoutine(id: number) {
 /** Saves a routine's name. The caller has already validated it. */
 export async function renameRoutine(id: number, name: string): Promise<void> {
   await db.update(routines).set({ name }).where(eq(routines.id, id));
+  void refreshReminders();
 }
 
 /** Saves a routine's training days (bitmask, Monday = bit 0). */
 export async function setRoutineDays(id: number, days: number): Promise<void> {
   await db.update(routines).set({ days }).where(eq(routines.id, id));
+  void refreshReminders();
 }
 
 /** How many workouts belong to a routine, i.e. how many will go with it (ADR 0002). */
@@ -116,6 +121,7 @@ export function deleteRoutine(id: number): void {
       tx.update(routines).set({ position }).where(eq(routines.id, r.id)).run();
     });
   });
+  void refreshReminders();
 }
 
 /** A routine exercise with its saved Jumps ("Add each time", `Jumps`: null until the lifter sets one, 2.5 kg / 5 lb). */
@@ -187,7 +193,7 @@ export function addRoutineExercise(
   jumps: Partial<Jumps> = {},
   rule: OverloadRule = defaultRule(loadType),
 ): boolean {
-  return db.transaction((tx) => {
+  const added = db.transaction((tx) => {
     const [{ n }] = tx
       .select({ n: count() })
       .from(routineExercises)
@@ -201,6 +207,8 @@ export function addRoutineExercise(
       .all();
     return inserted.length > 0;
   });
+  if (added) void refreshReminders();
+  return added;
 }
 
 /**
@@ -243,4 +251,5 @@ export function removeRoutineExercise(routineExerciseId: number): void {
       tx.update(routineExercises).set({ position }).where(eq(routineExercises.id, r.id)).run();
     });
   });
+  void refreshReminders();
 }

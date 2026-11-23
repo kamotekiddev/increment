@@ -78,6 +78,13 @@
       "when": 1795237923197,
       "tag": "0010_step_per_routine_exercise",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1795423715760,
+      "tag": "0011_reminders_settings",
+      "breakpoints": true
     }
   ]
 }

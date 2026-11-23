@@ -7,4 +7,5 @@ export { PromptHeader, PromptSheet } from "./PromptSheet";
 export { RoundButton } from "./RoundButton";
 export { ScreenHeader } from "./ScreenHeader";
 export type { ScreenHeaderProps } from "./ScreenHeader";
+export { SettingsSwitch } from "./SettingsSwitch";
 export { Text } from "./Text";
