@@ -211,6 +211,9 @@ export const pro = {
   /** A small round check before an included item (Pro unlocked's list), and its glyph. */
   itemCheck: 26,
   itemCheckGlyph: 14,
+  /** The accent circle at the start of Settings' Increment Pro card, and the star inside it. */
+  cardIcon: 38,
+  cardIconGlyph: 18,
 } as const;
 
 /** The rest panel pinned to the bottom of the live workout: ring size and stroke in points, top corner radius. */
