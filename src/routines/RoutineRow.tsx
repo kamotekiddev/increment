@@ -1,19 +1,23 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View } from "react-native";
 
-import { Text } from "@/components";
-import { fontSize, opacity, radius, spacing, textStyle, useColors } from "@/theme";
+import { Pill, Text } from "@/components";
+import { fontSize, lineHeight, opacity, radius, size, spacing, textStyle, useColors } from "@/theme";
 
 import { routinePreview, routineSubtitle } from "./routineListText";
 import type { RoutineListItem } from "./routineQueries";
 
+const dim = { opacity: opacity.locked };
+
 export interface RoutineRowProps {
   routine: RoutineListItem;
   onPress: () => void;
+  /** A Locked routine (free plan, past the 2 oldest): content dimmed, lock icon and Pro tag on the title row. */
+  locked?: boolean;
 }
 
 /** A routine card: name, a preview of its exercises, then a footer with days and exercise count. */
-export function RoutineRow({ routine, onPress }: RoutineRowProps) {
+export function RoutineRow({ routine, onPress, locked = false }: RoutineRowProps) {
   const colors = useColors();
   return (
     <Pressable
@@ -27,14 +31,23 @@ export function RoutineRow({ routine, onPress }: RoutineRowProps) {
         opacity: pressed ? opacity.pressed : 1,
       })}
     >
-      <Text variant="title" style={textStyle.rowTitle} numberOfLines={1}>
-        {routine.name}
-      </Text>
-      <Text tone="muted" style={{ fontSize: fontSize.meta, lineHeight: 19 }} numberOfLines={2}>
+      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.md }}>
+        <Text variant="title" style={[textStyle.rowTitle, { flex: 1 }, locked && dim]} numberOfLines={1}>
+          {routine.name}
+        </Text>
+        {locked ? (
+          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.snug }}>
+            <Ionicons name="lock-closed-outline" size={size.lockGlyph} color={colors.inkMuted} />
+            <Pill label="Pro" tone="neutral" />
+          </View>
+        ) : null}
+      </View>
+      <Text tone="muted" style={[{ fontSize: fontSize.meta, lineHeight: lineHeight.small }, locked && dim]} numberOfLines={2}>
         {routinePreview(routine.exerciseNames, routine.exerciseCount)}
       </Text>
       <View
         style={{
+          opacity: locked ? opacity.locked : 1,
           flexDirection: "row",
           alignItems: "center",
           gap: 6,

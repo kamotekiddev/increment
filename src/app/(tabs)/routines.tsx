@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { useState } from "react";
-import { ScrollView, View } from "react-native";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Button, RoundButton, Text } from "@/components";
@@ -8,10 +9,11 @@ import { LimitMeter } from "@/routines/LimitMeter";
 import { LimitSheet } from "@/routines/LimitSheet";
 import { RoutineRow } from "@/routines/RoutineRow";
 import { canCreateRoutine, FREE_ROUTINE_LIMIT } from "@/routines/routineLimit";
-import { routineCounterParts } from "@/routines/routineListText";
+import { routineListState } from "@/routines/routineListState";
 import { useIsPro } from "@/pro";
 import { useRoutines } from "@/routines/routineQueries";
-import { fontSize, radius, spacing, textStyle, useColors } from "@/theme";
+import { PAYWALL_PATH } from "@/pro/proRoutes";
+import { counterCard, fontSize, lineHeight, opacity, radius, size, spacing, textStyle, useColors } from "@/theme";
 
 export default function RoutinesScreen() {
   const colors = useColors();
@@ -21,7 +23,7 @@ export default function RoutinesScreen() {
   const [limitOpen, setLimitOpen] = useState(false);
 
   const count = routines?.length ?? 0;
-  const counter = routineCounterParts(count, isPro);
+  const { card, lockedIds } = routineListState(routines?.map((r) => r.id) ?? [], isPro);
 
   function create() {
     if (canCreateRoutine(count, isPro)) router.push("/routines/new");
@@ -52,23 +54,48 @@ export default function RoutinesScreen() {
           </View>
         ) : (
           <>
-            {isPro ? (
-              <Text tone="muted">{`${counter.strong} ${counter.rest}`}</Text>
+            {card.kind === "pro" ? (
+              <Text tone="muted">{`${card.strong} ${card.rest}`}</Text>
+            ) : card.kind === "locked" ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={`${card.strong} ${card.rest}`}
+                onPress={() => router.push(PAYWALL_PATH)}
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacing.md,
+                  paddingVertical: spacing.md,
+                  paddingHorizontal: counterCard.paddingX,
+                  borderRadius: radius.inset,
+                  backgroundColor: colors.accentTint,
+                  opacity: pressed ? opacity.pressed : 1,
+                })}
+              >
+                <Ionicons name="lock-closed-outline" size={size.counterGlyph} color={colors.accent} />
+                <Text tone="soft" style={{ flex: 1, fontSize: fontSize.meta, lineHeight: lineHeight.subtitle }}>
+                  <Text variant="label" style={{ fontSize: fontSize.meta }}>
+                    {card.strong}
+                  </Text>{" "}
+                  {card.rest}
+                </Text>
+                <Ionicons name="chevron-forward" size={size.counterGlyph} color={colors.inkMuted} />
+              </Pressable>
             ) : (
               <View
                 style={{
                   gap: spacing.sm,
                   paddingVertical: spacing.md,
-                  paddingHorizontal: 14,
+                  paddingHorizontal: counterCard.paddingX,
                   borderRadius: radius.inset,
                   backgroundColor: colors.accentTint,
                 }}
               >
-                <Text tone="soft" style={{ fontSize: fontSize.meta, lineHeight: 18 }}>
+                <Text tone="soft" style={{ fontSize: fontSize.meta, lineHeight: lineHeight.subtitle }}>
                   <Text variant="label" style={{ fontSize: fontSize.meta }}>
-                    {counter.strong}
+                    {card.strong}
                   </Text>{" "}
-                  {counter.rest}
+                  {card.rest}
                 </Text>
                 <LimitMeter used={count} total={FREE_ROUTINE_LIMIT} />
               </View>
@@ -77,6 +104,7 @@ export default function RoutinesScreen() {
               <RoutineRow
                 key={routine.id}
                 routine={routine}
+                locked={lockedIds.has(routine.id)}
                 onPress={() => router.push({ pathname: "/routines/[id]", params: { id: String(routine.id) } })}
               />
             ))}

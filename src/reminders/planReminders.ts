@@ -1,3 +1,4 @@
+import { withoutLocked } from "@/routines/openRoutines";
 import { isDaySet } from "@/routines/routineDays";
 
 import { REMINDER_ID_PREFIX } from "./reminderId";
@@ -6,7 +7,7 @@ import { REMINDER_ID_PREFIX } from "./reminderId";
 export const REMINDER_WINDOW_DAYS = 28;
 
 /** A Routine as the planner sees it, in Routines-tab order. `days` is the bitmask with Monday = bit 0. */
-export type PlannerRoutine = { name: string; days: number; exerciseCount: number };
+export type PlannerRoutine = { id: number; name: string; days: number; exerciseCount: number };
 
 export type PlannedReminder = { id: string; at: Date; title: string; body: string };
 
@@ -17,6 +18,8 @@ type PlannerInput = {
   /** Reminder time as minutes after local midnight. */
   timeMinutes: number;
   now: Date;
+  /** Locked routines get no reminder. */
+  lockedIds: ReadonlySet<number>;
 };
 
 function pad(n: number): string {
@@ -36,12 +39,13 @@ function bodyFor(planned: readonly PlannerRoutine[]): string {
 }
 
 /**
- * Pure: the reminders for today and the next 27 days. A day with no planned Routine gets none.
+ * Pure: the reminders for today and the next 27 days. A day with no planned open Routine gets none (a Locked routine is never planned).
  * Today is skipped when its time has passed or a Workout was started today.
  */
-export function planReminders({ routines, workoutStartedToday, timeMinutes, now }: PlannerInput): PlannedReminder[] {
+export function planReminders({ routines, workoutStartedToday, timeMinutes, now, lockedIds }: PlannerInput): PlannedReminder[] {
   const hours = Math.floor(timeMinutes / 60);
   const minutes = timeMinutes % 60;
+  const open = withoutLocked(routines, lockedIds);
   const out: PlannedReminder[] = [];
   for (let offset = 0; offset < REMINDER_WINDOW_DAYS; offset++) {
     const y = now.getFullYear();
@@ -50,7 +54,7 @@ export function planReminders({ routines, workoutStartedToday, timeMinutes, now 
     const at = new Date(y, m, d, hours, minutes);
     if (offset === 0 && (workoutStartedToday || at.getTime() <= now.getTime())) continue;
     const bit = (at.getDay() + 6) % 7; // Date: Sunday = 0; the bitmask has Monday = bit 0
-    const planned = routines.filter((r) => isDaySet(r.days, bit));
+    const planned = open.filter((r) => isDaySet(r.days, bit));
     if (planned.length === 0) continue;
     out.push({
       id: `${REMINDER_ID_PREFIX}${at.getFullYear()}-${pad(at.getMonth() + 1)}-${pad(at.getDate())}`,

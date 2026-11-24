@@ -1,5 +1,6 @@
 import { planReminders } from "./planReminders";
 import type { PlannerRoutine } from "./planReminders";
+import { lockedRoutineIds } from "@/routines/routineLimit";
 
 // DST in America/New_York: clocks go forward on 2026-03-08 and back on 2026-11-01.
 process.env.TZ = "America/New_York";
@@ -11,14 +12,16 @@ const FRI = 1 << 4;
 const SUN = 1 << 6;
 const SIX_PM = 18 * 60;
 
-const pushA: PlannerRoutine = { name: "Push day A", days: MON | THU, exerciseCount: 5 };
-const pullB: PlannerRoutine = { name: "Pull day B", days: TUE | FRI, exerciseCount: 4 };
+const pushA: PlannerRoutine = { id: 1, name: "Push day A", days: MON | THU, exerciseCount: 5 };
+const pullB: PlannerRoutine = { id: 2, name: "Pull day B", days: TUE | FRI, exerciseCount: 4 };
 
 // Sunday 2026-11-22 at noon, local.
 const sundayNoon = new Date(2026, 10, 22, 12, 0);
 
+const free = (rs: PlannerRoutine[]) => new Set(lockedRoutineIds(rs.map((r) => r.id), false));
+
 function plan(over: Partial<Parameters<typeof planReminders>[0]> = {}) {
-  return planReminders({ routines: [pushA, pullB], workoutStartedToday: false, timeMinutes: SIX_PM, now: sundayNoon, ...over });
+  return planReminders({ routines: [pushA, pullB], workoutStartedToday: false, lockedIds: new Set<number>(), timeMinutes: SIX_PM, now: sundayNoon, ...over });
 }
 
 describe("planReminders", () => {
@@ -36,7 +39,7 @@ describe("planReminders", () => {
   });
 
   it("includes today at 17:59 and skips it at 18:00 or later", () => {
-    const today = { name: "Legs", days: SUN, exerciseCount: 3 };
+    const today = { id: 3, name: "Legs", days: SUN, exerciseCount: 3 };
     const at = (h: number, m: number) => plan({ routines: [today], now: new Date(2026, 10, 22, h, m) }).map((r) => r.id);
     expect(at(17, 59)[0]).toBe("reminder-2026-11-22");
     expect(at(18, 0)[0]).toBe("reminder-2026-11-29");
@@ -44,7 +47,7 @@ describe("planReminders", () => {
   });
 
   it("skips today when a Workout was started, leaving the rest unchanged", () => {
-    const today = { name: "Legs", days: SUN, exerciseCount: 3 };
+    const today = { id: 3, name: "Legs", days: SUN, exerciseCount: 3 };
     const now = new Date(2026, 10, 22, 9, 0);
     const all = plan({ routines: [today], now });
     const started = plan({ routines: [today], now, workoutStartedToday: true });
@@ -53,7 +56,7 @@ describe("planReminders", () => {
   });
 
   it("titles one, two and three Routines on one day in Routines-tab order", () => {
-    const mk = (name: string): PlannerRoutine => ({ name, days: MON, exerciseCount: 2 });
+    const mk = (name: string, i: number): PlannerRoutine => ({ id: i + 1, name, days: MON, exerciseCount: 2 });
     const first = (names: string[]) => plan({ routines: names.map(mk) })[0];
     expect(first(["Push day A"]).title).toBe("Push day A today");
     expect(first(["Push day A", "Legs"]).title).toBe("Push day A and Legs today");
@@ -63,19 +66,19 @@ describe("planReminders", () => {
   });
 
   it("words the exercise count for one Routine", () => {
-    const first = (n: number) => plan({ routines: [{ name: "X", days: MON, exerciseCount: n }] })[0].body;
+    const first = (n: number) => plan({ routines: [{ id: 1, name: "X", days: MON, exerciseCount: n }] })[0].body;
     expect(first(5)).toBe("5 exercises planned");
     expect(first(1)).toBe("1 exercise planned");
     expect(first(0)).toBe("No exercises yet");
   });
 
   it("plans nothing when no Routine has days", () => {
-    expect(plan({ routines: [{ name: "X", days: 0, exerciseCount: 3 }] })).toEqual([]);
+    expect(plan({ routines: [{ id: 1, name: "X", days: 0, exerciseCount: 3 }] })).toEqual([]);
     expect(plan({ routines: [] })).toEqual([]);
   });
 
   it("keeps 18:00 local across both DST changes", () => {
-    const daily = { name: "X", days: 0b1111111, exerciseCount: 1 };
+    const daily = { id: 1, name: "X", days: 0b1111111, exerciseCount: 1 };
     const spring = plan({ routines: [daily], now: new Date(2026, 2, 5, 9, 0) });
     expect(spring.map((r) => r.id)).toContain("reminder-2026-03-08");
     expect(spring.every((r) => r.at.getHours() === 18)).toBe(true);
@@ -87,5 +90,20 @@ describe("planReminders", () => {
   it("uses the reminder time", () => {
     const r = plan({ timeMinutes: 6 * 60 + 30 })[0];
     expect([r.at.getHours(), r.at.getMinutes()]).toEqual([6, 30]);
+  });
+
+  it("plans nothing for a Locked routine on free, and everything with Pro", () => {
+    const locked: PlannerRoutine = { id: 3, name: "Legs", days: SUN, exerciseCount: 3 };
+    const routines = [pushA, pullB, locked];
+    const lockedIds = free(routines);
+    expect(plan({ routines, lockedIds }).map((r) => r.id)).toEqual(plan().map((r) => r.id));
+    expect(plan({ routines, lockedIds }).some((r) => r.title.includes("Legs"))).toBe(false);
+    expect(plan({ routines }).length).toBeGreaterThan(plan().length);
+  });
+
+  it("plans nothing when the only routine with days is Locked", () => {
+    const quiet = (id: number): PlannerRoutine => ({ id, name: `Q${id}`, days: 0, exerciseCount: 1 });
+    const routines = [quiet(1), quiet(2), { id: 3, name: "Legs", days: SUN, exerciseCount: 3 }];
+    expect(plan({ routines, lockedIds: free(routines) })).toEqual([]);
   });
 });

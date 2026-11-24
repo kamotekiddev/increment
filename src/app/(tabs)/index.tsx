@@ -18,7 +18,7 @@ export default function TodayScreen() {
   const cards = today?.state.kind === "cards" ? today.state.cards : undefined;
   // The deck reports its top card; fall back to the first if that Routine is no longer on Today.
   const topCard = cards ? (cards.find((c) => c.routineId === topId) ?? cards[0]) : undefined;
-  const previewId = today?.state.kind === "rest" ? today.state.next.routineId : topCard?.routineId;
+  const previewId = today?.state.kind === "rest" ? today.state.next?.routineId : topCard?.routineId;
   const preview = useNextPreview(previewId);
 
   return (

@@ -107,6 +107,9 @@ export const size = {
   switchTrackHeight: 31,
   switchThumb: 27,
   switchInset: 2,
+  /** The lock glyph on a Locked routine's row, and the lock and chevron of the Routines tab's "N routines locked." card. */
+  lockGlyph: 14,
+  counterGlyph: 18,
 } as const;
 
 /** A note row inside a Settings card (the Reminders days note, the notifications-off note). */
@@ -118,6 +121,9 @@ export const noteRow = {
   /** A Settings row's gap between its label, value and chevron. */
   rowGap: 10,
 } as const;
+
+/** The Routines tab's counter card ("N of 2 free routines used", "N routines locked."): its side padding. */
+export const counterCard = { paddingX: 14 } as const;
 
 /** Border widths. */
 export const borderWidth = { outline: 2 } as const;
@@ -150,7 +156,7 @@ export const deck = {
 export const minTouch = 44;
 
 /** Opacity for interactive states. One disabled value everywhere. */
-export const opacity = { pressed: 0.85, disabled: 0.4, onAccentSoft: 0.85 } as const;
+export const opacity = { pressed: 0.85, disabled: 0.4, locked: 0.5, onAccentSoft: 0.85 } as const;
 
 /** Line heights for text that sets its own size. */
 export const lineHeight = {

@@ -1,10 +1,13 @@
 import { router } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
+import { PAYWALL_PATH } from "@/pro/proRoutes";
+import { loadLockedRoutineIds } from "@/routines/lockedRoutines";
 import { useUnit } from "@/settings";
 
 import { findInProgressWorkout } from "./inProgressQueries";
 import { ResumeOrDiscardSheet } from "./ResumeOrDiscardSheet";
+import { runExclusive } from "./runExclusive";
 import { startDecision } from "./startDecision";
 import { discardAndStartWorkout, startWorkout } from "./workoutQueries";
 
@@ -26,10 +29,24 @@ export function useStartWorkout() {
   } | null>(null);
   const { unit } = useUnit();
 
-  function start(routineId: number, routineName: string) {
-    const decision = startDecision(findInProgressWorkout());
-    if (decision.kind === "start") openWorkout(startWorkout(routineId, unit));
-    else setPrompt({ workoutId: decision.workoutId, runningName: decision.routineName, routineId, startingName: routineName });
+  const starting = useRef(false);
+
+  /** A second tap while the first is still reading does nothing; a failed read starts nothing (the lifter can tap again). */
+  function start(routineId: number, routineName: string): Promise<void> {
+    return runExclusive(
+      starting,
+      async () => {
+        // Read now, not at render: a refund can land between render and tap and lock this routine.
+        if ((await loadLockedRoutineIds()).has(routineId)) {
+          router.push(PAYWALL_PATH);
+          return;
+        }
+        const decision = startDecision(findInProgressWorkout());
+        if (decision.kind === "start") openWorkout(startWorkout(routineId, unit));
+        else setPrompt({ workoutId: decision.workoutId, runningName: decision.routineName, routineId, startingName: routineName });
+      },
+      (error) => console.warn("Could not start the workout", error),
+    );
   }
 
   const sheet = (
