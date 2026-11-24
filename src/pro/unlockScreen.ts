@@ -6,8 +6,8 @@
  */
 export type UnlockScreenEvent =
   | { kind: "switched-on"; workoutOpen: boolean }
-  | { kind: "workout-closed"; owed: boolean; workoutInProgress: boolean }
-  | { kind: "launch"; owed: boolean; workoutResumed: boolean };
+  | { kind: "workout-closed"; owed: boolean; workoutInProgress: boolean; isPro: boolean }
+  | { kind: "launch"; owed: boolean; workoutResumed: boolean; isPro: boolean };
 
 /** Whether to show Pro unlocked now, and the `unlock_screen_owed` flag to store afterwards. */
 export interface UnlockScreenAction {
@@ -25,14 +25,17 @@ export function unlockScreen(event: UnlockScreenEvent): UnlockScreenAction {
       return event.workoutOpen ? { show: false, owed: true } : { show: true, owed: false };
     case "workout-closed":
       // A minimized workout is still in progress: it isn't over yet.
-      return owedUnless(event.owed, event.workoutInProgress);
+      return owedUnless(event.owed, event.workoutInProgress, event.isPro);
     case "launch":
-      return owedUnless(event.owed, event.workoutResumed);
+      return owedUnless(event.owed, event.workoutResumed, event.isPro);
   }
 }
 
-/** Shows what is owed, unless a workout still holds it back. */
-function owedUnless(owed: boolean, heldBack: boolean): UnlockScreenAction {
-  if (!owed) return { show: false, owed: false };
+/**
+ * Shows what is owed, unless a workout still holds it back. A lifter who is no longer Pro (a refund, or the
+ * dev source on Free) is owed nothing: the stale flag is cleared, never shown.
+ */
+function owedUnless(owed: boolean, heldBack: boolean, isPro: boolean): UnlockScreenAction {
+  if (!owed || !isPro) return { show: false, owed: false };
   return heldBack ? { show: false, owed: true } : { show: true, owed: false };
 }

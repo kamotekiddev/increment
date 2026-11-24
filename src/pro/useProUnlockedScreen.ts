@@ -18,9 +18,9 @@ function openProUnlocked(pathname: string): void {
 }
 
 /** Stores the owed flag when it changed, then shows Pro unlocked if the action says so. */
-function act(action: UnlockScreenAction, owedBefore: boolean, pathname: string): void {
+function act(action: UnlockScreenAction, owedBefore: boolean, pathname: string, persist = true): void {
   try {
-    if (action.owed !== owedBefore) writeUnlockScreenOwed(db, action.owed);
+    if (persist && action.owed !== owedBefore) writeUnlockScreenOwed(db, action.owed);
   } catch {
     // A failed write only risks showing the screen again or not at all; never block on it.
   }
@@ -48,7 +48,7 @@ export function useProUnlockedScreen(ready: boolean): void {
 
   useEffect(
     () =>
-      proStore.getState().onSwitchedOn(() => {
+      proStore.getState().onSwitchedOn(({ fromDevSource }) => {
         let owed = false;
         try {
           owed = readUnlockScreenOwed(db);
@@ -57,7 +57,22 @@ export function useProUnlockedScreen(ready: boolean): void {
         }
         // Before the navigator is drawn nothing can show yet, so it is held back the same way as by a workout.
         const workoutOpen = !readyRef.current || inWorkoutFlow(pathRef.current);
-        act(unlockScreen({ kind: "switched-on", workoutOpen }), owed, pathRef.current);
+        // A dev source switch shows the screen but never persists the owed flag: it isn't a real purchase.
+        act(unlockScreen({ kind: "switched-on", workoutOpen }), owed, pathRef.current, !fromDevSource);
+      }),
+    [],
+  );
+
+  // A flag still owed when Pro goes away (a refund, or the dev source on Free) is stale: clear it.
+  useEffect(
+    () =>
+      proStore.subscribe((state, previous) => {
+        if (state.isPro || !previous.isPro) return;
+        try {
+          if (readUnlockScreenOwed(db)) writeUnlockScreenOwed(db, false);
+        } catch {
+          // The launch and workout-closed checks clear it too.
+        }
       }),
     [],
   );
@@ -71,7 +86,9 @@ export function useProUnlockedScreen(ready: boolean): void {
     try {
       const owed = readUnlockScreenOwed(db);
       if (!owed) return;
-      const action = unlockScreen({ kind: "workout-closed", owed, workoutInProgress: findInProgressWorkout() !== null });
+      const action = unlockScreen({ kind: "workout-closed", owed, workoutInProgress: findInProgressWorkout() !== null,
+        isPro: proStore.getState().isPro,
+      });
       act(action, owed, pathname);
     } catch {
       // The flag stays owed and shows at the next launch.
@@ -96,7 +113,7 @@ export function useProUnlockedOnLaunch(): void {
       if (!owed) return;
       const workout = findInProgressWorkout();
       const workoutResumed = workout !== null && shouldAutoOpen(lastActivity(workout), Date.now());
-      act(unlockScreen({ kind: "launch", owed, workoutResumed }), owed, "/");
+      act(unlockScreen({ kind: "launch", owed, workoutResumed, isPro: proStore.getState().isPro }), owed, "/");
     } catch {
       // The flag stays owed for the next launch.
     }

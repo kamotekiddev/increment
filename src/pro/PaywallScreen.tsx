@@ -20,7 +20,9 @@ import {
 } from "@/theme";
 
 import {
+  boughtPendingAfter,
   paywallState,
+  productAfterReload,
   restoreOutcome,
   restoreResult,
   type PaywallButton as PaywallButtonState,
@@ -209,11 +211,20 @@ export function PaywallScreen() {
     mounted.current = true;
     const load = () =>
       void fetchProProduct().then((next) => {
-        if (mounted.current) setProduct(next);
+        // A reload that fails keeps a price already shown.
+        if (mounted.current) setProduct((previous) => productAfterReload(previous, next));
       });
     load();
     const sub = AppState.addEventListener("change", (s) => {
-      if (s === "active") load();
+      if (s !== "active") return;
+      load();
+      // A declined Ask to Buy only shows as nothing owned: ask, and let the answer end "Payment pending".
+      void proStore
+        .getState()
+        .refresh()
+        .then((answer) => {
+          if (mounted.current) setBoughtPending((current) => boughtPendingAfter(current, answer));
+        });
     });
     return () => {
       mounted.current = false;
@@ -249,6 +260,7 @@ export function PaywallScreen() {
     const answer = await proStore.getState().refresh();
     if (!mounted.current) return;
     setRestoring(false);
+    setBoughtPending((current) => boughtPendingAfter(current, answer));
     const result = restoreResult(restoreOutcome(answer), Platform.OS);
     if (result.kind === "alert") Alert.alert(result.title, result.body, [{ text: "OK" }]);
   }

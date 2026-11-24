@@ -2,7 +2,7 @@ import { createStore } from "zustand/vanilla";
 
 import type { SelectInsertDb } from "@/db/client";
 
-import { decideEntitlement, type StoreAnswer } from "./entitlementDecision";
+import { decideEntitlement, type EntitlementRow, type StoreAnswer } from "./entitlementDecision";
 import { applyDevSource, type ProFlags, type ProSource } from "./devSource";
 import { readEntitlement, writeEntitlement } from "./entitlementRow";
 import type { ProStoreAdapter } from "./storeAdapter";
@@ -27,7 +27,13 @@ export interface ProState {
    * Calls `listener` each time the effective `isPro` goes from false to true, from a store answer or a
    * dev source change alike. Returns an unsubscribe function.
    */
-  onSwitchedOn: (listener: () => void) => () => void;
+  onSwitchedOn: (listener: (info: SwitchedOnInfo) => void) => () => void;
+}
+
+/** What a switched-on listener is told. */
+export interface SwitchedOnInfo {
+  /** The dev source caused it, not the store. Nothing about it may be persisted: the real row is untouched. */
+  fromDevSource: boolean;
 }
 
 /** Pro as shared state, backed by the entitlements row. Free until `load` runs. */
@@ -35,18 +41,18 @@ export function createProStore(db: SelectInsertDb, adapter: ProStoreAdapter, now
   let stored: ProFlags = { isPro: false, pending: false };
   /** Refreshes queue behind each other, so two never interleave. Each reads the latest row when its turn comes. */
   let queue: Promise<unknown> = Promise.resolve();
-  const listeners = new Set<() => void>();
+  const listeners = new Set<(info: SwitchedOnInfo) => void>();
 
   return createStore<ProState>((set, get) => {
     /** Publishes the effective state, and tells listeners when Pro switched on (unless this is the launch read). */
-    const show = (announce: boolean) => {
+    const show = (announce: boolean, fromDevSource = false) => {
       const wasPro = get()?.isPro ?? false;
       const next = applyDevSource(stored, get()?.source ?? "store");
       set(next);
       if (!announce || wasPro || !next.isPro) return;
       listeners.forEach((listener) => {
         try {
-          listener();
+          listener({ fromDevSource });
         } catch {
           // One listener's failure never stops the others or the caller.
         }
@@ -54,19 +60,31 @@ export function createProStore(db: SelectInsertDb, adapter: ProStoreAdapter, now
     };
 
     const runRefresh = async (): Promise<StoreAnswer> => {
+      const answer = await adapter.checkOwned().catch((): StoreAnswer => ({ kind: "no-answer" }));
       try {
-        const answer = await adapter.checkOwned().catch((): StoreAnswer => ({ kind: "no-answer" }));
-        const decision = decideEntitlement(readEntitlement(db), answer, now());
-        if (decision.write) writeEntitlement(db, decision.row);
+        let cached: EntitlementRow | null;
+        try {
+          cached = readEntitlement(db);
+        } catch {
+          // An unreadable row: go by what this session last knew.
+          cached = { isPro: stored.isPro, productId: null, proof: null, verifiedAt: null };
+        }
+        const decision = decideEntitlement(cached, answer, now());
+        if (decision.write) {
+          try {
+            writeEntitlement(db, decision.row);
+          } catch {
+            // The store's answer still holds for this session; the next check writes it again.
+          }
+        }
         // No answer leaves everything as it was, including a pending purchase still waiting to clear.
         const pending = answer.kind === "no-answer" ? stored.pending : decision.pending;
         stored = { isPro: decision.row.isPro, pending };
         show(true);
-        return answer;
       } catch {
-        // A database error leaves the last known state in place; the next check tries again.
-        return { kind: "no-answer" };
+        // Anything else that fails leaves the last known state; the store's answer is still returned.
       }
+      return answer;
     };
 
     return {
@@ -84,7 +102,7 @@ export function createProStore(db: SelectInsertDb, adapter: ProStoreAdapter, now
       },
       setSource: (source) => {
         set({ source });
-        show(true);
+        show(true, true);
       },
       onSwitchedOn: (listener) => {
         listeners.add(listener);
