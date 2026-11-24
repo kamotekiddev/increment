@@ -144,6 +144,33 @@ describe("Pro store", () => {
     expect(store.getState().isPro).toBe(false);
   });
 
+  describe("a database error", () => {
+    /** A database whose reads, writes or both throw. */
+    function brokenDb(broken: ("select" | "insert")[]) {
+      const db = createTestDb();
+      return new Proxy(db, {
+        get(target, prop, receiver) {
+          if (broken.includes(prop as "select" | "insert")) throw new Error("disk I/O error");
+          return Reflect.get(target, prop, receiver);
+        },
+      });
+    }
+
+    it.each([["write", ["insert"]], ["read", ["select"]], ["read and write", ["select", "insert"]]] as const)(
+      "on the %s still returns what the store answered, and never rejects",
+      async (_name, broken) => {
+        const adapter = new FakeProStoreAdapter();
+        const store = createProStore(brokenDb([...broken]), adapter);
+        adapter.answer = ownedAnswer();
+        await expect(store.getState().refresh()).resolves.toEqual(ownedAnswer());
+        adapter.answer = { kind: "not-owned" };
+        await expect(store.getState().refresh()).resolves.toEqual({ kind: "not-owned" });
+        adapter.answer = { kind: "no-answer" };
+        await expect(store.getState().refresh()).resolves.toEqual({ kind: "no-answer" });
+      },
+    );
+  });
+
   describe("dev source", () => {
     it("starts on Store, overrides in memory, and never writes the row", async () => {
       const db = createTestDb();
@@ -210,6 +237,17 @@ describe("Pro store", () => {
       expect(fired()).toBe(1);
       store.getState().setSource("pro");
       expect(fired()).toBe(1);
+    });
+
+    it("tells a listener whether the switch came from the dev source", async () => {
+      const { adapter, store } = setup();
+      const seen: boolean[] = [];
+      store.getState().onSwitchedOn((info) => seen.push(info.fromDevSource));
+      adapter.answer = ownedAnswer();
+      await store.getState().refresh();
+      store.getState().setSource("free");
+      store.getState().setSource("pro");
+      expect(seen).toEqual([false, true]);
     });
 
     it("doesn't fire for a purchase while the dev source already forces Pro", async () => {

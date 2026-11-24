@@ -25,6 +25,27 @@ export interface PaywallButton {
   lineStrong: boolean;
 }
 
+/** The product after a reload: a failed reload keeps a price already loaded rather than hiding it. */
+export function productAfterReload(previous: PaywallProduct, next: ProProduct): PaywallProduct {
+  return next.kind === "failed" && previous.kind === "loaded" ? previous : next;
+}
+
+/**
+ * Whether the Paywall's own "Payment pending" (iOS Ask to Buy, which the store's pending flag never sees)
+ * still holds after the store's answer. A definite not-owned (declined) or a cleared payment ends it; a
+ * pending purchase or no answer leaves it. An answer never turns it on.
+ */
+export function boughtPendingAfter(current: boolean, answer: StoreAnswer): boolean {
+  switch (answer.kind) {
+    case "not-owned":
+      return false;
+    case "owned":
+      return answer.state === "pending" ? current : false;
+    case "no-answer":
+      return current;
+  }
+}
+
 /** How a Restore purchase check ended. */
 export type RestoreOutcome = "found" | "pending" | "nothing-found" | "no-answer";
 

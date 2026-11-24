@@ -1,4 +1,42 @@
-import { paywallState, restoreOutcome, restoreResult } from "./paywallState";
+import { boughtPendingAfter, paywallState, productAfterReload, restoreOutcome, restoreResult } from "./paywallState";
+
+describe("keeping the loaded price", () => {
+  const failed = { kind: "failed" } as const;
+
+  it("a reload that fails keeps the price already loaded", () => {
+    expect(productAfterReload({ kind: "loaded", localizedPrice: "₱300.00" }, failed)).toEqual({ kind: "loaded", localizedPrice: "₱300.00" });
+  });
+
+  it("a reload that succeeds replaces it, and a first failure shows as failed", () => {
+    const newer = { kind: "loaded", localizedPrice: "₱350.00" } as const;
+    expect(productAfterReload({ kind: "loaded", localizedPrice: "₱300.00" }, newer)).toEqual(newer);
+    expect(productAfterReload({ kind: "loading" }, failed)).toEqual(failed);
+    expect(productAfterReload(failed, failed)).toEqual(failed);
+  });
+});
+
+describe("Payment pending after Ask to Buy on iOS", () => {
+  const owned = { kind: "owned", productId: "pro_lifetime", proof: "t", state: "purchased" } as const;
+  const ownedPending = { ...owned, state: "pending" } as const;
+
+  it("clears when the store says nothing is owned (the request was declined)", () => {
+    expect(boughtPendingAfter(true, { kind: "not-owned" })).toBe(false);
+  });
+
+  it("clears when the payment cleared", () => {
+    expect(boughtPendingAfter(true, owned)).toBe(false);
+  });
+
+  it("stays while the store still says pending, or gives no answer", () => {
+    expect(boughtPendingAfter(true, ownedPending)).toBe(true);
+    expect(boughtPendingAfter(true, { kind: "no-answer" })).toBe(true);
+  });
+
+  it("never turns on by itself", () => {
+    expect(boughtPendingAfter(false, ownedPending)).toBe(false);
+    expect(boughtPendingAfter(false, { kind: "no-answer" })).toBe(false);
+  });
+});
 
 const loaded = { kind: "loaded", localizedPrice: "₱300.00" } as const;
 const usualLine = "One-time payment. No subscription. Works offline.";
