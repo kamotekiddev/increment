@@ -44,6 +44,14 @@ _Avoid_: Best set, main set
 The one-time purchase that unlocks the paid features. It works offline.
 _Avoid_: Premium, subscription, paid plan
 
+**Locked routine**:
+A Routine past the lifter's 2 oldest while they don't have Pro, for example after a refund. It can be opened and deleted, but not started or edited, and it is left out of Today and Reminders. Its Workouts and Records stay. Buying or restoring Pro unlocks it, and so can deleting an older Routine. A Workout in progress on it may be finished first. A Routine that can't be edited during a Workout in progress is "blocked by a Workout in progress", not locked.
+_Avoid_: Pro routine, paused routine, disabled routine
+
+**Restore purchase**:
+Asking the store whether this lifter already bought Pro, for example on a new phone, so it unlocks without paying again. It brings back Pro only, never training data.
+_Avoid_: "Restore" on its own (restoring from a backup is a different thing)
+
 **Step**:
 How a Target rises once progression is Earned: add weight (by the Jump), add reps (by the Rep step), or both. It is set per exercise.
 _Avoid_: Progression type, mode

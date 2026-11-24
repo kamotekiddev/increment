@@ -13,7 +13,7 @@
 | App state | Zustand (first store: the rest timer, `src/workout/restStore.ts`, so it survives leaving the live screen) |
 | UI | Own components on the Increment tokens, Sora font |
 | Charts | Victory Native (Skia) |
-| One-time purchase | react-native-iap (StoreKit 2 / Google Play Billing) |
+| One-time purchase | expo-iap (StoreKit 2 / Google Play Billing; the Expo Modules sibling of react-native-iap, same API) |
 | Reminders and rest-over alert | expo-notifications, local only (the rest timer uses it in Phase 1) |
 | Rest timer extras | react-native-svg (progress ring), expo-haptics (buzz at zero) |
 | Backup, export, PDF | expo-file-system, expo-sharing, expo-document-picker, expo-print |
@@ -29,7 +29,7 @@
 - **sets**: id, workout_exercise_id, exercise_id, idx, weight, weight_unit, reps, done, is_warmup, edited (`weight` is the number as typed or pre-filled and `weight_unit` the unit it is in, migration 0009, ADR 0003; a blank weight is 0 until typed; `edited`: the lifter typed this row, so it stops following earlier rows)
 - **user_settings**: one row (id 1, created on first read) of the lifter's preferences. Today: `unit` (kg or lb, default kg), the Workout settings `default_rest_s` (seconds, default 90), `show_previous_set` (default true) and `keep_screen_awake` (default true), all three not-null (migration 0008). The per-equipment Jump columns (`jump_*_kg`) were dropped by migration 0010 without copying (the app was not released); the Jump now lives on `routine_exercises`. `default_rest_s` is clamped to 15 to 600 s (a multiple of 15) on read. Later features add theme, reminders and auto-backup as columns
 - **settings**: key/value, internal flags only (the library seed version)
-- **entitlements**: is_pro, product_id, proof, verified_at (a cache; `proof` is the store's signed transaction or purchase token, verified in Phase 3 so editing this table alone cannot unlock Pro)
+- **entitlements**: is_pro, product_id, proof, verified_at (a cache of the store's last answer; `proof` is the store's signed transaction or purchase token. The store's on-device answer overwrites it at every check, so a hand edit holds only while the store can't answer; see [ADR 0004](adr/0004-the-store-decides-pro.md))
 
 Foreign keys are switched on after migrations finish (not before), because a migration that rebuilds a table would otherwise cascade-delete child rows.
 
@@ -51,7 +51,7 @@ Plain functions: `nextTarget({rule, planned, loadType, history, jumpKg, unit}) â
 - **Default rule**: a new routine exercise starts with the step from its `load_type` (weight for weighted, reps otherwise), three clean workouts in a row, no miss rule, no deload. Every lifter can change the step, the miss rule (two misses in a row: drop 10%) and the deload (every 6 weeks, 40% lighter) in the Overload rule panel; Start marks a workout exercise `is_deload` when the engine returns a due Deload.
 
 ## Offline one-time purchase
-- A non-consumable product on both stores, bought through react-native-iap.
+- A non-consumable product on both stores, bought through expo-iap. The store's on-device answer decides Pro; the `entitlements` row is the fallback when the store can't answer ([ADR 0004](adr/0004-the-store-decides-pro.md)).
 - Acknowledge Google purchases right away (Google refunds them after 3 days if they aren't acknowledged).
 - Cache the entitlement locally (`isPro`) so Pro works with no network; re-verify with the store opportunistically when online.
 - Restore purchases from the paywall and from Welcome back. Handle refunds when the store reports them.

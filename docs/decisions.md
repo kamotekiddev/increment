@@ -5,6 +5,7 @@
 - **Platform**: iOS and Android, built with Expo (React Native).
 - **Offline, no account, no backend.**
 - **Monetization**: a one-time Pro unlock with no subscription.
+- **Pro price** (owner decision 2026-11-24, "for now"): ₱300, set as the Philippine peso base price in App Store Connect and Play Console. Each store fills in other countries' prices from it, and the app shows whatever localized price the store returns, so changing it later needs no app update. If ₱300 isn't one of Apple's peso price points, use the nearest one.
 - **Backups are Pro-only**; restore is offered during onboarding for returning customers.
 - **Units**: a global kg/lb preference, display only. A set is stored as typed, with its unit; Targets are kg, and a routine exercise's Jump is saved per unit in that unit. See [ADR 0003](adr/0003-sets-store-the-weight-as-typed.md).
 - **Exercise library source**: a curated subset (178 exercises at the start of Phase 0) of the public-domain [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (Unlicense), text instructions only, with a load type on each exercise.
@@ -33,6 +34,5 @@
 
 ## Open
 - [ ] Android: do rest-over notifications arrive on time without the exact-alarm permission? Unverified; owner checks on a phone, and if late, decides whether to request the permission (a Play policy question)
-- [ ] Pro price and currency for each store
 - [ ] Confirm "Increment" is available in both stores and as a trademark
 - [ ] Owner review of the curated library list (178 exercises, `src/db/library/exercises.json`)
