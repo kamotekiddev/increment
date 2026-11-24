@@ -14,7 +14,7 @@ import { AppState, View } from "react-native";
 import { Text } from "@/components";
 import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
-import { loadProOnce, startProStoreChecks } from "@/pro";
+import { loadProOnce, startProStoreChecks, useProUnlockedScreen } from "@/pro";
 import { loadReminderSettingsOnce, loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
 import { useReminderTap } from "@/reminders/useReminderTap";
 import { spacing, useColors } from "@/theme";
@@ -44,6 +44,8 @@ export default function RootLayout() {
 
   const fontsDone = fontsLoaded || fontError != null;
   const done = fontsDone && (dbReady || dbError != null);
+  // Pro unlocked shows each time Pro switches on, never over a live workout.
+  useProUnlockedScreen(done && !dbError);
 
   useEffect(() => {
     if (done) SplashScreen.hideAsync();
@@ -75,5 +77,10 @@ export default function RootLayout() {
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
+      <Stack.Screen name="pro-unlocked" options={{ presentation: "modal" }} />
+    </Stack>
+  );
 }

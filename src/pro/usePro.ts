@@ -6,6 +6,7 @@ import { db } from "@/db/client";
 import { expoIapAdapter } from "./expoIapAdapter";
 import { startProChecks } from "./proChecks";
 import { createProStore } from "./proStore";
+import type { BuyResult, ProProduct } from "./storeAdapter";
 
 /**
  * The app's one Pro store, asking the phone's store through expo-iap. `startProStoreChecks` asks at
@@ -44,4 +45,19 @@ export function loadProOnce(): Error | null {
 /** Whether this lifter has Pro, after the dev source. The one Pro check every feature reads (product rule 7). */
 export function useIsPro(): boolean {
   return useStore(proStore, (s) => s.isPro);
+}
+
+/** Whether the store holds a Pro purchase whose payment hasn't cleared (after the dev source). */
+export function useProPending(): boolean {
+  return useStore(proStore, (s) => s.pending);
+}
+
+/** Fetches Pro with the store's localized price. Never rejects. */
+export function fetchProProduct(): Promise<ProProduct> {
+  return expoIapAdapter.fetchProduct();
+}
+
+/** Opens the store's payment sheet for Pro and resolves when it closes. Never rejects. */
+export function buyPro(): Promise<BuyResult> {
+  return expoIapAdapter.buy();
 }

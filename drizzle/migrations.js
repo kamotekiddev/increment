@@ -13,6 +13,7 @@ import m0008 from './0008_sharp_starfox.sql';
 import m0009 from './0009_set_weight_as_typed.sql';
 import m0010 from './0010_step_per_routine_exercise.sql';
 import m0011 from './0011_reminders_settings.sql';
+import m0012 from './0012_pro_unlock_screen_owed.sql';
 
   export default {
     journal,
@@ -28,7 +29,8 @@ m0007,
 m0008,
 m0009,
 m0010,
-m0011
+m0011,
+m0012
     }
   }
   

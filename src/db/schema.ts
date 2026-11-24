@@ -172,4 +172,6 @@ export const entitlements = sqliteTable("entitlements", {
   productId: text("product_id"),
   proof: text("proof"),
   verifiedAt: integer("verified_at"),
+  /** Pro switched on during a live workout, so Pro unlocked still has to show once that workout is over. */
+  unlockScreenOwed: integer("unlock_screen_owed", { mode: "boolean" }).notNull().default(false),
 });
