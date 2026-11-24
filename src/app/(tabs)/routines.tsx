@@ -13,7 +13,7 @@ import { routineListState } from "@/routines/routineListState";
 import { useIsPro } from "@/pro";
 import { useRoutines } from "@/routines/routineQueries";
 import { PAYWALL_PATH } from "@/pro/proRoutes";
-import { fontSize, opacity, radius, spacing, textStyle, useColors } from "@/theme";
+import { counterCard, fontSize, lineHeight, opacity, radius, size, spacing, textStyle, useColors } from "@/theme";
 
 export default function RoutinesScreen() {
   const colors = useColors();
@@ -66,32 +66,32 @@ export default function RoutinesScreen() {
                   alignItems: "center",
                   gap: spacing.md,
                   paddingVertical: spacing.md,
-                  paddingHorizontal: 14,
+                  paddingHorizontal: counterCard.paddingX,
                   borderRadius: radius.inset,
                   backgroundColor: colors.accentTint,
                   opacity: pressed ? opacity.pressed : 1,
                 })}
               >
-                <Ionicons name="lock-closed-outline" size={18} color={colors.accent} />
-                <Text tone="soft" style={{ flex: 1, fontSize: fontSize.meta, lineHeight: 18 }}>
+                <Ionicons name="lock-closed-outline" size={size.counterGlyph} color={colors.accent} />
+                <Text tone="soft" style={{ flex: 1, fontSize: fontSize.meta, lineHeight: lineHeight.subtitle }}>
                   <Text variant="label" style={{ fontSize: fontSize.meta }}>
                     {card.strong}
                   </Text>{" "}
                   {card.rest}
                 </Text>
-                <Ionicons name="chevron-forward" size={18} color={colors.inkMuted} />
+                <Ionicons name="chevron-forward" size={size.counterGlyph} color={colors.inkMuted} />
               </Pressable>
             ) : (
               <View
                 style={{
                   gap: spacing.sm,
                   paddingVertical: spacing.md,
-                  paddingHorizontal: 14,
+                  paddingHorizontal: counterCard.paddingX,
                   borderRadius: radius.inset,
                   backgroundColor: colors.accentTint,
                 }}
               >
-                <Text tone="soft" style={{ fontSize: fontSize.meta, lineHeight: 18 }}>
+                <Text tone="soft" style={{ fontSize: fontSize.meta, lineHeight: lineHeight.subtitle }}>
                   <Text variant="label" style={{ fontSize: fontSize.meta }}>
                     {card.strong}
                   </Text>{" "}

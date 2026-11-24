@@ -1,5 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
+import { useEffect, useRef } from "react";
 import { View } from "react-native";
 
 import { BottomSheet, Button, Text } from "@/components";
@@ -27,9 +28,21 @@ export interface LimitSheetProps {
 export function LimitSheet({ visible, onDismiss, backTo }: LimitSheetProps) {
   const colors = useColors();
 
+  // The sheet reports only a user dismissal, not the end of its own slide-away, so the Paywall waits
+  // a fixed time. One timer at a time (a double tap opens one Paywall), cleared if the screen goes first.
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (timer.current) clearTimeout(timer.current);
+    },
+    [],
+  );
+
   function seePro() {
+    if (timer.current) return;
     onDismiss();
-    setTimeout(() => {
+    timer.current = setTimeout(() => {
+      timer.current = null;
       if (backTo) router.dismissTo(backTo);
       router.push(PAYWALL_PATH);
     }, SHEET_CLOSE_MS);

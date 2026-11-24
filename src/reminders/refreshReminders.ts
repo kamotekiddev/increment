@@ -6,7 +6,7 @@ import { Platform } from "react-native";
 import { db } from "@/db/client";
 import { workouts } from "@/db/schema";
 import { isPermissionGranted } from "@/notifications";
-import { proStore } from "@/pro";
+import { lockedIdsNow } from "@/routines/lockedRoutines";
 import { loadRoutines } from "@/routines/routineQueries";
 import { readReminderSettings } from "@/settings/reminderSetting";
 
@@ -39,7 +39,7 @@ async function run(): Promise<void> {
       workoutStartedToday: startedToday,
       timeMinutes: reminderTimeMin,
       now,
-      isPro: proStore.getState().isPro,
+      lockedIds: lockedIdsNow(routines.map((r) => r.id)),
     });
     if (planned.length === 0) return;
 

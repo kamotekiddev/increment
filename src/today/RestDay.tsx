@@ -44,14 +44,18 @@ export function RestDay({ state, preview }: { state: Rest; preview: NextPreview 
         </View>
       </View>
 
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: spacing.md }}>
-        <Text variant="title" numberOfLines={1} style={{ flex: 1 }}>
-          {`Next: ${state.next.routineName}`}
-        </Text>
-        <Text tone="muted">{state.next.weekday}</Text>
-      </View>
+      {state.next ? (
+        <>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: spacing.md }}>
+            <Text variant="title" numberOfLines={1} style={{ flex: 1 }}>
+              {`Next: ${state.next.routineName}`}
+            </Text>
+            <Text tone="muted">{state.next.weekday}</Text>
+          </View>
 
-      <ExercisePreviewCard preview={preview} />
+          <ExercisePreviewCard preview={preview} />
+        </>
+      ) : null}
     </>
   );
 }

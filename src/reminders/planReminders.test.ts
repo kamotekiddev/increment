@@ -1,5 +1,6 @@
 import { planReminders } from "./planReminders";
 import type { PlannerRoutine } from "./planReminders";
+import { lockedRoutineIds } from "@/routines/routineLimit";
 
 // DST in America/New_York: clocks go forward on 2026-03-08 and back on 2026-11-01.
 process.env.TZ = "America/New_York";
@@ -17,8 +18,10 @@ const pullB: PlannerRoutine = { id: 2, name: "Pull day B", days: TUE | FRI, exer
 // Sunday 2026-11-22 at noon, local.
 const sundayNoon = new Date(2026, 10, 22, 12, 0);
 
+const free = (rs: PlannerRoutine[]) => new Set(lockedRoutineIds(rs.map((r) => r.id), false));
+
 function plan(over: Partial<Parameters<typeof planReminders>[0]> = {}) {
-  return planReminders({ routines: [pushA, pullB], workoutStartedToday: false, isPro: true, timeMinutes: SIX_PM, now: sundayNoon, ...over });
+  return planReminders({ routines: [pushA, pullB], workoutStartedToday: false, lockedIds: new Set<number>(), timeMinutes: SIX_PM, now: sundayNoon, ...over });
 }
 
 describe("planReminders", () => {
@@ -92,14 +95,15 @@ describe("planReminders", () => {
   it("plans nothing for a Locked routine on free, and everything with Pro", () => {
     const locked: PlannerRoutine = { id: 3, name: "Legs", days: SUN, exerciseCount: 3 };
     const routines = [pushA, pullB, locked];
-    expect(plan({ routines, isPro: false }).map((r) => r.id)).toEqual(plan().map((r) => r.id));
-    expect(plan({ routines, isPro: false }).some((r) => r.title.includes("Legs"))).toBe(false);
-    expect(plan({ routines, isPro: true }).length).toBeGreaterThan(plan().length);
+    const lockedIds = free(routines);
+    expect(plan({ routines, lockedIds }).map((r) => r.id)).toEqual(plan().map((r) => r.id));
+    expect(plan({ routines, lockedIds }).some((r) => r.title.includes("Legs"))).toBe(false);
+    expect(plan({ routines }).length).toBeGreaterThan(plan().length);
   });
 
   it("plans nothing when the only routine with days is Locked", () => {
     const quiet = (id: number): PlannerRoutine => ({ id, name: `Q${id}`, days: 0, exerciseCount: 1 });
     const routines = [quiet(1), quiet(2), { id: 3, name: "Legs", days: SUN, exerciseCount: 3 }];
-    expect(plan({ routines, isPro: false })).toEqual([]);
+    expect(plan({ routines, lockedIds: free(routines) })).toEqual([]);
   });
 });

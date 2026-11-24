@@ -21,6 +21,8 @@ export interface TodayInput {
   /** Epoch ms of the current moment. Days are read in local time. */
   now: number;
   routines: TodayRoutine[];
+  /** A Locked routine (left out of `routines`) has training days. Only the nudge reads it: such a day is a rest day, not "no days set". */
+  lockedHaveDays?: boolean;
   /** Finished Workouts only (discarded ones are not passed). `routineId` is null when the Routine was deleted. */
   finished: FinishedWorkout[];
   /** The Workout in progress, if any. */
@@ -52,8 +54,8 @@ export type TodayState =
   | { kind: "cards"; cards: TodayCard[] }
   | {
       kind: "rest";
-      /** The next planned Routine, with the full weekday it falls on ("Thursday"). */
-      next: { routineId: number; routineName: string; weekday: string };
+      /** The next planned Routine, with the full weekday it falls on ("Thursday"). Null when only Locked routines have days. */
+      next: { routineId: number; routineName: string; weekday: string } | null;
       /** Routine-days planned this week (a Routine on 3 days counts 3), and finished workouts started this week. */
       week: { planned: number; done: number };
     }
@@ -89,7 +91,7 @@ function weekTotals(now: number, routines: TodayRoutine[], finished: FinishedWor
 }
 
 /** Pure: the week strip and the screen state for Today, from plain inputs. */
-export function buildToday({ now, routines, finished, inProgress }: TodayInput): TodayView {
+export function buildToday({ now, routines, finished, inProgress, lockedHaveDays = false }: TodayInput): TodayView {
   const today = new Date(now);
   const sunday = new Date(weekStart(now));
   const todayKey = dayKey(today);
@@ -107,7 +109,7 @@ export function buildToday({ now, routines, finished, inProgress }: TodayInput):
     };
   });
 
-  return { strip, state: stateFor(now, routines, finished, inProgress) };
+  return { strip, state: stateFor(now, routines, finished, inProgress, lockedHaveDays) };
 }
 
 function stateFor(
@@ -115,10 +117,14 @@ function stateFor(
   routines: TodayRoutine[],
   finished: TodayInput["finished"],
   inProgress: TodayInput["inProgress"],
+  lockedHaveDays: boolean,
 ): TodayState {
   const today = new Date(now);
   if (routines.length === 0) return { kind: "noRoutines" };
-  if (routines.every((r) => r.days === 0)) return { kind: "noDays" };
+  if (routines.every((r) => r.days === 0)) {
+    // Days only on Locked routines: a normal rest day, never the "set training days" nudge.
+    return lockedHaveDays ? { kind: "rest", next: null, week: weekTotals(now, routines, finished) } : { kind: "noDays" };
+  }
 
   const todayBit = bitOf(today);
   const planned = routines.filter((r) => isDaySet(r.days, todayBit));

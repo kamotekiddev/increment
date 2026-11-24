@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, View } from "react-native";
 
 import { Pill, Text } from "@/components";
-import { fontSize, opacity, radius, spacing, textStyle, useColors } from "@/theme";
+import { fontSize, lineHeight, opacity, radius, size, spacing, textStyle, useColors } from "@/theme";
 
 import { routinePreview, routineSubtitle } from "./routineListText";
 import type { RoutineListItem } from "./routineQueries";
@@ -36,13 +36,13 @@ export function RoutineRow({ routine, onPress, locked = false }: RoutineRowProps
           {routine.name}
         </Text>
         {locked ? (
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-            <Ionicons name="lock-closed-outline" size={14} color={colors.inkMuted} />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.snug }}>
+            <Ionicons name="lock-closed-outline" size={size.lockGlyph} color={colors.inkMuted} />
             <Pill label="Pro" tone="neutral" />
           </View>
         ) : null}
       </View>
-      <Text tone="muted" style={[{ fontSize: fontSize.meta, lineHeight: 19 }, locked && dim]} numberOfLines={2}>
+      <Text tone="muted" style={[{ fontSize: fontSize.meta, lineHeight: lineHeight.small }, locked && dim]} numberOfLines={2}>
         {routinePreview(routine.exerciseNames, routine.exerciseCount)}
       </Text>
       <View

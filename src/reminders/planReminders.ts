@@ -1,4 +1,4 @@
-import { openRoutines } from "@/routines/openRoutines";
+import { withoutLocked } from "@/routines/openRoutines";
 import { isDaySet } from "@/routines/routineDays";
 
 import { REMINDER_ID_PREFIX } from "./reminderId";
@@ -18,8 +18,8 @@ type PlannerInput = {
   /** Reminder time as minutes after local midnight. */
   timeMinutes: number;
   now: Date;
-  /** Without Pro, Locked routines get no reminder. */
-  isPro: boolean;
+  /** Locked routines get no reminder. */
+  lockedIds: ReadonlySet<number>;
 };
 
 function pad(n: number): string {
@@ -42,10 +42,10 @@ function bodyFor(planned: readonly PlannerRoutine[]): string {
  * Pure: the reminders for today and the next 27 days. A day with no planned open Routine gets none (a Locked routine is never planned).
  * Today is skipped when its time has passed or a Workout was started today.
  */
-export function planReminders({ routines, workoutStartedToday, timeMinutes, now, isPro }: PlannerInput): PlannedReminder[] {
+export function planReminders({ routines, workoutStartedToday, timeMinutes, now, lockedIds }: PlannerInput): PlannedReminder[] {
   const hours = Math.floor(timeMinutes / 60);
   const minutes = timeMinutes % 60;
-  const open = openRoutines(routines, isPro);
+  const open = withoutLocked(routines, lockedIds);
   const out: PlannedReminder[] = [];
   for (let offset = 0; offset < REMINDER_WINDOW_DAYS; offset++) {
     const y = now.getFullYear();

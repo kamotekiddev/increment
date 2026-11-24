@@ -16,7 +16,7 @@ import {
   requestForReminders,
 } from "@/notifications";
 import { refreshReminders, remindersDaysNote } from "@/reminders";
-import { useIsPro } from "@/pro";
+import { useLockedRoutineIds } from "@/routines/lockedRoutines";
 import { useRoutines } from "@/routines/routineQueries";
 import {
   fontFamily,
@@ -33,6 +33,8 @@ import {
 import { formatReminderTime } from "./reminderTime";
 import { ReminderTimeSheet } from "./ReminderTimeSheet";
 import { useReminderTime, useRemindersOn } from "./useReminderSettings";
+
+const NO_LOCKED: ReadonlySet<number> = new Set();
 
 /** A note under a Reminders row: a small icon and its text, on a divider. */
 function NoteRow({
@@ -73,7 +75,7 @@ export function ReminderCard() {
   const { remindersOn, setRemindersOn } = useRemindersOn();
   const { reminderTimeMin, setReminderTime } = useReminderTime();
   const routines = useRoutines();
-  const isPro = useIsPro();
+  const lockedIds = useLockedRoutineIds(routines);
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // Screen state only: the last read of the OS permission, and whether the switch was just refused.
@@ -122,7 +124,7 @@ export function ReminderCard() {
 
   const offNote = notificationsOffNote({ remindersOn, granted, askedDenied });
 
-  const days = remindersDaysNote(routines ?? [], isPro);
+  const days = remindersDaysNote(routines ?? [], lockedIds ?? NO_LOCKED);
 
   const rowStyle = {
     height: size.settingsRow,

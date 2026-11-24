@@ -1,4 +1,4 @@
-import { openRoutines } from "@/routines/openRoutines";
+import { withoutLocked } from "@/routines/openRoutines";
 
 import type { FinishedWorkout, TodayInput, TodayRoutine } from "./todayState";
 
@@ -8,11 +8,13 @@ export function toTodayInput(
   routines: (TodayRoutine & { position?: number })[],
   finished: FinishedWorkout[],
   inProgress: { routineId: number | null } | null,
-  isPro: boolean,
+  lockedIds: ReadonlySet<number>,
 ): TodayInput {
+  const open = withoutLocked(routines, lockedIds);
   return {
     now,
-    routines: openRoutines(routines, isPro).map(({ id, name, days, exerciseCount }) => ({ id, name, days, exerciseCount })),
+    routines: open.map(({ id, name, days, exerciseCount }) => ({ id, name, days, exerciseCount })),
+    lockedHaveDays: routines.some((r) => lockedIds.has(r.id) && r.days !== 0),
     finished: finished.map(({ routineId, startedAt }) => ({ routineId, startedAt })),
     inProgress: inProgress ? { routineId: inProgress.routineId } : null,
   };
