@@ -81,7 +81,7 @@ export default function NewRoutineScreen() {
           <Button label="Create routine" large disabled={saving || name.trim() === ""} onPress={() => save(false)} />
         </BottomAction>
       </View>
-      <LimitSheet visible={limitOpen} onDismiss={() => setLimitOpen(false)} />
+      <LimitSheet visible={limitOpen} onDismiss={() => setLimitOpen(false)} backTo="/(tabs)/routines" />
     </>
   );
 }
