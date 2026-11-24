@@ -5,3 +5,12 @@ export const FREE_ROUTINE_LIMIT = 2;
 export function canCreateRoutine(count: number, isPro: boolean): boolean {
   return isPro || count < FREE_ROUTINE_LIMIT;
 }
+
+/**
+ * Pure: the ids of the Locked routines. The FREE_ROUTINE_LIMIT lowest ids (creation order, ids are
+ * never reused) stay open, whatever position the list shows. Worked out on read, never stored.
+ */
+export function lockedRoutineIds(routineIds: readonly number[], isPro: boolean): number[] {
+  if (isPro) return [];
+  return [...routineIds].sort((a, b) => a - b).slice(FREE_ROUTINE_LIMIT);
+}
