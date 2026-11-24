@@ -77,6 +77,33 @@ describe("Pro store", () => {
     expect(store.getState().isPro).toBe(true);
   });
 
+  it("keeps reporting a pending purchase when the next check gets no answer", async () => {
+    const db = createTestDb();
+    const adapter = new FakeProStoreAdapter();
+    adapter.answer = { kind: "owned", productId: "pro_lifetime", proof: "token-1", state: "pending" };
+    const store = createProStore(db, adapter);
+    store.getState().load();
+    await store.getState().refresh();
+
+    adapter.answer = { kind: "no-answer" };
+    await store.getState().refresh();
+    expect(store.getState().pending).toBe(true);
+    expect(store.getState().isPro).toBe(false);
+  });
+
+  it("never rejects, even when a switched-on listener throws", async () => {
+    const db = createTestDb();
+    const adapter = new FakeProStoreAdapter();
+    adapter.answer = ownedAnswer();
+    const store = createProStore(db, adapter);
+    store.getState().load();
+    store.getState().onSwitchedOn(() => {
+      throw new Error("listener failed");
+    });
+    await expect(store.getState().refresh()).resolves.toBeUndefined();
+    expect(store.getState().isPro).toBe(true);
+  });
+
   it("runs overlapping refreshes one after the other", async () => {
     const db = createTestDb();
     const adapter = new FakeProStoreAdapter();

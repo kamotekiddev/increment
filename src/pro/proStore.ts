@@ -40,15 +40,28 @@ export function createProStore(db: SelectInsertDb, adapter: ProStoreAdapter, now
       const wasPro = get()?.isPro ?? false;
       const next = applyDevSource(stored, get()?.source ?? "store");
       set(next);
-      if (announce && !wasPro && next.isPro) listeners.forEach((listener) => listener());
+      if (!announce || wasPro || !next.isPro) return;
+      listeners.forEach((listener) => {
+        try {
+          listener();
+        } catch {
+          // One listener's failure never stops the others or the caller.
+        }
+      });
     };
 
     const runRefresh = async () => {
-      const answer = await adapter.checkOwned().catch((): StoreAnswer => ({ kind: "no-answer" }));
-      const decision = decideEntitlement(readEntitlement(db), answer, now());
-      if (decision.write) writeEntitlement(db, decision.row);
-      stored = { isPro: decision.row.isPro, pending: decision.pending };
-      show(true);
+      try {
+        const answer = await adapter.checkOwned().catch((): StoreAnswer => ({ kind: "no-answer" }));
+        const decision = decideEntitlement(readEntitlement(db), answer, now());
+        if (decision.write) writeEntitlement(db, decision.row);
+        // No answer leaves everything as it was, including a pending purchase still waiting to clear.
+        const pending = answer.kind === "no-answer" ? stored.pending : decision.pending;
+        stored = { isPro: decision.row.isPro, pending };
+        show(true);
+      } catch {
+        // A database error leaves the last known state in place; the next check tries again.
+      }
     };
 
     return {
