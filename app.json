@@ -35,7 +35,8 @@
       ],
       "expo-sqlite",
       ["expo-notifications", { "enableRemoteNotifications": false }],
-      "expo-iap"
+      "expo-iap",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
