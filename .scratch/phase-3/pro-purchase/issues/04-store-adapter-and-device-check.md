@@ -15,3 +15,7 @@
   - iOS, on a Pro install, signed out of the Apple ID in Settings: the same question.
   - iOS: a launch and a return to the foreground never show an App Store sign-in or password prompt. If expo-iap's "what is owned" call prompts, the launch check uses a silent call and only the Restore button uses the syncing one (update the spec).
 - [ ] If any check shows the store can't tell "not owned" from "can't answer", or that it answers nothing offline, stop and bring it back to the owner, since ADR 0004 then needs revisiting.
+
+## Comments
+
+**2026-11-24, owner decision:** tickets 04 to 08 are built now, ahead of ticket 03 and the device checks. Nothing waits on a store account; the owner signs up for Apple Developer and Play Console closer to release. The adapter is written against expo-iap's docs. The device-check boxes above stay open for the owner, and a failed check changes only the adapter. Ticket 04 also adds a local StoreKit configuration file (`pro_lifetime`, ₱300) with the steps to use it in the iOS Simulator, so the purchase flow can be tried before Apple's account exists.
