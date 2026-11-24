@@ -274,7 +274,7 @@ export default function EditRoutineScreen() {
                   <View
                     style={{
                       flexDirection: "row",
-                      alignItems: "flex-start",
+                      alignItems: "center",
                       gap: spacing.md,
                       padding: spacing.lg,
                       borderRadius: radius.lg,
