@@ -16,8 +16,11 @@ export interface ProState {
   source: ProSource;
   /** Reads the cached row. Call once the migrations have run. Never asks the store and never fires "switched on". */
   load: () => void;
-  /** Asks the store what is owned and writes the answer through the entitlement decision. Serialised; never rejects. */
-  refresh: () => Promise<void>;
+  /**
+   * Asks the store what is owned and writes the answer through the entitlement decision. Serialised; never
+   * rejects. Resolves with the answer it acted on, or no answer when the store or the database failed.
+   */
+  refresh: () => Promise<StoreAnswer>;
   /** Sets the dev source. In memory only: nothing is written. */
   setSource: (source: ProSource) => void;
   /**
@@ -31,7 +34,7 @@ export interface ProState {
 export function createProStore(db: SelectInsertDb, adapter: ProStoreAdapter, now: () => number = Date.now) {
   let stored: ProFlags = { isPro: false, pending: false };
   /** Refreshes queue behind each other, so two never interleave. Each reads the latest row when its turn comes. */
-  let queue: Promise<void> = Promise.resolve();
+  let queue: Promise<unknown> = Promise.resolve();
   const listeners = new Set<() => void>();
 
   return createStore<ProState>((set, get) => {
@@ -50,7 +53,7 @@ export function createProStore(db: SelectInsertDb, adapter: ProStoreAdapter, now
       });
     };
 
-    const runRefresh = async () => {
+    const runRefresh = async (): Promise<StoreAnswer> => {
       try {
         const answer = await adapter.checkOwned().catch((): StoreAnswer => ({ kind: "no-answer" }));
         const decision = decideEntitlement(readEntitlement(db), answer, now());
@@ -59,8 +62,10 @@ export function createProStore(db: SelectInsertDb, adapter: ProStoreAdapter, now
         const pending = answer.kind === "no-answer" ? stored.pending : decision.pending;
         stored = { isPro: decision.row.isPro, pending };
         show(true);
+        return answer;
       } catch {
         // A database error leaves the last known state in place; the next check tries again.
+        return { kind: "no-answer" };
       }
     };
 
@@ -73,8 +78,9 @@ export function createProStore(db: SelectInsertDb, adapter: ProStoreAdapter, now
         show(false);
       },
       refresh: () => {
-        queue = queue.then(runRefresh, runRefresh);
-        return queue;
+        const run = queue.then(runRefresh, runRefresh);
+        queue = run;
+        return run;
       },
       setSource: (source) => {
         set({ source });

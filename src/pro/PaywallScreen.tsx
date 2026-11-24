@@ -19,7 +19,13 @@ import {
   useColors,
 } from "@/theme";
 
-import { paywallState, type PaywallButton as PaywallButtonState, type PaywallProduct } from "./paywallState";
+import {
+  paywallState,
+  restoreOutcome,
+  restoreResult,
+  type PaywallButton as PaywallButtonState,
+  type PaywallProduct,
+} from "./paywallState";
 import { buyPro, fetchProProduct, proStore, useProPending } from "./usePro";
 
 /** A table cell's value: included, not included, or a short text ("Unlimited", "2"). */
@@ -193,6 +199,7 @@ export function PaywallScreen() {
   const insets = useSafeAreaInsets();
   const [product, setProduct] = useState<PaywallProduct>({ kind: "loading" });
   const [inFlight, setInFlight] = useState(false);
+  const [restoring, setRestoring] = useState(false);
   // iOS reports Ask to Buy only through the buy itself; the store's own pending flag never sees it.
   const [boughtPending, setBoughtPending] = useState(false);
   const storePending = useProPending();
@@ -232,6 +239,20 @@ export function PaywallScreen() {
     }
   }
 
+  /**
+   * Restore purchase: the same check as at launch. Found switches Pro on, and Pro unlocked replaces this
+   * screen; pending sets the store's pending flag, which gives the Payment pending state. Nothing found
+   * and no answer get one alert.
+   */
+  async function restore() {
+    setRestoring(true);
+    const answer = await proStore.getState().refresh();
+    if (!mounted.current) return;
+    setRestoring(false);
+    const result = restoreResult(restoreOutcome(answer), Platform.OS);
+    if (result.kind === "alert") Alert.alert(result.title, result.body, [{ text: "OK" }]);
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
@@ -243,13 +264,27 @@ export function PaywallScreen() {
         }}
       >
         <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", minHeight: size.round }}>
-          {/* Restore purchase is wired in ticket 07; until then the link is shown but does nothing. */}
           <Pressable
             accessibilityRole="button"
-            style={{ minHeight: minTouch, justifyContent: "center", paddingHorizontal: spacing.xs }}
+            accessibilityLabel={restoring ? "Checking…" : "Restore purchase"}
+            accessibilityState={{ disabled: restoring, busy: restoring }}
+            disabled={restoring}
+            onPress={() => void restore()}
+            style={({ pressed }) => ({
+              minHeight: minTouch,
+              flexDirection: "row",
+              alignItems: "center",
+              gap: spacing.sm,
+              paddingHorizontal: spacing.xs,
+              opacity: pressed ? opacity.pressed : 1,
+            })}
           >
-            <Text tone="muted" style={{ fontFamily: fontFamily.medium, fontSize: fontSize.label }}>
-              Restore purchase
+            {restoring ? <ActivityIndicator size="small" color={colors.iconFaint} /> : null}
+            <Text
+              tone="muted"
+              style={[{ fontFamily: fontFamily.medium, fontSize: fontSize.label }, restoring && { color: colors.iconFaint }]}
+            >
+              {restoring ? "Checking…" : "Restore purchase"}
             </Text>
           </Pressable>
           <RoundButton icon="close" label="Close" onPress={() => router.back()} />
