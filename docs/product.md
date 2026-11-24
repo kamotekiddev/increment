@@ -22,7 +22,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 - Create a routine with a name, the days it repeats, and its exercises from the library.
 - For each exercise, set sets, a rep range and rest, plus its overload rule.
 - Reorder exercises in a reorder mode (saved on Done), remove them with a confirmation, or delete the routine with a confirmation that says its workouts are deleted too.
-- Free users can have up to **2 routines**. Adding a 3rd shows a limit pop-up. In Phase 1 the pop-up has no upgrade button; the link to the paywall arrives in Phase 3.
+- Free users can have up to **2 routines**. Adding a 3rd shows a limit pop-up. The pop-up has no upgrade button until feature 2 of Phase 3 (the Paywall itself exists, opened from Settings).
 
 ### Live workout
 - Start a workout from a routine. Each exercise shows its Target in a banner and its set rows prefilled to the Target; a first workout with no Target has a blank weight and reps at the bottom of the rep range.
@@ -86,4 +86,7 @@ Welcome → Goal → Experience → Schedule → Equipment → Units → Your pl
 Rules:
 - **Backups are Pro-only.** A free user cannot create a backup file in any way; the backup row in Settings is locked and opens the paywall.
 - Automatic backups run after every workout, daily, weekly or monthly, checked when the app opens. The last N files are kept. On iOS they go to the app's folder or iCloud Drive; on Android, to a folder the user picks.
-- Paywall copy: "Unlock Pro · [Price]" with "One-time payment. No subscription. Works offline." Restore purchase is on the paywall and on Welcome back.
+- Paywall copy: "Unlock Pro · [Price]" with "One-time payment. No subscription. Works offline." Restore purchase is on the paywall (reached after onboarding from the Increment Pro card at the top of Settings) and, in Phase 4, on Welcome back.
+- **Paywall states:** loading (button disabled, spinner), loaded (the store's localized price), offline ("Connect to the internet to buy Pro."), Payment pending (Android cash or bank payments, iOS Ask to Buy; Pro switches on by itself once the store confirms, even if the app was closed) and in flight. Cancelling the store's sheet changes nothing; any other failure shows "Purchase didn't go through" and says nothing was charged. Restore purchase answers with Pro unlocked, Payment pending, "No purchase found" (check the Apple ID or Google account) or "Couldn't reach the App Store / Google Play".
+- **Pro unlocked shows once each time Pro switches on, and never over a live workout** (owner decision 2026-11-24): during a workout it waits until the workout is finished or discarded, or the next launch that doesn't resume one.
+- **Refunds:** when the store reports a purchase gone (checked at launch and on return to the app), Pro switches off. Everything the lifter made stays; only Pro actions lock. The Locked routine (routines past the 2 oldest) arrives in feature 2; the other Pro features lock as they are built.
