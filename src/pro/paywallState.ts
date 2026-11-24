@@ -1,3 +1,4 @@
+import type { StoreAnswer } from "./entitlementDecision";
 import type { ProProduct } from "./storeAdapter";
 
 /** The Pro product as the Paywall sees it: still being fetched, or what the store returned. */
@@ -24,7 +25,47 @@ export interface PaywallButton {
   lineStrong: boolean;
 }
 
-const USUAL_LINE = "One-time payment. No subscription. Works offline.";
+/** How a Restore purchase check ended. */
+export type RestoreOutcome = "found" | "pending" | "nothing-found" | "no-answer";
+
+/** The Restore outcome for the store's answer to "what is owned". */
+export function restoreOutcome(answer: StoreAnswer): RestoreOutcome {
+  switch (answer.kind) {
+    case "owned":
+      return answer.state === "purchased" ? "found" : "pending";
+    case "not-owned":
+      return "nothing-found";
+    case "no-answer":
+      return "no-answer";
+  }
+}
+
+/** What the Paywall does after Restore purchase: nothing of its own, or one native alert with OK. */
+export type RestoreResult = { kind: "none" } | { kind: "alert"; title: string; body: string };
+
+/**
+ * The Restore purchase result for an outcome on this platform. Found and pending need nothing here: the
+ * Pro store's switch to Pro opens Pro unlocked, and its pending flag gives the Payment pending state.
+ * Only Android gets the Google copy.
+ */
+export function restoreResult(outcome: RestoreOutcome, platform: string): RestoreResult {
+  const android = platform === "android";
+  if (outcome === "found" || outcome === "pending") return { kind: "none" };
+  if (outcome === "no-answer") {
+    return {
+      kind: "alert",
+      title: android ? "Couldn't reach Google Play" : "Couldn't reach the App Store",
+      body: "Check your connection and try again.",
+    };
+  }
+  return {
+    kind: "alert",
+    title: "No purchase found",
+    body: `Make sure you're signed in with the ${android ? "Google account" : "Apple ID"} you bought Pro with.`,
+  };
+}
+
+const USUAL_LINE ="One-time payment. No subscription. Works offline.";
 
 /** The Paywall's button and the line under it. In flight beats pending, and pending beats the product fetch. */
 export function paywallState({ product, pending, inFlight }: PaywallInputs): PaywallButton {

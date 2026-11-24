@@ -1,4 +1,4 @@
-import { paywallState } from "./paywallState";
+import { paywallState, restoreOutcome, restoreResult } from "./paywallState";
 
 const loaded = { kind: "loaded", localizedPrice: "₱300.00" } as const;
 const usualLine = "One-time payment. No subscription. Works offline.";
@@ -69,5 +69,49 @@ describe("Paywall state", () => {
     const state = paywallState({ product: loaded, pending: true, inFlight: true });
     expect(state).toMatchObject({ enabled: false, spinner: true, look: "accent" });
     expect(state.label).toBe("Unlock Pro · ₱300.00");
+  });
+});
+
+describe("Restore purchase outcome", () => {
+  it("reads the store's answer: purchased is found, pending is pending, not owned is nothing found", () => {
+    expect(restoreOutcome({ kind: "owned", productId: "pro_lifetime", proof: "t", state: "purchased" })).toBe("found");
+    expect(restoreOutcome({ kind: "owned", productId: "pro_lifetime", proof: "t", state: "pending" })).toBe("pending");
+    expect(restoreOutcome({ kind: "not-owned" })).toBe("nothing-found");
+    expect(restoreOutcome({ kind: "no-answer" })).toBe("no-answer");
+  });
+});
+
+describe("Restore purchase result", () => {
+  it("nothing found: an alert naming the account to sign in with, Apple ID on iOS and Google account on Android", () => {
+    expect(restoreResult("nothing-found", "ios")).toEqual({
+      kind: "alert",
+      title: "No purchase found",
+      body: "Make sure you're signed in with the Apple ID you bought Pro with.",
+    });
+    expect(restoreResult("nothing-found", "android")).toEqual({
+      kind: "alert",
+      title: "No purchase found",
+      body: "Make sure you're signed in with the Google account you bought Pro with.",
+    });
+  });
+
+  it("no answer: an alert naming the store that couldn't be reached, App Store on iOS and Google Play on Android", () => {
+    expect(restoreResult("no-answer", "ios")).toEqual({
+      kind: "alert",
+      title: "Couldn't reach the App Store",
+      body: "Check your connection and try again.",
+    });
+    expect(restoreResult("no-answer", "android")).toEqual({
+      kind: "alert",
+      title: "Couldn't reach Google Play",
+      body: "Check your connection and try again.",
+    });
+  });
+
+  it("found and pending show no alert on either platform: Pro unlocked or the Payment pending state takes over", () => {
+    for (const platform of ["ios", "android"]) {
+      expect(restoreResult("found", platform)).toEqual({ kind: "none" });
+      expect(restoreResult("pending", platform)).toEqual({ kind: "none" });
+    }
   });
 });

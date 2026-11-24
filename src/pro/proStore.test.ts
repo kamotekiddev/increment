@@ -59,7 +59,7 @@ describe("Pro store", () => {
     throwing.checkOwned = () => Promise.reject(new Error("store unavailable"));
     const failing = createProStore(db, throwing);
     failing.getState().load();
-    await expect(failing.getState().refresh()).resolves.toBeUndefined();
+    await expect(failing.getState().refresh()).resolves.toEqual({ kind: "no-answer" });
     expect(failing.getState().isPro).toBe(true);
   });
 
@@ -102,8 +102,21 @@ describe("Pro store", () => {
     store.getState().onSwitchedOn(() => {
       throw new Error("listener failed");
     });
-    await expect(store.getState().refresh()).resolves.toBeUndefined();
+    await expect(store.getState().refresh()).resolves.toEqual(ownedAnswer());
     expect(store.getState().isPro).toBe(true);
+  });
+
+  it("resolves with the store's answer it acted on, so Restore purchase can tell nothing found from no answer", async () => {
+    const adapter = new FakeProStoreAdapter();
+    const store = createProStore(createTestDb(), adapter);
+    store.getState().load();
+
+    adapter.answer = { kind: "not-owned" };
+    await expect(store.getState().refresh()).resolves.toEqual({ kind: "not-owned" });
+    adapter.answer = { kind: "no-answer" };
+    await expect(store.getState().refresh()).resolves.toEqual({ kind: "no-answer" });
+    adapter.answer = ownedAnswer();
+    await expect(store.getState().refresh()).resolves.toEqual(ownedAnswer());
   });
 
   it("runs overlapping refreshes one after the other", async () => {
