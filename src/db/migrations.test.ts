@@ -130,3 +130,24 @@ describe("migration 0010: a step per routine exercise", () => {
     ]);
   });
 });
+
+/** Migration 0012: the entitlements row remembers a Pro unlocked screen held back by a live workout. */
+describe("migration 0012: Pro unlocked can be owed", () => {
+  it("keeps a cached Pro row as it was and owes nothing", () => {
+    const { sqlite, migrateTo } = createDbAtMigration(11);
+    sqlite
+      .prepare("INSERT INTO entitlements (id, is_pro, product_id, proof, verified_at) VALUES (1, 1, 'pro_lifetime', 'token', 1700)")
+      .run();
+    migrateTo(12);
+    expect(sqlite.prepare("SELECT * FROM entitlements").all()).toEqual([
+      { id: 1, is_pro: 1, product_id: "pro_lifetime", proof: "token", verified_at: 1700, unlock_screen_owed: 0 },
+    ]);
+  });
+
+  it("gives a row written later the flag off by default", () => {
+    const { sqlite, migrateTo } = createDbAtMigration(11);
+    migrateTo(12);
+    sqlite.prepare("INSERT INTO entitlements (id, is_pro) VALUES (1, 0)").run();
+    expect(sqlite.prepare("SELECT unlock_screen_owed FROM entitlements").get()).toEqual({ unlock_screen_owed: 0 });
+  });
+});

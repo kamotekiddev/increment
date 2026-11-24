@@ -1,0 +1,1 @@
+ALTER TABLE `entitlements` ADD `unlock_screen_owed` integer DEFAULT false NOT NULL;
