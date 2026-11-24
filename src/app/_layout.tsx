@@ -14,7 +14,7 @@ import { AppState, View } from "react-native";
 import { Text } from "@/components";
 import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
-import { loadProOnce } from "@/pro";
+import { loadProOnce, startProStoreChecks } from "@/pro";
 import { loadReminderSettingsOnce, loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
 import { useReminderTap } from "@/reminders/useReminderTap";
 import { spacing, useColors } from "@/theme";
@@ -50,13 +50,18 @@ export default function RootLayout() {
   }, [done]);
 
   // Reminders are rescheduled at app start (once the database is ready) and each time the app returns to the foreground.
+  // The store is asked about Pro at the same moments, and on each purchase update. Nothing here is awaited.
   useEffect(() => {
     if (!dbReady || dbError) return;
     void refreshReminders();
     const sub = AppState.addEventListener("change", (state) => {
       if (state === "active") void refreshReminders();
     });
-    return () => sub.remove();
+    const stopProChecks = startProStoreChecks();
+    return () => {
+      sub.remove();
+      stopProChecks();
+    };
   }, [dbReady, dbError]);
 
   if (!done) return null;

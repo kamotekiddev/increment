@@ -1,15 +1,26 @@
+import { AppState } from "react-native";
 import { useStore } from "zustand";
 
 import { db } from "@/db/client";
 
 import { expoIapAdapter } from "./expoIapAdapter";
+import { startProChecks } from "./proChecks";
 import { createProStore } from "./proStore";
 
 /**
- * The app's one Pro store, asking the phone's store through expo-iap. Nothing asks yet: the checks at
- * launch and on return to the foreground come with ticket 05, so until then the cached row decides.
+ * The app's one Pro store, asking the phone's store through expo-iap. `startProStoreChecks` asks at
+ * launch, on return to the foreground and on each purchase update; until an answer arrives, the cached
+ * row decides.
  */
 export const proStore = createProStore(db, expoIapAdapter);
+
+/**
+ * Starts the store checks on the app's Pro store (see `startProChecks`). Call it once, at the root, once
+ * the database is ready. Returns a function that stops them.
+ */
+export function startProStoreChecks(): () => void {
+  return startProChecks(proStore.getState(), expoIapAdapter, AppState);
+}
 
 let proLoad: { error: Error | null } | null = null;
 
