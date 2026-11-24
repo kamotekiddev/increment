@@ -28,6 +28,7 @@ describe("toTodayInput", () => {
       [{ id: 1, name: "Push", days: 3, exerciseCount: 4, position: 0 }],
       [{ routineId: 1, startedAt: 4 }],
       { routineId: null },
+      true,
     );
     expect(input).toEqual({
       now: 5,
@@ -47,6 +48,7 @@ describe("toTodayInput", () => {
       ],
       [],
       null,
+      true,
     );
     expect(input.routines.map((r) => r.id)).toEqual([7, 2, 5]);
     const { state } = buildToday({ ...input, now: new Date(2026, 10, 16, 9).getTime() }); // Monday
@@ -54,6 +56,36 @@ describe("toTodayInput", () => {
   });
 
   it("passes no in-progress workout through as null", () => {
-    expect(toTodayInput(5, [], [], null).inProgress).toBeNull();
+    expect(toTodayInput(5, [], [], null, true).inProgress).toBeNull();
+  });
+
+  describe("Locked routines on free", () => {
+    const MON = 1;
+    const WED = 4;
+    const monday = new Date(2026, 10, 16, 9).getTime();
+    const row = (id: number, days: number) => ({ id, name: `R${id}`, days, exerciseCount: 1 });
+
+    it("drops them from the input, keeping the 2 lowest ids", () => {
+      const input = toTodayInput(5, [row(9, MON), row(1, MON), row(4, MON), row(2, MON)], [], null, false);
+      expect(input.routines.map((r) => r.id)).toEqual([1, 2]);
+    });
+
+    it("keeps them all with Pro", () => {
+      expect(toTodayInput(5, [row(1, MON), row(2, MON), row(3, MON)], [], null, true).routines).toHaveLength(3);
+    });
+
+    it("makes a day with only a Locked routine a rest day, next preview from open routines", () => {
+      const rows = [row(1, WED), row(2, 0), row(3, MON)];
+      const free = buildToday({ ...toTodayInput(monday, rows, [], null, false), now: monday });
+      expect(free.state).toMatchObject({ kind: "rest", next: { routineId: 1, weekday: "Wednesday" } });
+      const pro = buildToday({ ...toTodayInput(monday, rows, [], null, true), now: monday });
+      expect(pro.state).toMatchObject({ kind: "cards", cards: [{ routineId: 3 }] });
+    });
+
+    it("reads as noDays when every open routine has no days (the Locked one is ignored)", () => {
+      const rows = [row(1, 0), row(2, 0), row(3, MON)];
+      const { state } = buildToday(toTodayInput(monday, rows, [], null, false));
+      expect(state).toEqual({ kind: "noDays" });
+    });
   });
 });

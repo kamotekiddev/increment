@@ -5,6 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { db } from "@/db/client";
 import { exercises, routineExercises, workouts } from "@/db/schema";
 import { nextTarget } from "@/engine";
+import { useIsPro } from "@/pro";
 import { useRoutines } from "@/routines/routineQueries";
 import { useUnit } from "@/settings";
 import { jumpKgFor, type Unit } from "@/units";
@@ -38,6 +39,7 @@ function readWeek() {
  */
 export function useTodayData(refreshKey = 0): TodayInput | undefined {
   const routines = useRoutines();
+  const isPro = useIsPro();
   const inProgress = useInProgressOnFocus();
   const [week, setWeek] = useState(readWeek);
   useFocusEffect(
@@ -49,8 +51,8 @@ export function useTodayData(refreshKey = 0): TodayInput | undefined {
     }, [refreshKey]),
   );
   return useMemo(
-    () => (routines ? toTodayInput(week.now, routines, week.finished, inProgress) : undefined),
-    [routines, inProgress, week],
+    () => (routines ? toTodayInput(week.now, routines, week.finished, inProgress, isPro) : undefined),
+    [routines, inProgress, week, isPro],
   );
 }
 

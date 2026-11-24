@@ -6,6 +6,7 @@ import { Platform } from "react-native";
 import { db } from "@/db/client";
 import { workouts } from "@/db/schema";
 import { isPermissionGranted } from "@/notifications";
+import { proStore } from "@/pro";
 import { loadRoutines } from "@/routines/routineQueries";
 import { readReminderSettings } from "@/settings/reminderSetting";
 
@@ -34,10 +35,11 @@ async function run(): Promise<void> {
     const startedToday = db.select({ id: workouts.id }).from(workouts).where(gte(workouts.startedAt, midnight)).limit(1).all().length > 0;
     const routines = await loadRoutines();
     const planned = planReminders({
-      routines: routines.map((r) => ({ name: r.name, days: r.days, exerciseCount: r.exerciseCount })),
+      routines: routines.map((r) => ({ id: r.id, name: r.name, days: r.days, exerciseCount: r.exerciseCount })),
       workoutStartedToday: startedToday,
       timeMinutes: reminderTimeMin,
       now,
+      isPro: proStore.getState().isPro,
     });
     if (planned.length === 0) return;
 

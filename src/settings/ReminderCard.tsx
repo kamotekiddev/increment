@@ -16,6 +16,7 @@ import {
   requestForReminders,
 } from "@/notifications";
 import { refreshReminders, remindersDaysNote } from "@/reminders";
+import { useIsPro } from "@/pro";
 import { useRoutines } from "@/routines/routineQueries";
 import {
   fontFamily,
@@ -72,6 +73,7 @@ export function ReminderCard() {
   const { remindersOn, setRemindersOn } = useRemindersOn();
   const { reminderTimeMin, setReminderTime } = useReminderTime();
   const routines = useRoutines();
+  const isPro = useIsPro();
   const [sheetOpen, setSheetOpen] = useState(false);
 
   // Screen state only: the last read of the OS permission, and whether the switch was just refused.
@@ -120,7 +122,7 @@ export function ReminderCard() {
 
   const offNote = notificationsOffNote({ remindersOn, granted, askedDenied });
 
-  const days = remindersDaysNote(routines ?? []);
+  const days = remindersDaysNote(routines ?? [], isPro);
 
   const rowStyle = {
     height: size.settingsRow,
