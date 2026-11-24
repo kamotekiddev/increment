@@ -1,4 +1,20 @@
-import { canCreateRoutine, FREE_ROUTINE_LIMIT, lockedRoutineIds } from "./routineLimit";
+import { canCreateRoutine, FREE_ROUTINE_LIMIT, isRoutineLocked, lockedRoutineIds } from "./routineLimit";
+
+describe("isRoutineLocked", () => {
+  it("is true for the third routine on the free plan", () => {
+    expect(isRoutineLocked(3, [1, 2, 3], false)).toBe(true);
+    expect(isRoutineLocked(2, [1, 2, 3], false)).toBe(false);
+  });
+
+  it("is false with Pro, and false for a routine no longer in the list", () => {
+    expect(isRoutineLocked(3, [1, 2, 3], true)).toBe(false);
+    expect(isRoutineLocked(9, [1, 2, 3], false)).toBe(false);
+  });
+
+  it("unlocks when an older routine is deleted", () => {
+    expect(isRoutineLocked(3, [2, 3], false)).toBe(false);
+  });
+});
 
 describe("lockedRoutineIds", () => {
   it("locks the third routine on the free plan", () => {

@@ -44,6 +44,12 @@ export async function loadRoutines(): Promise<RoutineListItem[]> {
   });
 }
 
+/** Every routine id, for the Locked check at the moment a workout is asked to start. */
+export async function loadRoutineIds(): Promise<number[]> {
+  const rows = await db.select({ id: routines.id }).from(routines);
+  return rows.map((r) => r.id);
+}
+
 /** The routine list, reloaded each time the screen gains focus. Undefined until first load. */
 export function useRoutines(): RoutineListItem[] | undefined {
   const [items, setItems] = useState<RoutineListItem[] | undefined>(undefined);

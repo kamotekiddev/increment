@@ -14,3 +14,8 @@ export function lockedRoutineIds(routineIds: readonly number[], isPro: boolean):
   if (isPro) return [];
   return [...routineIds].sort((a, b) => a - b).slice(FREE_ROUTINE_LIMIT);
 }
+
+/** Pure: whether one routine is Locked right now. A routine missing from the list is not. */
+export function isRoutineLocked(routineId: number, routineIds: readonly number[], isPro: boolean): boolean {
+  return lockedRoutineIds(routineIds, isPro).includes(routineId);
+}

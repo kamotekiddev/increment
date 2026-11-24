@@ -1,6 +1,10 @@
 import { router } from "expo-router";
 import { useState } from "react";
 
+import { proStore } from "@/pro";
+import { PAYWALL_PATH } from "@/pro/proRoutes";
+import { isRoutineLocked } from "@/routines/routineLimit";
+import { loadRoutineIds } from "@/routines/routineQueries";
 import { useUnit } from "@/settings";
 
 import { findInProgressWorkout } from "./inProgressQueries";
@@ -26,7 +30,13 @@ export function useStartWorkout() {
   } | null>(null);
   const { unit } = useUnit();
 
-  function start(routineId: number, routineName: string) {
+  async function start(routineId: number, routineName: string) {
+    // Read now, not at render: a refund can land between render and tap and lock this routine.
+    const ids = await loadRoutineIds();
+    if (isRoutineLocked(routineId, ids, proStore.getState().isPro)) {
+      router.push(PAYWALL_PATH);
+      return;
+    }
     const decision = startDecision(findInProgressWorkout());
     if (decision.kind === "start") openWorkout(startWorkout(routineId, unit));
     else setPrompt({ workoutId: decision.workoutId, runningName: decision.routineName, routineId, startingName: routineName });

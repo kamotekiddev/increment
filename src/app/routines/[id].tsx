@@ -5,6 +5,8 @@ import { BackHandler, Pressable, ScrollView, View } from "react-native";
 
 import { Button, RoundButton, ScreenHeader, Text } from "@/components";
 import { db } from "@/db/client";
+import { useIsPro } from "@/pro";
+import { PAYWALL_PATH } from "@/pro/proRoutes";
 import { exerciseMeta } from "@/library/exerciseMeta";
 import { BOTTOM_ACTION_CLEARANCE, BottomAction } from "@/routines/BottomAction";
 import { DayPicker } from "@/routines/DayPicker";
@@ -12,11 +14,13 @@ import { DeleteRoutineSheet } from "@/routines/DeleteRoutineSheet";
 import { EmptyExercises } from "@/routines/EmptyExercises";
 import { ExerciseSetupSheet } from "@/routines/ExerciseSetupSheet";
 import { ExerciseTile } from "@/routines/ExerciseTile";
+import { lockedRoutineBanner } from "@/routines/lockedRoutineText";
 import { moveExercise } from "@/routines/moveExercise";
 import { NameField } from "@/routines/NameField";
 import { RemoveExerciseSheet } from "@/routines/RemoveExerciseSheet";
 import { ReorderList } from "@/routines/ReorderList";
 import { saveExerciseOrder } from "@/routines/reorderQueries";
+import { isRoutineLocked } from "@/routines/routineLimit";
 import { toggleDay } from "@/routines/routineDays";
 import { validateRoutineName } from "@/routines/routineName";
 import { routineNameMessage } from "@/routines/routineNameMessage";
@@ -29,6 +33,7 @@ import {
   renameRoutine,
   type RoutineExerciseItem,
   setRoutineDays,
+  useRoutines,
   updateRoutineExercise,
   useRoutineExercises,
 } from "@/routines/routineQueries";
@@ -70,6 +75,13 @@ export default function EditRoutineScreen() {
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const inProgress = useInProgressOnFocus();
   const blockedByWorkout = isBlockedByWorkout(inProgress, id);
+  const isPro = useIsPro();
+  const allRoutines = useRoutines();
+  const locked =
+    !!allRoutines && isRoutineLocked(id, allRoutines.map((r) => r.id), isPro);
+  // Read-only for either reason: a workout in progress, or the Pro lock.
+  const readOnly = blockedByWorkout || locked;
+  const dim = blockedByWorkout ? opacity.disabled : opacity.locked;
   const { start, sheet: startSheet } = useStartWorkout();
   const loadedRows = useRoutineExercises(id, exerciseVersion);
   // Reorder mode: `order` is the in-memory draft (null when not reordering). After Done the saved
@@ -121,7 +133,7 @@ export default function EditRoutineScreen() {
 
   /** Checks the name and saves it. An invalid name is not saved, so the saved one stays. */
   const commitName = useCallback(async (): Promise<void> => {
-    if (gone.current || blockedByWorkout || !savedName.current) return;
+    if (gone.current || readOnly || !savedName.current) return;
     const existing = await loadRoutines();
     const result = validateRoutineName(draft.current, existing, id);
     if (!result.ok) {
@@ -136,7 +148,7 @@ export default function EditRoutineScreen() {
       setSavedLabel(result.name);
       await renameRoutine(id, result.name);
     }
-  }, [id, blockedByWorkout]);
+  }, [id, readOnly]);
 
   // Leaving the screen: a valid name still being typed is saved; an invalid one is dropped,
   // which leaves the saved name in place.
@@ -147,6 +159,7 @@ export default function EditRoutineScreen() {
   }, [commitName]);
 
   async function onToggleDay(index: number) {
+    if (readOnly) return;
     const next = toggleDay(days, index);
     setDays(next);
     await setRoutineDays(id, next);
@@ -314,6 +327,33 @@ export default function EditRoutineScreen() {
                       onPress={() => openWorkout(inProgress.id)}
                     />
                   </View>
+                ) : locked ? (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "flex-start",
+                      gap: spacing.md,
+                      padding: spacing.lg,
+                      borderRadius: radius.lg,
+                      backgroundColor: colors.accentTint,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: radius.pill,
+                        backgroundColor: colors.accent,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Ionicons name="lock-closed" size={16} color={colors.onAccent} />
+                    </View>
+                    <Text variant="caption" tone="soft" style={{ flex: 1 }}>
+                      {lockedRoutineBanner(savedLabel)}
+                    </Text>
+                  </View>
                 ) : (
                   <Button
                     label="Start workout"
@@ -323,8 +363,8 @@ export default function EditRoutineScreen() {
                   />
                 )}
                 <View
-                  pointerEvents={blockedByWorkout ? "none" : "auto"}
-                  style={{ opacity: blockedByWorkout ? opacity.disabled : 1 }}
+                  pointerEvents={readOnly ? "none" : "auto"}
+                  style={{ opacity: readOnly ? dim : 1 }}
                 >
                   <NameField
                     value={name}
@@ -354,7 +394,7 @@ export default function EditRoutineScreen() {
                   <DayPicker
                     value={days}
                     onToggle={onToggleDay}
-                    disabled={blockedByWorkout}
+                    disabled={readOnly}
                   />
                 </View>
                 {exerciseRows && exerciseRows.length > 0 ? (
@@ -365,8 +405,8 @@ export default function EditRoutineScreen() {
                           key={row.id}
                           accessibilityRole="button"
                           accessibilityLabel={`Edit ${row.name}`}
-                          accessibilityState={{ disabled: blockedByWorkout }}
-                          disabled={blockedByWorkout}
+                          accessibilityState={{ disabled: readOnly }}
+                          disabled={readOnly}
                           onPress={() => setEditing(row)}
                           style={({ pressed }) => ({
                             height: size.row,
@@ -377,8 +417,8 @@ export default function EditRoutineScreen() {
                             paddingRight: spacing.lg,
                             borderRadius: radius.row,
                             backgroundColor: colors.card,
-                            opacity: blockedByWorkout
-                              ? opacity.disabled
+                            opacity: readOnly
+                              ? dim
                               : pressed
                                 ? opacity.pressed
                                 : 1,
@@ -409,11 +449,11 @@ export default function EditRoutineScreen() {
                       <Pressable
                         accessibilityRole="button"
                         accessibilityLabel="Reorder exercises"
-                        accessibilityState={{ disabled: blockedByWorkout }}
-                        disabled={blockedByWorkout}
+                        accessibilityState={{ disabled: readOnly }}
+                        disabled={readOnly}
                         onPress={() => setOrder(exerciseRows)}
                         style={{
-                          opacity: blockedByWorkout ? opacity.disabled : 1,
+                          opacity: readOnly ? opacity.disabled : 1,
                           alignSelf: "flex-end",
                           height: minTouch,
                           flexDirection: "row",
@@ -436,14 +476,14 @@ export default function EditRoutineScreen() {
                       label="Add exercise"
                       variant="dashed"
                       large
-                      disabled={blockedByWorkout}
+                      disabled={readOnly}
                       onPress={addExercises}
                     />
                   </>
                 ) : exerciseRows ? (
                   <View
-                    pointerEvents={blockedByWorkout ? "none" : "auto"}
-                    style={{ opacity: blockedByWorkout ? opacity.disabled : 1 }}
+                    pointerEvents={readOnly ? "none" : "auto"}
+                    style={{ opacity: readOnly ? dim : 1 }}
                   >
                     <EmptyExercises onAdd={addExercises} />
                   </View>
@@ -458,7 +498,16 @@ export default function EditRoutineScreen() {
         ) : null}
         {routine && !reordering ? (
           <BottomAction>
-            <Button label="Done" large onPress={() => router.back()} />
+            {locked ? (
+              <Button
+                label="Unlock Pro"
+                icon="lock-closed"
+                large
+                onPress={() => router.push(PAYWALL_PATH)}
+              />
+            ) : (
+              <Button label="Done" large onPress={() => router.back()} />
+            )}
           </BottomAction>
         ) : null}
       </View>
