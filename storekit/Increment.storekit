@@ -1,0 +1,33 @@
+{
+  "identifier" : "5DAA21C5-1CC6-4F77-BDE6-27B0AECAFB5F",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+    {
+      "displayPrice" : "300.0",
+      "familyShareable" : false,
+      "internalID" : "B7B1E776-C34B-4A76-B53F-3C8DFFAC44CD",
+      "localizations" : [
+        {
+          "description" : "Pay once and keep it forever.",
+          "displayName" : "Increment Pro",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "pro_lifetime",
+      "referenceName" : "Increment Pro",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_storefront" : "PHL"
+  },
+  "subscriptionGroups" : [
+
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

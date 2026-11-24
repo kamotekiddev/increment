@@ -2,11 +2,14 @@ import { useStore } from "zustand";
 
 import { db } from "@/db/client";
 
+import { expoIapAdapter } from "./expoIapAdapter";
 import { createProStore } from "./proStore";
-import { noAnswerAdapter } from "./storeAdapter";
 
-/** The app's one Pro store. Until ticket 04 lands the real adapter, the store never answers and the cached row decides. */
-export const proStore = createProStore(db, noAnswerAdapter);
+/**
+ * The app's one Pro store, asking the phone's store through expo-iap. Nothing asks yet: the checks at
+ * launch and on return to the foreground come with ticket 05, so until then the cached row decides.
+ */
+export const proStore = createProStore(db, expoIapAdapter);
 
 let proLoad: { error: Error | null } | null = null;
 

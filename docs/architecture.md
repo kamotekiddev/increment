@@ -52,7 +52,8 @@ Plain functions: `nextTarget({rule, planned, loadType, history, jumpKg, unit}) â
 
 ## Offline one-time purchase
 - A non-consumable product on both stores, bought through expo-iap. The store's on-device answer decides Pro; the `entitlements` row is the fallback when the store can't answer ([ADR 0004](adr/0004-the-store-decides-pro.md)).
-- Acknowledge Google purchases right away (Google refunds them after 3 days if they aren't acknowledged).
+- The store adapter (`src/pro/`) is the only code that calls the store, and `src/pro/expoIapAdapter.ts` is the only file that imports expo-iap (an ESLint rule enforces it; Jest maps expo-iap to a stub). "What is owned" is `getAvailablePurchases` with active items only: StoreKit 2's current entitlements on iOS, which never prompts for an App Store sign-in, and Play's purchase query on Android. Every error and timeout is "no answer". Local iOS testing: [testing-purchases.md](testing-purchases.md).
+- Acknowledge Google purchases right away (Google refunds them after 3 days if they aren't acknowledged): `finishTransaction` with `isConsumable: false`, after a purchase and on every check.
 - Cache the entitlement locally (`isPro`) so Pro works with no network; re-verify with the store opportunistically when online.
 - Restore purchases from the paywall and from Welcome back. Handle refunds when the store reports them.
 
