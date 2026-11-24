@@ -160,9 +160,11 @@ export const userSettings = sqliteTable("user_settings", {
 });
 
 /**
- * Single-row cache of the Pro purchase, so Pro works offline.
- * `is_pro` is only a fast cache; `proof` holds the store's signed transaction or purchase token,
- * which Phase 3 verifies so that editing this table alone cannot unlock Pro.
+ * Single-row cache of the Pro purchase, so screens draw at once and Pro works offline (ADR 0004).
+ * The phone's store decides Pro: each definite answer is written here ("owned" sets `is_pro`, "not owned"
+ * clears it, undoing a refund or a hand edit), and the row is only the fallback when the store can't answer.
+ * `proof` keeps the store's signed transaction (iOS) or purchase token (Android) as a record; nothing
+ * verifies its signature. `verified_at` is when the store last answered, in ms. Written with an upsert on id 1.
  */
 export const entitlements = sqliteTable("entitlements", {
   id: integer("id").primaryKey(),
@@ -170,4 +172,6 @@ export const entitlements = sqliteTable("entitlements", {
   productId: text("product_id"),
   proof: text("proof"),
   verifiedAt: integer("verified_at"),
+  /** Pro switched on during a live workout, so Pro unlocked still has to show once that workout is over. */
+  unlockScreenOwed: integer("unlock_screen_owed", { mode: "boolean" }).notNull().default(false),
 });

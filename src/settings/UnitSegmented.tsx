@@ -1,11 +1,11 @@
-import { Pressable, View } from "react-native";
-
-import { Text } from "@/components";
-import { fontFamily, fontSize, radius, size as sizes, spacing, useColors } from "@/theme";
 import type { Unit } from "@/units";
 
-const UNITS: Unit[] = ["kg", "lb"];
-const NAMES: Record<Unit, string> = { kg: "Kilograms", lb: "Pounds" };
+import { Segmented, type SegmentedOption } from "./Segmented";
+
+const UNITS: readonly SegmentedOption<Unit>[] = [
+  { value: "kg", label: "Kilograms", short: "kg" },
+  { value: "lb", label: "Pounds", short: "lb" },
+];
 
 /**
  * The kg / lb radio group, shared by the live workout pill and the Settings card.
@@ -23,48 +23,5 @@ export function UnitSegmented({
   size: "compact" | "wide";
   track: "card" | "sunk";
 }) {
-  const colors = useColors();
-  const compact = size === "compact";
-  return (
-    <View
-      accessibilityRole="radiogroup"
-      accessibilityLabel="Weight unit"
-      style={{
-        flexDirection: "row",
-        backgroundColor: colors[track],
-        borderRadius: compact ? radius.pill : radius.lg,
-        padding: spacing.xs,
-        gap: compact ? 0 : spacing.xs,
-      }}
-    >
-      {UNITS.map((u) => {
-        const selected = u === unit;
-        return (
-          <Pressable
-            key={u}
-            accessibilityRole="radio"
-            accessibilityLabel={NAMES[u]}
-            accessibilityState={{ selected }}
-            hitSlop={compact ? spacing.xs : undefined}
-            onPress={() => onChange(u)}
-            style={{
-              ...(compact ? { width: 46, height: 32 } : { flex: 1, height: sizes.round - spacing.xs }),
-              borderRadius: compact ? radius.pill : radius.inset,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: selected ? colors.accent : "transparent",
-            }}
-          >
-            <Text
-              variant="label"
-              tone={selected ? "onAccent" : "muted"}
-              style={{ fontSize: compact ? fontSize.small : fontSize.body, fontFamily: selected ? fontFamily.semibold : fontFamily.medium }}
-            >
-              {compact ? u : NAMES[u]}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </View>
-  );
+  return <Segmented options={UNITS} value={unit} onChange={onChange} size={size} track={track} accessibilityLabel="Weight unit" />;
 }

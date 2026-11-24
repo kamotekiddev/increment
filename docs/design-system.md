@@ -21,6 +21,7 @@ The full system lives at https://claude.ai/artifact/2eEe2GhySr9xx6LqTbmGhs. This
 | icon-faint | `#85858B` | Inactive icons |
 | accent | `#5B3DF5` | Actions, active tab, progress |
 | accent-tint | `#EFEAFF` | Progress pills, highlights (alias: `pr`) |
+| accent-tint-line | `#E2DAFF` | A divider on the accent tint (the Paywall table's Pro column) |
 | accent-layer-1 | `#9D8BF9` | Second card in the Today deck, under the top card |
 | accent-layer-2 | `#CEC5FC` | Third card in the Today deck |
 | danger | `#C62828` | Destructive actions |
@@ -55,4 +56,6 @@ Line heights that a component sets itself come from `lineHeight` in `src/theme` 
 - **Settings rows and the Default rest − / +**: sizes come from `size` too (`size.settingsRow`, `size.stepper`, `size.stepperValue`); the 36 pt − / + reach 44 pt with hitSlop.
 - **History rows**: a History row is at least `size.historyRow` (64 pt) tall.
 - **Radio cards** (the Overload rule panel's rule types): a `size.radio` (22 pt) circle at the end of the card, accent-filled with a `size.radioDot` (8 pt) white dot when selected.
+- **Paywall and Pro unlocked**: both are modal screens. The Paywall's Free/Pro table is a white card whose Pro column sits on the accent tint, divided by `accent-tint-line`. Its main button is 56 pt like a large Button; while a payment is pending it turns accent tint with accent text and a clock. Pro unlocked opens with an accent hero (`size.hero`, `radius.hero`) holding a white check circle inside two faint rings. Their sizes come from `pro` in `src/theme`.
+- **Increment Pro card** (top of Settings): a white `radius.card` row, `size.pickerRow` (62 pt) tall, with a `pro.cardIcon` (38 pt) accent circle holding a white star, then "Increment Pro". Free ends in an accent "Unlock" and a faint chevron, and opens the Paywall; Pro ends in a muted "Unlocked" and an accent check, and can't be tapped.
 - Touch targets are at least 44 pt.

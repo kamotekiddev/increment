@@ -13,7 +13,7 @@
 | App state | Zustand (first store: the rest timer, `src/workout/restStore.ts`, so it survives leaving the live screen) |
 | UI | Own components on the Increment tokens, Sora font |
 | Charts | Victory Native (Skia) |
-| One-time purchase | react-native-iap (StoreKit 2 / Google Play Billing) |
+| One-time purchase | expo-iap (StoreKit 2 / Google Play Billing; the Expo Modules sibling of react-native-iap, same API) |
 | Reminders and rest-over alert | expo-notifications, local only (the rest timer uses it in Phase 1) |
 | Rest timer extras | react-native-svg (progress ring), expo-haptics (buzz at zero) |
 | Backup, export, PDF | expo-file-system, expo-sharing, expo-document-picker, expo-print |
@@ -29,7 +29,7 @@
 - **sets**: id, workout_exercise_id, exercise_id, idx, weight, weight_unit, reps, done, is_warmup, edited (`weight` is the number as typed or pre-filled and `weight_unit` the unit it is in, migration 0009, ADR 0003; a blank weight is 0 until typed; `edited`: the lifter typed this row, so it stops following earlier rows)
 - **user_settings**: one row (id 1, created on first read) of the lifter's preferences. Today: `unit` (kg or lb, default kg), the Workout settings `default_rest_s` (seconds, default 90), `show_previous_set` (default true) and `keep_screen_awake` (default true), all three not-null (migration 0008). The per-equipment Jump columns (`jump_*_kg`) were dropped by migration 0010 without copying (the app was not released); the Jump now lives on `routine_exercises`. `default_rest_s` is clamped to 15 to 600 s (a multiple of 15) on read. Later features add theme, reminders and auto-backup as columns
 - **settings**: key/value, internal flags only (the library seed version)
-- **entitlements**: is_pro, product_id, proof, verified_at (a cache; `proof` is the store's signed transaction or purchase token, verified in Phase 3 so editing this table alone cannot unlock Pro)
+- **entitlements**: is_pro, product_id, proof, verified_at, unlock_screen_owed (boolean, default false; whether Pro unlocked is still owed after a switch during a live workout, migration 0012) (a cache of the store's last answer; `proof` is the store's signed transaction or purchase token. The store's on-device answer overwrites it at every check, so a hand edit holds only while the store can't answer; see [ADR 0004](adr/0004-the-store-decides-pro.md))
 
 Foreign keys are switched on after migrations finish (not before), because a migration that rebuilds a table would otherwise cascade-delete child rows.
 
@@ -51,10 +51,14 @@ Plain functions: `nextTarget({rule, planned, loadType, history, jumpKg, unit}) â
 - **Default rule**: a new routine exercise starts with the step from its `load_type` (weight for weighted, reps otherwise), three clean workouts in a row, no miss rule, no deload. Every lifter can change the step, the miss rule (two misses in a row: drop 10%) and the deload (every 6 weeks, 40% lighter) in the Overload rule panel; Start marks a workout exercise `is_deload` when the engine returns a due Deload.
 
 ## Offline one-time purchase
-- A non-consumable product on both stores, bought through react-native-iap.
-- Acknowledge Google purchases right away (Google refunds them after 3 days if they aren't acknowledged).
-- Cache the entitlement locally (`isPro`) so Pro works with no network; re-verify with the store opportunistically when online.
-- Restore purchases from the paywall and from Welcome back. Handle refunds when the store reports them.
+- A non-consumable product on both stores, bought through expo-iap. The store's on-device answer decides Pro; the `entitlements` row is the fallback when the store can't answer ([ADR 0004](adr/0004-the-store-decides-pro.md)).
+- The store adapter (`src/pro/`) is the only code that calls the store, and `src/pro/expoIapAdapter.ts` is the only file that imports expo-iap (an ESLint rule enforces it; Jest maps expo-iap to a stub). "What is owned" is `getAvailablePurchases` with active items only: StoreKit 2's current entitlements on iOS, which never prompts for an App Store sign-in, and Play's purchase query on Android. Every error and timeout is "no answer". Local iOS testing: [testing-purchases.md](testing-purchases.md).
+- Acknowledge Google purchases right away (Google refunds them after 3 days if they aren't acknowledged): `finishTransaction` with `isConsumable: false`, after a purchase and on every check.
+- Product `pro_lifetime` (one constant in `src/pro/product.ts`), the same ID on both stores. The adapter interface (`storeAdapter.ts`) is `connect`, `fetchProduct`, `buy`, `checkOwned` and `onPurchaseUpdate`; no call rejects, and every call except the payment sheet has a 10 s timeout. Pure parts are tested with a fake adapter: the entitlement decision (owned and purchased turns Pro on, a definite not owned turns it off, pending and no answer leave the row alone), `storeMapping`, `paywallState`, `unlockScreen` and `devSource`.
+- **When the store is asked** (`src/pro/proChecks.ts`, started from the root layout's reminders effect): on a cold launch, on every return to the foreground, on every purchase update, after a purchase and after Restore purchase. Two checks never run at once. Screens never wait for it: `load()` reads the `entitlements` row before any screen renders, so Pro works offline from the cached row.
+- One gate: `useIsPro()` from `@/pro`, which every later feature reads. A dev-only source (Store / Pro / Free) overrides it in memory and never writes the row.
+- **unlock_screen_owed** (migration 0012, boolean, default false): set when Pro switches on from the store while the live workout, its Offer or its summary is open, and cleared once Pro unlocked has shown (or when Pro goes away). Pro unlocked shows after the workout is finished or discarded, or at a later launch that resumes no workout. The dev source never sets it.
+- Restore purchases is the same check as at launch, from the Paywall's link (Welcome back arrives in Phase 4). Refunds land as a definite "not owned" at the next check.
 
 ## Backup file
 - A single `.increment` file holding JSON of every table plus a **format version number** from day one, so a v1.0 backup still imports into v1.5. Every set carries `weight` and `weight_unit` from the first version (ADR 0003), so no backup lacks per-set units.

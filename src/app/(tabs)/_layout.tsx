@@ -5,6 +5,7 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { TabButton } from "@/components/TabButton";
+import { useProUnlockedOnLaunch } from "@/pro";
 import { minTouch, radius, spacing, useColors } from "@/theme";
 import { InProgressBar } from "@/workout/InProgressBar";
 import { useInProgressOnFocus, useNow } from "@/workout/inProgressQueries";
@@ -17,6 +18,8 @@ export default function TabsLayout() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   useResumeOnLaunch();
+  // After the resume check, with the same 12-hour test: an owed Pro unlocked waits for a resumed workout.
+  useProUnlockedOnLaunch();
   const workout = useInProgressOnFocus();
   const now = useNow(workout !== null);
   const tabBottom = Math.max(insets.bottom, spacing.lg);

@@ -52,4 +52,4 @@ Pro is a one-time, non-consumable in-app purchase that works offline. The price 
 
 ## Planned stack
 
-Expo (React Native) + TypeScript · Expo Router · SQLite (expo-sqlite) + Drizzle ORM · Zustand · Victory Native · react-native-iap · expo-notifications · EAS Build/Submit · Jest + Maestro. See [architecture](docs/architecture.md).
+Expo (React Native) + TypeScript · Expo Router · SQLite (expo-sqlite) + Drizzle ORM · Zustand · Victory Native · expo-iap · expo-notifications · EAS Build/Submit · Jest + Maestro. See [architecture](docs/architecture.md).

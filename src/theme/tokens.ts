@@ -14,6 +14,8 @@ export const lightColors = {
   accent: "#5B3DF5",
   /** Progress pills and highlights (alias: pr). */
   accentTint: "#EFEAFF",
+  /** A divider drawn on the accent tint (the Pro column of the Paywall table). */
+  accentTintLine: "#E2DAFF",
   /** Second and third card of the Today deck: lighter than the accent, one step each. */
   accentLayer1: "#9D8BF9",
   accentLayer2: "#CEC5FC",
@@ -188,6 +190,30 @@ export const textStyle = {
   rowTitle: { fontSize: fontSize.input, lineHeight: lineHeight.title, letterSpacing: -0.4 },
   /** Title of a bottom sheet at the `title` text size (the Exercise setup sheet, the Overload rule panel). */
   sheetTitle: { lineHeight: lineHeight.sheetTitle, letterSpacing: -0.4 },
+} as const;
+
+/** The Paywall's Free/Pro table and the Pro unlocked hero, in points. */
+export const pro = {
+  /** Widths of the Free and Pro columns; the feature column takes the rest. */
+  freeColumn: 70,
+  proColumn: 84,
+  /** The least height of a table row, and its header row. */
+  tableRow: 40,
+  /** The Pro unlocked hero's two faint rings: diameter, stroke width and opacity. */
+  outerRing: 300,
+  outerRingWidth: 30,
+  outerRingOpacity: 0.07,
+  innerRing: 180,
+  innerRingWidth: 22,
+  innerRingOpacity: 0.1,
+  /** The check inside the hero's white circle. */
+  heroCheck: 30,
+  /** A small round check before an included item (Pro unlocked's list), and its glyph. */
+  itemCheck: 26,
+  itemCheckGlyph: 14,
+  /** The accent circle at the start of Settings' Increment Pro card, and the star inside it. */
+  cardIcon: 38,
+  cardIconGlyph: 18,
 } as const;
 
 /** The rest panel pinned to the bottom of the live workout: ring size and stroke in points, top corner radius. */

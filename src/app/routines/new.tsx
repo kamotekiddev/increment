@@ -12,7 +12,8 @@ import { canCreateRoutine } from "@/routines/routineLimit";
 import { validateRoutineName } from "@/routines/routineName";
 import { routineNameMessage } from "@/routines/routineNameMessage";
 import { toggleDay } from "@/routines/routineDays";
-import { createRoutine, loadRoutines, useIsPro } from "@/routines/routineQueries";
+import { useIsPro } from "@/pro";
+import { createRoutine, loadRoutines } from "@/routines/routineQueries";
 import { fontFamily, fontSize, spacing, useColors } from "@/theme";
 
 export default function NewRoutineScreen() {

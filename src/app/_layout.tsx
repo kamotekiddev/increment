@@ -14,6 +14,7 @@ import { AppState, View } from "react-native";
 import { Text } from "@/components";
 import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
+import { loadProOnce, startProStoreChecks, useProUnlockedScreen } from "@/pro";
 import { loadReminderSettingsOnce, loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
 import { useReminderTap } from "@/reminders/useReminderTap";
 import { spacing, useColors } from "@/theme";
@@ -34,27 +35,35 @@ export default function RootLayout() {
     Sora_800ExtraBold,
   });
   const { ready: dbReady, error: openError } = useDatabase();
-  // Once the database is ready, read the saved unit and Workout settings before any screen renders.
+  // Once the database is ready, read the saved unit, Workout settings and cached Pro state before any screen renders.
   const unitError = dbReady ? loadUnitOnce() : null;
   const workoutError = dbReady ? loadWorkoutSettingsOnce() : null;
   const reminderError = dbReady ? loadReminderSettingsOnce() : null;
-  const dbError = openError ?? unitError ?? workoutError ?? reminderError;
+  const proError = dbReady ? loadProOnce() : null;
+  const dbError = openError ?? unitError ?? workoutError ?? reminderError ?? proError;
 
   const fontsDone = fontsLoaded || fontError != null;
   const done = fontsDone && (dbReady || dbError != null);
+  // Pro unlocked shows each time Pro switches on, never over a live workout.
+  useProUnlockedScreen(done && !dbError);
 
   useEffect(() => {
     if (done) SplashScreen.hideAsync();
   }, [done]);
 
   // Reminders are rescheduled at app start (once the database is ready) and each time the app returns to the foreground.
+  // The store is asked about Pro at the same moments, and on each purchase update. Nothing here is awaited.
   useEffect(() => {
     if (!dbReady || dbError) return;
     void refreshReminders();
     const sub = AppState.addEventListener("change", (state) => {
       if (state === "active") void refreshReminders();
     });
-    return () => sub.remove();
+    const stopProChecks = startProStoreChecks();
+    return () => {
+      sub.remove();
+      stopProChecks();
+    };
   }, [dbReady, dbError]);
 
   if (!done) return null;
@@ -68,5 +77,12 @@ export default function RootLayout() {
     );
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      {/* The tabs come first, so a modal declared below never becomes the first screen. */}
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
+      <Stack.Screen name="pro-unlocked" options={{ presentation: "modal" }} />
+    </Stack>
+  );
 }
