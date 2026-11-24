@@ -14,6 +14,7 @@ import { AppState, View } from "react-native";
 import { Text } from "@/components";
 import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
+import { loadProOnce } from "@/pro";
 import { loadReminderSettingsOnce, loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
 import { useReminderTap } from "@/reminders/useReminderTap";
 import { spacing, useColors } from "@/theme";
@@ -34,11 +35,12 @@ export default function RootLayout() {
     Sora_800ExtraBold,
   });
   const { ready: dbReady, error: openError } = useDatabase();
-  // Once the database is ready, read the saved unit and Workout settings before any screen renders.
+  // Once the database is ready, read the saved unit, Workout settings and cached Pro state before any screen renders.
   const unitError = dbReady ? loadUnitOnce() : null;
   const workoutError = dbReady ? loadWorkoutSettingsOnce() : null;
   const reminderError = dbReady ? loadReminderSettingsOnce() : null;
-  const dbError = openError ?? unitError ?? workoutError ?? reminderError;
+  const proError = dbReady ? loadProOnce() : null;
+  const dbError = openError ?? unitError ?? workoutError ?? reminderError ?? proError;
 
   const fontsDone = fontsLoaded || fontError != null;
   const done = fontsDone && (dbReady || dbError != null);

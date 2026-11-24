@@ -22,11 +22,6 @@ export interface RoutineListItem {
   exerciseNames: string[];
 }
 
-/** Phase 3 wires the real purchase state; until then every lifter is on the free plan. */
-export function useIsPro(): boolean {
-  return false;
-}
-
 /** Every routine in creation order, with its exercise count. */
 export async function loadRoutines(): Promise<RoutineListItem[]> {
   const [rows, named] = await Promise.all([

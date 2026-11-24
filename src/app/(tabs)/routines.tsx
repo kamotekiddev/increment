@@ -9,7 +9,8 @@ import { LimitSheet } from "@/routines/LimitSheet";
 import { RoutineRow } from "@/routines/RoutineRow";
 import { canCreateRoutine, FREE_ROUTINE_LIMIT } from "@/routines/routineLimit";
 import { routineCounterParts } from "@/routines/routineListText";
-import { useIsPro, useRoutines } from "@/routines/routineQueries";
+import { useIsPro } from "@/pro";
+import { useRoutines } from "@/routines/routineQueries";
 import { fontSize, radius, spacing, textStyle, useColors } from "@/theme";
 
 export default function RoutinesScreen() {
