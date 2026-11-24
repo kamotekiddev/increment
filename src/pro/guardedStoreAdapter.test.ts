@@ -130,6 +130,93 @@ describe("asking what is owned", () => {
   });
 });
 
+describe("guarded calls that throw or stall", () => {
+  it("answers without waiting for a slow acknowledge, which still happens on every check", async () => {
+    const api = new FakeStoreApi();
+    api.purchases = [purchase({ isAcknowledgedAndroid: false })];
+    let finishCalls = 0;
+    api.finishTransaction = () => {
+      finishCalls += 1;
+      return new Promise(() => {});
+    };
+    const adapter = createStoreAdapter(api);
+    await expect(adapter.checkOwned()).resolves.toMatchObject({ kind: "owned" });
+    await expect(adapter.checkOwned()).resolves.toMatchObject({ kind: "owned" });
+    expect(finishCalls).toBe(2);
+  });
+
+  it("a finishTransaction that throws synchronously never rejects a check", async () => {
+    const api = new FakeStoreApi();
+    api.purchases = [purchase({ isAcknowledgedAndroid: false })];
+    api.finishTransaction = () => {
+      throw new Error("native module missing");
+    };
+    await expect(createStoreAdapter(api).checkOwned()).resolves.toMatchObject({ kind: "owned" });
+  });
+
+  it("an initConnection that throws synchronously is no answer, and connects again next time", async () => {
+    const api = new FakeStoreApi();
+    let calls = 0;
+    api.initConnection = () => {
+      calls += 1;
+      if (calls === 1) throw new Error("native module missing");
+      return Promise.resolve(true);
+    };
+    const adapter = createStoreAdapter(api);
+    await expect(adapter.checkOwned()).resolves.toEqual({ kind: "no-answer" });
+    await expect(adapter.fetchProduct()).resolves.toEqual({ kind: "failed" });
+    expect(calls).toBe(2);
+  });
+
+  it("a failed purchase request drops the connection, so the next call connects afresh", async () => {
+    const api = new FakeStoreApi();
+    api.purchaseResult = storeError("network-error");
+    const adapter = createStoreAdapter(api);
+    await adapter.buy();
+    await adapter.checkOwned();
+    expect(api.connectCalls).toBe(2);
+  });
+
+  it("a cancelled purchase keeps the connection", async () => {
+    const api = new FakeStoreApi();
+    api.purchaseResult = storeError("user-cancelled");
+    const adapter = createStoreAdapter(api);
+    await adapter.buy();
+    await adapter.checkOwned();
+    expect(api.connectCalls).toBe(1);
+  });
+
+  it("a late failure of an old call never discards a newer connection", async () => {
+    const api = new FakeStoreApi();
+    const pending: { resolve: (p: StorePurchase[]) => void; reject: (e: Error) => void }[] = [];
+    api.getAvailablePurchases = () =>
+      new Promise<StorePurchase[]>((resolve, reject) => {
+        pending.push({ resolve, reject });
+      });
+    const adapter = createStoreAdapter(api);
+    const a = adapter.checkOwned();
+    const c = adapter.checkOwned();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(pending).toHaveLength(2);
+    // A fails and drops connection 1; the next check opens connection 2.
+    pending[0].reject(new Error("dropped"));
+    await a;
+    const b = adapter.checkOwned();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(api.connectCalls).toBe(2);
+    // C fails late, on the old connection. Connection 2 must survive.
+    pending[1].reject(new Error("late"));
+    await c;
+    pending[2].resolve([]);
+    await b;
+    const d = adapter.checkOwned();
+    await new Promise((r) => setTimeout(r, 0));
+    pending[3].resolve([]);
+    await d;
+    expect(api.connectCalls).toBe(2);
+  });
+});
+
 describe("fetching the Pro product", () => {
   it("returns the store's localized price string", async () => {
     const api = new FakeStoreApi();

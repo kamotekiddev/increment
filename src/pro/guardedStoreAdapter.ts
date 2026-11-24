@@ -52,53 +52,68 @@ export function createStoreAdapter<P extends StorePurchase>(
   /** The open connection, shared by every call. Cleared when it fails, so the next call tries again. */
   let connection: Promise<boolean> | null = null;
 
-  const connect = async (): Promise<boolean> => {
-    connection ??= withTimeout(api.initConnection(), timeoutMs);
+  /** Forgets `failed`, unless a newer connection has replaced it by now: a late failure never discards that one. */
+  const drop = (failed: Promise<boolean>): void => {
+    if (connection === failed) connection = null;
+  };
+
+  /** The connection a call runs on (boxed, so awaiting it keeps the identity), or null when the store can't connect. Never rejects. */
+  const acquire = async (): Promise<{ attempt: Promise<boolean> } | null> => {
+    // Inside a promise, so an initConnection that throws synchronously becomes a rejection.
+    const attempt = (connection ??= withTimeout(new Promise<boolean>((resolve) => resolve(api.initConnection())), timeoutMs));
     try {
-      if (await connection) return true;
+      if (await attempt) return { attempt };
     } catch {
       // Falls through: not connected.
     }
-    connection = null;
-    return false;
+    drop(attempt);
+    return null;
   };
+
+  const connect = async (): Promise<boolean> => (await acquire()) !== null;
 
   /** Finishes each purchase that needs it as a non-consumable (the Android acknowledge). Never rejects. */
   const finish = async (purchases: readonly P[]): Promise<void> => {
     await Promise.all(
       purchasesToFinish(purchases).map((purchase) =>
-        withTimeout(Promise.resolve(api.finishTransaction({ purchase, isConsumable: false })), timeoutMs).catch(() => {
-          // Not acknowledged this time; the next check tries again, well inside Google's 3 days.
-        }),
+        // Inside a promise, so a synchronous throw from the store becomes a rejection.
+        withTimeout(new Promise((resolve) => resolve(api.finishTransaction({ purchase, isConsumable: false }))), timeoutMs).catch(
+          () => {
+            // Not acknowledged this time; the next check tries again, well inside Google's 3 days.
+          },
+        ),
       ),
     );
   };
 
   const checkOwned = async (): Promise<StoreAnswer> => {
-    if (!(await connect())) return { kind: "no-answer" };
+    const used = await acquire();
+    if (!used) return { kind: "no-answer" };
     try {
       const purchases = await withTimeout(
         api.getAvailablePurchases({ onlyIncludeActiveItemsIOS: true, alsoPublishToEventListenerIOS: false }),
         timeoutMs,
       );
-      await finish(purchases);
+      // The acknowledge never delays the answer; it runs on every check and never rejects.
+      void finish(purchases);
       return answerFromPurchases(purchases);
     } catch {
       // A dropped connection is opened afresh next time.
-      connection = null;
+      drop(used.attempt);
       return { kind: "no-answer" };
     }
   };
 
   const fetchProduct = async (): Promise<ProProduct> => {
-    if (!(await connect())) return { kind: "failed" };
+    const used = await acquire();
+    if (!used) return { kind: "failed" };
     try {
       const products = await withTimeout(api.fetchProducts({ skus: [PRO_PRODUCT_ID], type: "in-app" }), timeoutMs);
       // The store leaves out a SKU it doesn't know rather than throwing.
       const pro = products?.find((p) => p.id === PRO_PRODUCT_ID);
       return pro ? { kind: "loaded", localizedPrice: pro.displayPrice } : { kind: "failed" };
     } catch {
-      connection = null;
+      drop(used.attempt);
       return { kind: "failed" };
     }
   };
@@ -111,7 +126,8 @@ export function createStoreAdapter<P extends StorePurchase>(
   };
 
   const buy = async (): Promise<BuyResult> => {
-    if (!(await connect())) return { kind: "error" };
+    const used = await acquire();
+    if (!used) return { kind: "error" };
     let result: P | P[] | null;
     try {
       // No timeout: the store's payment sheet stays open as long as the lifter needs.
@@ -121,6 +137,8 @@ export function createStoreAdapter<P extends StorePurchase>(
       });
     } catch (error) {
       const outcome = buyOutcomeFromError(error);
+      // A failure that isn't the lifter's choice may be a dropped billing connection: don't reuse it.
+      if (outcome === "error") drop(used.attempt);
       return outcome === "already-owned" ? buyResultFromStore() : { kind: outcome };
     }
     // iOS hands back one purchase, Android a list.
