@@ -150,7 +150,7 @@ export const deck = {
 export const minTouch = 44;
 
 /** Opacity for interactive states. One disabled value everywhere. */
-export const opacity = { pressed: 0.85, disabled: 0.4, onAccentSoft: 0.85 } as const;
+export const opacity = { pressed: 0.85, disabled: 0.4, locked: 0.5, onAccentSoft: 0.85 } as const;
 
 /** Line heights for text that sets its own size. */
 export const lineHeight = {
