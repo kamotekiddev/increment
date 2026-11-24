@@ -38,7 +38,7 @@ Create, edit and delete a custom exercise (Pro). Delete removes it from routines
 The Progress tab's blurred chart preview becomes the real chart for Pro (weight, estimated 1-rep max and volume over time, per exercise), and the All records screen opens from the Records card. Free users keep the locked preview, top set, pills and Records card as in Phase 2.
 
 ### 5 · Plate calculator
-A plate calculator button on the live workout opens a calculator (Pro) that shows the plates per side for the set's weight, plus "Your gym's plates" (moved here from Phase 2 feature 2). A separate function from the engine and `src/units`: it never changes a Target or a Jump.
+A plate calculator button on the live workout opens a calculator (Pro) that shows the plates per side for the set's weight, plus "Your gym's plates" (moved here from Phase 2 feature 2). A separate function from the engine and `src/units`: it never changes a Target or a Jump. Open for its spec: a free lifter opening the Paywall from the calculator is on top of the live workout, so buying there would show Pro unlocked over the workout. Feature 1's "never over a live workout" rule doesn't see a Paywall opened from the workout, so this spec decides what happens.
 
 ### 6 · Backup and restore
 The Your data section in Settings: free state shows the backup row locked, opening the Paywall. Pro creates a single `.increment` file (JSON of every table plus a format version number from day one, every set with `weight` and `weight_unit`), handed to the share sheet (Backup ready). Restore from a file in Settings. Second half of the gate: a backup restores on a new phone.
