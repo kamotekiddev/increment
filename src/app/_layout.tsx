@@ -14,7 +14,7 @@ import { AppState, View } from "react-native";
 import { Text } from "@/components";
 import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
-import { loadProOnce, startProStoreChecks, useProUnlockedScreen } from "@/pro";
+import { loadProOnce, proStore, startProStoreChecks, useProUnlockedScreen } from "@/pro";
 import { loadReminderSettingsOnce, loadUnitOnce, loadWorkoutSettingsOnce } from "@/settings";
 import { useReminderTap } from "@/reminders/useReminderTap";
 import { spacing, useColors } from "@/theme";
@@ -60,7 +60,12 @@ export default function RootLayout() {
       if (state === "active") void refreshReminders();
     });
     const stopProChecks = startProStoreChecks();
+    // The lock follows Pro, so the schedule is rebuilt each time Pro switches on or off.
+    const unsubPro = proStore.subscribe((s, prev) => {
+      if (s.isPro !== prev.isPro) void refreshReminders();
+    });
     return () => {
+      unsubPro();
       sub.remove();
       stopProChecks();
     };
