@@ -1,4 +1,4 @@
-# 04: Check the store at launch and on return to the app
+# 05: Check the store at launch and on return to the app
 
 **What to build:** Wire `refresh()` to the real adapter at the moments ADR 0004 sets, so refunds and hand edits are undone and pending purchases complete by themselves.
 

@@ -1,4 +1,4 @@
-# 07: Increment Pro card and Developer card in Settings
+# 08: Increment Pro card and Developer card in Settings
 
 **What to build:** The Paywall's entry point for feature 1, and the dev-only Pro source switch.
 

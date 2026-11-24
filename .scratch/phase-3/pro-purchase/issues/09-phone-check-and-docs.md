@@ -1,4 +1,4 @@
-# 08: Phone check and docs
+# 09: Phone check and docs
 
 **What to build:** The owner checks Pro purchase and restore on an iPhone and an Android phone, and the docs are updated. This is gate half one: Pro unlocks offline on both stores.
 

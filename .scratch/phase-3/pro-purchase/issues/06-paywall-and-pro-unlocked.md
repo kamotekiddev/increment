@@ -1,4 +1,4 @@
-# 05: Paywall and Pro unlocked
+# 06: Paywall and Pro unlocked
 
 **What to build:** The two screens from the canvas (`Paywall`, `PaywallStates`, `ProUnlocked`), the purchase flow, and the "show Pro unlocked once" rule.
 

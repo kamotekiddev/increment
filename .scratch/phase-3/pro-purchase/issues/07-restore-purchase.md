@@ -1,4 +1,4 @@
-# 06: Restore purchase
+# 07: Restore purchase
 
 **What to build:** The Paywall's "Restore purchase" link and its four outcomes.
 
