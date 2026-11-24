@@ -36,5 +36,6 @@
   - iOS purchases always come back `purchased`.
   - iOS `finishTransaction` on an already finished transaction is a no-op, so every check finishes iOS Pro purchases (there is no acknowledged flag on iOS). Android skips any with `isAcknowledgedAndroid: true`.
   - Android doesn't connect on its own: calls before `initConnection` reject with `not-prepared`. The adapter connects first.
+  - Checked in the Android bridge (`ExpoIapModule.kt`) and OpenIAP Play `main`. The `requestPurchase` promise waits until the Play sheet closes: it suspends until `onPurchasesUpdated`. A cancel, or any failure after launch, rejects the promise and doesn't just emit `purchase-error`. So `buy` can await it, with no race against the listeners. A second `initConnection` on a ready client returns `true` without rejecting, so reconnecting after a failed query is safe.
 - **Still for the owner's device check:** Android with Play signed out or disabled. If that comes back as an empty list, the mapping turns it into not owned, which is the case this ticket must catch. The fix would go in `storeMapping.ts` / `guardedStoreAdapter.ts`.
 - **StoreKit file:** `storekit/Increment.storekit` (`pro_lifetime`, non-consumable, ₱300, PHL storefront). How to use it: `docs/testing-purchases.md`.
