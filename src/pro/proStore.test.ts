@@ -55,7 +55,9 @@ describe("Pro store", () => {
     const store = createProStore(db, adapter);
     await store.getState().refresh();
 
-    const failing = createProStore(db, { checkOwned: () => Promise.reject(new Error("store unavailable")) });
+    const throwing = new FakeProStoreAdapter();
+    throwing.checkOwned = () => Promise.reject(new Error("store unavailable"));
+    const failing = createProStore(db, throwing);
     failing.getState().load();
     await expect(failing.getState().refresh()).resolves.toBeUndefined();
     expect(failing.getState().isPro).toBe(true);

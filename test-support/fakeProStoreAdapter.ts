@@ -1,4 +1,4 @@
-import type { ProStoreAdapter } from "../src/pro/storeAdapter";
+import type { BuyResult, ProProduct, ProStoreAdapter } from "../src/pro/storeAdapter";
 import type { StoreAnswer } from "../src/pro/entitlementDecision";
 
 /**
@@ -7,10 +7,27 @@ import type { StoreAnswer } from "../src/pro/entitlementDecision";
  */
 export class FakeProStoreAdapter implements ProStoreAdapter {
   answer: StoreAnswer = { kind: "no-answer" };
+  product: ProProduct = { kind: "failed" };
+  buyResult: BuyResult = { kind: "error" };
   /** How many times the store was asked what is owned. */
   calls = 0;
   private held = false;
   private waiting: (() => void)[] = [];
+  private updateListeners = new Set<(answer: StoreAnswer) => void>();
+
+  connect = (): Promise<boolean> => Promise.resolve(true);
+  fetchProduct = (): Promise<ProProduct> => Promise.resolve(this.product);
+  buy = (): Promise<BuyResult> => Promise.resolve(this.buyResult);
+
+  onPurchaseUpdate = (listener: (answer: StoreAnswer) => void): (() => void) => {
+    this.updateListeners.add(listener);
+    return () => this.updateListeners.delete(listener);
+  };
+
+  /** The store reports a purchase on its own, as a pending payment clearing would. */
+  emitPurchaseUpdate(answer: StoreAnswer): void {
+    this.updateListeners.forEach((listener) => listener(answer));
+  }
 
   checkOwned = (): Promise<StoreAnswer> => {
     this.calls += 1;

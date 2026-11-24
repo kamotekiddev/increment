@@ -61,6 +61,9 @@
   },
   "private": true,
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "moduleNameMapper": {
+      "^expo-iap$": "<rootDir>/test-support/expoIapStub.ts"
+    }
   }
 }
