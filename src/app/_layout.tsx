@@ -79,6 +79,8 @@ export default function RootLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      {/* The tabs come first, so a modal declared below never becomes the first screen. */}
+      <Stack.Screen name="(tabs)" />
       <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
       <Stack.Screen name="pro-unlocked" options={{ presentation: "modal" }} />
     </Stack>
