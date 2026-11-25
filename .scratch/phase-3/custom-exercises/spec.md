@@ -24,11 +24,11 @@ Tickets: `issues/01` to `issues/08`. Ticket 01 asks the owner to review the desi
    - A finished workout left with no exercises is deleted too.
    - The sheet names the routines it leaves (or says none) and warns that the exercise's history is deleted for good and can't be recovered.
    - Blocked while the exercise is in the Workout in progress: the button is disabled with "{Name} is in your workout in progress. Finish or discard it first."
-9. **Pro gate.** One check in one place (product rule 7), next to the other Pro gates. A free lifter, including after a refund:
-   - sees the **+** with a small lock, and the "Create" row with a grey "Pro" tag; both open the Paywall;
+9. **Pro gate.** One check in one place (product rule 7), next to the other Pro gates. A free lifter, including after a refund (owner decision 2026-11-25: the form opens for everyone, only the save button is gated):
+   - can open New exercise from the **+** and the "Create" row (the row keeps its grey "Pro" tag) and fill in the whole form, but the bottom button reads **Unlock Pro** (lock icon) instead of "Save exercise", and opens the Paywall. Nothing is saved. The typed values stay on the screen, and if Pro switches on the button becomes Save exercise;
    - keeps every custom exercise in routines, workouts, history, Progress and the pickers;
-   - sees Edit locked (opens the Paywall) and may still Delete.
-   A Pro lifter opens New exercise.
+   - sees the same on Edit: "Unlock Pro" replaces "Save changes". Delete stays allowed.
+   A Pro lifter sees Save exercise and Save changes.
 10. **Entry points.** **+** in the Library header (Library tab only). The "Create “{search}”" row under the no-match card, in the Library and the routine picker (shared `ExerciseBrowser`), pre-fills the Name with the search text. The routine picker has no **+**.
 11. **After Save.** Return to where the lifter started. From the picker: back in the picker with the new exercise picked and its setup open. From the Library: the list with the new exercise visible. Cancel returns to where they started.
 
@@ -38,12 +38,13 @@ Tickets: `issues/01` to `issues/08`. Ticket 01 asks the owner to review the desi
 - Reminders, Today and the routine list read routine exercises, so they refresh after a delete. A routine left with no exercises stays (the lifter may add more).
 - Name check is a pure function with tests (library name, custom name, case, spaces, own name on Edit). So are the Equipment-switch rule and the step list rules.
 - Seed: custom rows have `slug = null`, `is_custom = true`.
-- The Settings dev "Pro source" switch (Free) must show the locked entry points, and Edit locked on an existing custom exercise.
+- The Settings dev "Pro source" switch (Free) must show the Unlock Pro button on New exercise and on Edit of an existing custom exercise.
 
 ## Design changes (canvas)
 - `ExerciseNew` and `ExerciseEdit`: remove "How you track it". Replace the "How to do it" textarea with the step boxes. Add the step boxes to Edit. Show the disabled Bodyweight state on Edit.
 - `ExerciseDelete`: the new warning text, with the routine names. Add a "blocked by a workout in progress" state.
-- `LibraryEmpty`: the free lock on **+** and the "Pro" tag on the Create row (the tag is already there).
+- `ExerciseNew` and `ExerciseEdit`: a free state where the bottom button is **Unlock Pro** with a lock icon.
+- `LibraryEmpty`: no change for free lifters (the **+** has no lock; the Pro tag on the Create row is already there).
 - Wire the Edit button on a custom exercise to `ExerciseEdit` (a known linking gap).
 
 ## Out of scope

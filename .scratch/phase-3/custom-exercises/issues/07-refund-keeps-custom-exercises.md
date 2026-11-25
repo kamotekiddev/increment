@@ -8,8 +8,8 @@
 
 - [ ] With Pro off, a routine containing a custom exercise starts and finishes normally, with its Target, Offer, Records and Progress.
 - [ ] The custom exercise still appears in the Library, the routine picker (it can be added to another routine) and the Progress picker, and keeps its history in Workout history.
-- [ ] Create (**+** and the Create row) and Edit are locked and open the Paywall. Delete still works.
+- [ ] Create (**+** and the Create row) and Edit open for a free lifter, but the save button is **Unlock Pro** and opens the Paywall. Delete still works.
 - [ ] A refund that lands mid-workout never costs the workout (the existing ticket-06 behaviour of feature 2 still holds with a custom exercise in it).
-- [ ] The dev "Pro source" switch set to Free shows all the locked entry points on a phone with existing custom exercises.
+- [ ] The dev "Pro source" switch set to Free shows the Unlock Pro button on New exercise and Edit on a phone with existing custom exercises.
 - [ ] Tests cover the gate for create, edit and delete.
 - [ ] Type check, lint and tests pass.

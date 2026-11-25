@@ -52,10 +52,10 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Screen | Notes |
 |---|---|
 | Library | Search and filters |
-| No search results | Message naming what was searched, with a Clear filters button (from Phase 3 feature 3 a "Create “{search}”" row follows it, with a Pro tag for free lifters, and the Library header gets a **+**) |
+| No search results | Message naming what was searched, with a Clear filters button (from Phase 3 feature 3 a "Create “{search}”" row follows it, with a Pro tag, and the Library header gets a **+**) |
 | Exercise detail | How-to only (no History tab; history is per Workout, see Workout history) |
-| Create custom exercise (Pro) | Name, Main muscle chips, Equipment chips (the six), "How to do it" as one box per step. No "How you track it" (equipment decides it). Opened from the Library **+** or the no-match Create row; a free lifter sees the lock and gets the Paywall instead |
-| Edit custom exercise (Pro) | Same fields as Create. Equipment can't switch to or from Bodyweight once the exercise is used. Delete exercise at the bottom |
+| Create custom exercise (Pro) | Name, Main muscle chips, Equipment chips (the six), "How to do it" as one box per step. No "How you track it" (equipment decides it). Opened from the Library **+** or the no-match Create row; a free lifter can fill it in, but "Unlock Pro" replaces Save and opens the Paywall |
+| Edit custom exercise (Pro) | Same fields as Create. Equipment can't switch to or from Bodyweight once the exercise is used. Delete exercise at the bottom. A free lifter sees "Unlock Pro" in place of Save changes |
 | Delete custom exercise | Sheet names the routines it leaves and warns its history is deleted for good and can't be recovered. Blocked while it is in a Workout in progress. Free lifters can delete |
 
 ## 5 · Progress and Pro

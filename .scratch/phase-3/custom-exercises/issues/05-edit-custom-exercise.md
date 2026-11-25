@@ -10,5 +10,5 @@
 - [ ] Name rules apply, and keeping its own name is not a clash.
 - [ ] Once the exercise is in a routine or has a logged set, the Bodyweight chip can't be switched on or off, with the note "Bodyweight can't be switched once the exercise is used." Other equipment switches stay open. Before use, all six chips are open. The rule is a pure function with tests, and the load type follows the equipment on save.
 - [ ] Edits show on Exercise detail, the routines and the live workout without a restart.
-- [ ] A free lifter sees Edit with a lock and the Paywall opens.
+- [ ] A free lifter can open Edit and change the fields, but the bottom button is **Unlock Pro** in place of Save changes and opens the Paywall; nothing is saved. Delete exercise stays available.
 - [ ] Type check, lint and tests pass.
