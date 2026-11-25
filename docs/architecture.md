@@ -12,7 +12,7 @@
 | Local database | SQLite (expo-sqlite) + Drizzle ORM, with migrations |
 | App state | Zustand (first store: the rest timer, `src/workout/restStore.ts`, so it survives leaving the live screen) |
 | UI | Own components on the Increment tokens, Sora font |
-| Charts | Victory Native (Skia) |
+| Charts | react-native-svg (already installed for the rest timer ring); Skia only as a fallback if SVG can't draw it (owner decision 2026-11-25) |
 | One-time purchase | expo-iap (StoreKit 2 / Google Play Billing; the Expo Modules sibling of react-native-iap, same API) |
 | Reminders and rest-over alert | expo-notifications, local only (the rest timer uses it in Phase 1) |
 | Rest timer extras | react-native-svg (progress ring), expo-haptics (buzz at zero) |
