@@ -71,7 +71,7 @@ export default function ProgressScreen() {
                 <ProgressHero
                   hero={progress.hero}
                   onProPress={onLockedTap}
-                  liveChart={isPro && progress.loadType === "weighted" ? { exerciseId: progress.exerciseId, unit } : undefined}
+                  liveChart={isPro ? { exerciseId: progress.exerciseId, unit, loadType: progress.loadType } : undefined}
                 />
                 <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={openAllRecords} />
               </>

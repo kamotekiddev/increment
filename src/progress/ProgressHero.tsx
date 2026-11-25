@@ -60,7 +60,7 @@ export function ProgressHero({
   hero: Hero;
   onProPress: () => void;
   /** Set for a Pro lifter on a weighted exercise: draws the live chart in place of the locked preview. */
-  liveChart?: { exerciseId: number; unit: Unit };
+  liveChart?: { exerciseId: number; unit: Unit; loadType?: "weighted" | "bodyweight" };
 }) {
   const colors = useColors();
   return (
@@ -104,7 +104,7 @@ export function ProgressHero({
         {hero.line}
       </Text>
       {liveChart ? (
-        <ProgressChart key={liveChart.exerciseId} exerciseId={liveChart.exerciseId} unit={liveChart.unit} readKey={hero} />
+        <ProgressChart key={liveChart.exerciseId} exerciseId={liveChart.exerciseId} unit={liveChart.unit} loadType={liveChart.loadType} readKey={hero} />
       ) : (
         <ChartPreview onPress={onProPress} />
       )}

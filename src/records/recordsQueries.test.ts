@@ -419,6 +419,18 @@ describe("chartSeries", () => {
     expect(() => chartSeries(bench, "repsInSet", "all", "kg")).toThrow();
   });
 
+  it("charts a custom bodyweight exercise over several workouts and skips a workout with no counted reps", () => {
+    const custom = db.insert(exercises).values({ name: "Mine BW", equipment: "bodyweight", loadType: "bodyweight", isCustom: true }).returning().get().id;
+    save({ day: 0, lifts: [{ exerciseId: custom, sets: [{ w: 0, r: 5 }, { w: 0, r: 4 }] }] });
+    save({ day: 1, lifts: [{ exerciseId: custom, sets: [{ w: 0, r: 0 }] }] });
+    save({ day: 2, lifts: [{ exerciseId: custom, sets: [{ w: 0, r: 7 }] }] });
+    const series = chartSeries(custom, "repsInWorkout", "all", "kg");
+    expect(series?.points).toEqual([
+      { date: "2026-11-01", value: 9 },
+      { date: "2026-11-03", value: 7 },
+    ]);
+  });
+
   it("charts a custom exercise like a library one", () => {
     const custom = db.insert(exercises).values({ name: "Mine", equipment: "barbell", loadType: "weighted", isCustom: true }).returning().get().id;
     save({ day: 0, lifts: [{ exerciseId: custom, sets: [{ w: 20, r: 5 }] }] });

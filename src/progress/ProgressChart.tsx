@@ -19,6 +19,11 @@ const WEIGHTED_TOGGLE: { metric: ChartMetric; label: string }[] = [
   { metric: "volume", label: "Volume" },
 ];
 
+const BODYWEIGHT_TOGGLE: { metric: ChartMetric; label: string }[] = [
+  { metric: "repsInSet", label: "Reps in a set" },
+  { metric: "repsInWorkout", label: "Reps in a workout" },
+];
+
 const RANGES: { range: ChartRange; label: string }[] = [
   { range: "last8", label: "Last 8" },
   { range: "last20", label: "Last 20" },
@@ -31,13 +36,24 @@ const HIT_RADIUS = 12;
 const number = (n: number) => n.toLocaleString("en-US");
 
 /**
- * The live chart of a weighted exercise (variant A): the metric toggle above, a line with a soft fill and dots below.
+ * The live chart of an exercise (weighted or bodyweight) (variant A): the metric toggle above, a line with a soft fill and dots below.
  * Opens on Weight over the latest 8 workouts; the range button cycles Last 8 / Last 20 / All and a tap on a dot reads
  * its date and value (the last point by default). Re-read when `readKey` changes (Progress passes a fresh hero each read).
  */
-export function ProgressChart({ exerciseId, unit, readKey }: { exerciseId: number; unit: Unit; readKey: unknown }) {
+export function ProgressChart({
+  exerciseId,
+  unit,
+  readKey,
+  loadType = "weighted",
+}: {
+  exerciseId: number;
+  unit: Unit;
+  readKey: unknown;
+  loadType?: "weighted" | "bodyweight";
+}) {
   const colors = useColors();
-  const [metric, setMetric] = useState<ChartMetric>("weight");
+  const toggle = loadType === "bodyweight" ? BODYWEIGHT_TOGGLE : WEIGHTED_TOGGLE;
+  const [metric, setMetric] = useState<ChartMetric>(toggle[0].metric);
   const [range, setRange] = useState<ChartRange>("last8");
   // A tapped dot belongs to one exercise, metric and range; any change of those drops it (back to the last point).
   const selectionKey = `${exerciseId}|${metric}|${range}|${unit}`;
@@ -51,7 +67,7 @@ export function ProgressChart({ exerciseId, unit, readKey }: { exerciseId: numbe
   const points = useMemo(() => series?.points ?? [], [series]);
   const plottable = points.length >= 2;
   const geometry = useMemo(() => chartGeometry(points.map((p) => p.value), WIDTH, HEIGHT), [points]);
-  const unitLabel = metric === "volume" || metric === "weight" || metric === "oneRepMax" ? unit : "reps";
+  const unitLabel = loadType === "bodyweight" ? "reps" : unit;
   const selectedIndex =
     tapped && tapped.key === selectionKey && tapped.index < points.length ? tapped.index : points.length - 1;
   const selected = points[selectedIndex];
@@ -69,7 +85,7 @@ export function ProgressChart({ exerciseId, unit, readKey }: { exerciseId: numbe
         accessibilityRole="tablist"
         style={{ flexDirection: "row", gap: 2, padding: 3, borderRadius: radius.pill, backgroundColor: colors.bg }}
       >
-        {WEIGHTED_TOGGLE.map((t) => {
+        {toggle.map((t) => {
           const on = t.metric === metric;
           return (
             <Pressable
@@ -105,7 +121,7 @@ export function ProgressChart({ exerciseId, unit, readKey }: { exerciseId: numbe
               height={undefined}
               style={{ aspectRatio: WIDTH / HEIGHT }}
               accessibilityRole="image"
-              accessibilityLabel={`${WEIGHTED_TOGGLE.find((t) => t.metric === metric)?.label} chart, ${points.length} workouts, selected ${number(selected.value)} ${unitLabel}, ${shortDateLabel(selected.date)}`}
+              accessibilityLabel={`${toggle.find((t) => t.metric === metric)?.label} chart, ${points.length} workouts, selected ${number(selected.value)} ${unitLabel}, ${shortDateLabel(selected.date)}`}
             >
               <Path d={`M0 ${geometry.ticks[1].y}H${WIDTH}`} stroke={colors.line} />
               <Path d={geometry.areaPath} fill={colors.accent} opacity={0.12} />
