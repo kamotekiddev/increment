@@ -28,6 +28,17 @@ To switch it off, set **StoreKit Configuration** back to **None** in the same pl
 
 These local transactions are signed by Xcode, not the App Store. They never reach App Store Connect and don't count as real purchases.
 
+## Checking custom exercises after a refund
+
+Make a custom exercise (Library **+**), put it in a routine and log a workout with it. Then either refund the `pro_lifetime` transaction (Manage Transactions), or set Settings, Developer, **Pro source** to **Free** (in memory, resets on relaunch, writes nothing). Check:
+
+- **New exercise** (the Library **+** and the "Create" row) and **Edit** on the custom exercise both open and take typing, but the bottom button reads **Unlock Pro** with a lock and opens the Paywall. Nothing is saved. Set Pro source to **Pro** and it reads Save exercise / Save changes.
+- The exercise is still in the Library, the routine picker (add it to another routine), the Progress picker and Workout history, and its routine starts and finishes with Target, Offer and Records.
+- **Delete exercise** on its detail still works.
+- Refund while a workout with it is open: the workout can be resumed and finished.
+
+The tests for this are in `src/library/customExercisesAfterRefund.test.ts`.
+
 ## What this can't test
 
 - Android. Play Billing needs the app on an internal testing track with license testers (ticket 03).
