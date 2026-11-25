@@ -56,3 +56,17 @@ export function chartGeometry(values: number[], width: number, height: number): 
   const areaPath = `${linePath} V${fmt(height)} H${fmt(points[0].x)} Z`;
   return { points, ticks, linePath, areaPath };
 }
+
+/** The index of the point whose x is nearest `x` (the earlier one on a tie), or -1 with no point. */
+export function nearestPointIndex(points: ChartXY[], x: number): number {
+  let best = -1;
+  let bestDistance = Infinity;
+  points.forEach((p, i) => {
+    const distance = Math.abs(p.x - x);
+    if (distance < bestDistance) {
+      best = i;
+      bestDistance = distance;
+    }
+  });
+  return best;
+}

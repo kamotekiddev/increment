@@ -59,7 +59,7 @@ export function ProgressHero({
 }: {
   hero: Hero;
   onProPress: () => void;
-  /** Set for a Pro lifter on a weighted exercise: draws the live chart in place of the locked preview. */
+  /** Set for a Pro lifter: draws the live chart in place of the locked preview. `loadType` picks the metrics (weighted by default). */
   liveChart?: { exerciseId: number; unit: Unit; loadType?: "weighted" | "bodyweight" };
 }) {
   const colors = useColors();

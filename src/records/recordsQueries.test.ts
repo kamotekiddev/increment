@@ -1,7 +1,7 @@
 import type { Db } from "@/db/client";
 import { exercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 
-import { chartSeries, exerciseRecords, workoutRecordTags } from "./recordsQueries";
+import { chartSeries, chartSeriesFrom, chartSource, exerciseRecords, workoutRecordTags } from "./recordsQueries";
 
 // The module reads the app's `db`; point that at an in-memory database with every migration applied.
 jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
@@ -341,6 +341,24 @@ describe("exerciseRecords", () => {
       mostRepsInSet: { value: 10, date: "2026-11-03" },
       mostRepsInWorkout: { value: 15, date: "2026-11-01" },
     });
+  });
+});
+
+describe("chartSource and chartSeriesFrom", () => {
+  it("read once, switch metric, range and unit in memory with the same result as chartSeries", () => {
+    const bench = exercise("Bench");
+    for (let day = 0; day < 10; day++) save({ day, lifts: [{ exerciseId: bench, sets: [{ w: 60 + day, r: 5 }] }] });
+    const source = chartSource(bench)!;
+    expect(source.loadType).toBe("weighted");
+    for (const metric of ["weight", "oneRepMax", "volume"] as const) {
+      for (const range of ["last8", "last20", "all"] as const) {
+        for (const unit of ["kg", "lb"] as const) {
+          expect(chartSeriesFrom(source, metric, range, unit)).toEqual(chartSeries(bench, metric, range, unit));
+        }
+      }
+    }
+    expect(() => chartSeriesFrom(source, "repsInSet", "all", "kg")).toThrow();
+    expect(chartSource(9999)).toBeNull();
   });
 });
 

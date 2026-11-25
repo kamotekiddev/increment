@@ -1,4 +1,4 @@
-import { chartGeometry } from "./chartGeometry";
+import { chartGeometry, nearestPointIndex } from "./chartGeometry";
 
 describe("chartGeometry", () => {
   it("scales 8 points into a 318 x 110 box, oldest left, higher values higher up", () => {
@@ -50,5 +50,28 @@ describe("chartGeometry", () => {
     const top = g.ticks.reduce((a, b) => (b.value > a.value ? b : a));
     const bottom = g.ticks.reduce((a, b) => (b.value < a.value ? b : a));
     expect(top.y).toBeLessThan(bottom.y);
+  });
+});
+
+describe("nearestPointIndex", () => {
+  const xs = (n: number) => chartGeometry(Array.from({ length: n }, (_, i) => i), 318, 110).points;
+
+  it("picks the point closest to the touch, ties to the earlier one", () => {
+    const points = xs(3); // x = 8, 159, 310
+    expect(nearestPointIndex(points, 0)).toBe(0);
+    expect(nearestPointIndex(points, 80)).toBe(0);
+    expect(nearestPointIndex(points, 120)).toBe(1);
+    expect(nearestPointIndex(points, 300)).toBe(2);
+    expect(nearestPointIndex(points, 400)).toBe(2);
+    expect(nearestPointIndex(points, 83.5)).toBe(0);
+  });
+
+  it("can reach every one of 30 crowded points (about 10 units apart)", () => {
+    const points = xs(30);
+    points.forEach((p, i) => expect(nearestPointIndex(points, p.x + 1)).toBe(i));
+  });
+
+  it("returns -1 with no point", () => {
+    expect(nearestPointIndex([], 10)).toBe(-1);
   });
 });

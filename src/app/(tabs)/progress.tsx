@@ -8,7 +8,7 @@ import { useIsPro } from "@/pro";
 import { ExercisePicker } from "@/progress/ExercisePicker";
 import { EmptyRecordsCard, FirstRecordCard } from "@/progress/FirstRecordCard";
 import { useUnit } from "@/settings/useUnit";
-import { lockedTapDestination } from "@/progress/proTap";
+import { progressPro } from "@/progress/proTap";
 import { ProgressHero } from "@/progress/ProgressHero";
 import { RecordsCard } from "@/progress/RecordsCard";
 import { useExerciseProgress } from "@/progress/useExerciseProgress";
@@ -22,12 +22,11 @@ export default function ProgressScreen() {
   const isPro = useIsPro();
   const { unit } = useUnit();
   // A free tap opens the Paywall. Buying returns here (Pro unlocked's "Start using Pro" dismisses back); nothing opens by itself.
+  const pro = progressPro(isPro);
   const onLockedTap = () => {
-    const destination = lockedTapDestination(isPro);
-    if (destination) router.push(destination);
+    if (pro.chartTap) router.push(pro.chartTap);
   };
-  /** "See all records": All records for Pro, the Paywall for a free lifter. */
-  const openAllRecords = () => (isPro ? router.push("/records") : onLockedTap());
+  const openAllRecords = () => router.push(pro.allRecords);
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
@@ -71,7 +70,7 @@ export default function ProgressScreen() {
                 <ProgressHero
                   hero={progress.hero}
                   onProPress={onLockedTap}
-                  liveChart={isPro ? { exerciseId: progress.exerciseId, unit, loadType: progress.loadType } : undefined}
+                  liveChart={pro.chart === "live" ? { exerciseId: progress.exerciseId, unit, loadType: progress.loadType } : undefined}
                 />
                 <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={openAllRecords} />
               </>

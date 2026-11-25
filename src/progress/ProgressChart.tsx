@@ -1,14 +1,15 @@
 import { useMemo, useState } from "react";
-import { Pressable, View } from "react-native";
-import Svg, { Circle, G, Path } from "react-native-svg";
+import { Pressable, View, type GestureResponderEvent } from "react-native";
+import Svg, { Circle, Path, Rect } from "react-native-svg";
 
 import { Text } from "@/components";
 import { shortDateLabel } from "@/history/historyQueries";
-import { chartSeries, type ChartMetric, type ChartRange } from "@/records/recordsQueries";
-import { fontFamily, fontSize, lineHeight, opacity, radius, spacing, useColors } from "@/theme";
+import { chartSeriesFrom, chartSource, type ChartMetric, type ChartRange } from "@/records/recordsQueries";
+import { chart, fontFamily, fontSize, lineHeight, opacity, radius, spacing, useColors } from "@/theme";
 import type { Unit } from "@/units";
 
-import { chartGeometry } from "./chartGeometry";
+import { chartGeometry, nearestPointIndex } from "./chartGeometry";
+import { thousands } from "./progressQueries";
 
 const WIDTH = 318;
 const HEIGHT = 110;
@@ -30,10 +31,11 @@ const RANGES: { range: ChartRange; label: string }[] = [
   { range: "all", label: "All" },
 ];
 
-/** Half-width of the invisible tap target around each dot, in chart units (about 24 px across on a phone). */
-const HIT_RADIUS = 12;
-
-const number = (n: number) => n.toLocaleString("en-US");
+/** `1,920` or `62.5`: thousands commas on the whole part, never the runtime's Intl data (as the Records card). */
+const number = (n: number) => {
+  const [whole, decimal] = String(n).split(".");
+  return decimal ? `${thousands(Number(whole))}.${decimal}` : thousands(n);
+};
 
 /**
  * The live chart of an exercise (weighted or bodyweight) (variant A): the metric toggle above, a line with a soft fill and dots below.
@@ -58,12 +60,15 @@ export function ProgressChart({
   // A tapped dot belongs to one exercise, metric and range; any change of those drops it (back to the last point).
   const selectionKey = `${exerciseId}|${metric}|${range}|${unit}`;
   const [tapped, setTapped] = useState<{ key: string; index: number } | null>(null);
-  const series = useMemo(
-    () => chartSeries(exerciseId, metric, range, unit),
+  // The sessions are read once per exercise and read; metric, range and unit are derived in memory.
+  const source = useMemo(
+    () => chartSource(exerciseId),
     // `readKey` re-reads after a workout is finished.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [exerciseId, metric, range, unit, readKey],
+    [exerciseId, readKey],
   );
+  const series = useMemo(() => (source ? chartSeriesFrom(source, metric, range, unit) : null), [source, metric, range, unit]);
+  const [width, setWidth] = useState(0);
   const points = useMemo(() => series?.points ?? [], [series]);
   const plottable = points.length >= 2;
   const geometry = useMemo(() => chartGeometry(points.map((p) => p.value), WIDTH, HEIGHT), [points]);
@@ -71,6 +76,12 @@ export function ProgressChart({
   const selectedIndex =
     tapped && tapped.key === selectionKey && tapped.index < points.length ? tapped.index : points.length - 1;
   const selected = points[selectedIndex];
+  // One full-width layer takes the tap: the touch x (in points) maps to chart units and picks the nearest dot.
+  const pick = (e: GestureResponderEvent) => {
+    if (width <= 0) return;
+    const index = nearestPointIndex(geometry.points, (e.nativeEvent.locationX * WIDTH) / width);
+    if (index >= 0) setTapped({ key: selectionKey, index });
+  };
   const rangeLabel = RANGES.find((r) => r.range === range)?.label;
   const cycleRange = () => setRange(RANGES[(RANGES.findIndex((r) => r.range === range) + 1) % RANGES.length].range);
   const values = points.map((p) => p.value);
@@ -83,7 +94,7 @@ export function ProgressChart({
     <View style={{ gap: spacing.md }}>
       <View
         accessibilityRole="tablist"
-        style={{ flexDirection: "row", gap: 2, padding: 3, borderRadius: radius.pill, backgroundColor: colors.bg }}
+        style={{ flexDirection: "row", gap: chart.toggleGap, padding: chart.togglePadding, borderRadius: radius.pill, backgroundColor: colors.bg }}
       >
         {toggle.map((t) => {
           const on = t.metric === metric;
@@ -98,7 +109,7 @@ export function ProgressChart({
                 alignItems: "center",
                 paddingVertical: spacing.sm,
                 borderRadius: radius.pill,
-                backgroundColor: on ? colors.accent : "transparent",
+                backgroundColor: on ? colors.accent : chart.clear,
                 opacity: pressed ? opacity.pressed : 1,
               })}
             >
@@ -114,7 +125,10 @@ export function ProgressChart({
           <Text style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.small }}>
             {`${number(selected.value)} ${unitLabel} · ${shortDateLabel(selected.date)}`}
           </Text>
-          <View style={{ borderRadius: radius.inset, overflow: "hidden", backgroundColor: colors.bg }}>
+          <View
+            onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+            style={{ borderRadius: radius.inset, overflow: "hidden", backgroundColor: colors.bg }}
+          >
             <Svg
               viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
               width="100%"
@@ -124,34 +138,33 @@ export function ProgressChart({
               accessibilityLabel={`${toggle.find((t) => t.metric === metric)?.label} chart, ${points.length} workouts, selected ${number(selected.value)} ${unitLabel}, ${shortDateLabel(selected.date)}`}
             >
               <Path d={`M0 ${geometry.ticks[1].y}H${WIDTH}`} stroke={colors.line} />
-              <Path d={geometry.areaPath} fill={colors.accent} opacity={0.12} />
-              <Path d={geometry.linePath} stroke={colors.accent} strokeWidth={2.4} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+              <Path d={geometry.areaPath} fill={colors.accent} opacity={chart.fillOpacity} />
+              <Path d={geometry.linePath} stroke={colors.accent} strokeWidth={chart.lineWidth} fill="none" strokeLinecap="round" strokeLinejoin="round" />
               {geometry.points.map((p, i) => {
                 const isSelected = i === selectedIndex;
                 return (
-                  <G key={points[i].date + i}>
-                    <Circle
-                      cx={p.x}
-                      cy={p.y}
-                      r={isSelected ? 5 : 2.6}
-                      fill={isSelected ? colors.accent : colors.card}
-                      stroke={colors.accent}
-                      strokeWidth={1.5}
-                    />
-                    <Circle cx={p.x} cy={p.y} r={HIT_RADIUS} fill="transparent" onPress={() => setTapped({ key: selectionKey, index: i })} />
-                  </G>
+                  <Circle
+                    key={points[i].date + i}
+                    cx={p.x}
+                    cy={p.y}
+                    r={isSelected ? chart.dotSelectedRadius : chart.dotRadius}
+                    fill={isSelected ? colors.accent : colors.card}
+                    stroke={colors.accent}
+                    strokeWidth={chart.dotStroke}
+                  />
                 );
               })}
+              <Rect x={0} y={0} width={WIDTH} height={HEIGHT} fill={chart.clear} onPress={pick} />
             </Svg>
           </View>
         </View>
       ) : (
         <View
           style={{
-            height: 120,
+            height: chart.emptyHeight,
             alignItems: "center",
             justifyContent: "center",
-            paddingHorizontal: 28,
+            paddingHorizontal: chart.emptyPaddingX,
             borderRadius: radius.inset,
             backgroundColor: colors.bg,
           }}

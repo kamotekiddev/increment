@@ -2,6 +2,7 @@ import type { Db } from "@/db/client";
 import { exercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 
 import { allRecords } from "./allRecordsQueries";
+import { exerciseRecords, workoutRecordTags } from "./recordsQueries";
 
 // The module reads the app's `db`; point that at an in-memory database with every migration applied.
 jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
@@ -30,7 +31,7 @@ interface TestSet {
   warmup?: boolean;
 }
 
-function save(day: number, lifts: { exerciseId: number; sets: TestSet[] }[], inProgress = false) {
+function save(day: number, lifts: { exerciseId: number; sets: TestSet[] }[], inProgress = false): number {
   const startedAt = BASE + day * DAY;
   const date = `2026-11-${String(1 + day).padStart(2, "0")}`;
   const workout = db
@@ -55,6 +56,7 @@ function save(day: number, lifts: { exerciseId: number; sets: TestSet[] }[], inP
         .run();
     });
   });
+  return workout.id;
 }
 
 describe("allRecords", () => {
@@ -130,5 +132,37 @@ describe("allRecords", () => {
   it("returns nothing when nothing was trained", () => {
     exercise("Never done");
     expect(allRecords("kg")).toEqual({ exercises: [], recordCount: 0, newCount: 0 });
+  });
+
+  it("gives exercises that share one last workout the same Records and New pills as the per-exercise queries", () => {
+    const bench = exercise("Bench press");
+    const squat = exercise("Back squat", "weighted", ["quadriceps"]);
+    const pullUp = exercise("Pull-up", "bodyweight", ["lats"]);
+    save(0, [
+      { exerciseId: bench, sets: [{ w: 60, r: 8 }] },
+      { exerciseId: squat, sets: [{ w: 100, r: 5 }] },
+      { exerciseId: pullUp, sets: [{ w: 0, r: 8 }] },
+    ]);
+    const last = save(3, [
+      { exerciseId: bench, sets: [{ w: 62.5, r: 8 }] },
+      { exerciseId: squat, sets: [{ w: 95, r: 5 }] },
+      { exerciseId: pullUp, sets: [{ w: 0, r: 10 }] },
+    ]);
+    const result = allRecords("kg");
+    expect(result.exercises).toHaveLength(3);
+    const tags = workoutRecordTags(last);
+    for (const e of result.exercises) {
+      expect(e.records).toEqual(exerciseRecords(e.exerciseId, "kg"));
+      const expected = db
+        .select()
+        .from(workoutExercises)
+        .all()
+        .filter((we) => we.workoutId === last && we.exerciseId === e.exerciseId)
+        .flatMap((we) => tags[we.id] ?? []);
+      expect(e.newRecords).toEqual(expected);
+    }
+    expect(result.exercises.find((e) => e.name === "Bench press")!.newRecords).toEqual(["Heaviest set", "1-rep max", "Most volume"]);
+    expect(result.exercises.find((e) => e.name === "Back squat")!.newRecords).toEqual([]);
+    expect(result.exercises.find((e) => e.name === "Pull-up")!.newRecords).toEqual(["Most reps in a set", "Most reps in a workout"]);
   });
 });

@@ -5,7 +5,17 @@ import { exercises, sets, workoutExercises, workouts } from "@/db/schema";
 import { muscleGroupsOf, type MuscleGroup } from "@/library/muscleGroups";
 import type { Unit } from "@/units";
 
-import { exerciseRecords, isCountedSet, workoutRecordTags, type ExerciseRecords, type RecordName } from "./recordsQueries";
+import {
+  COUNTED_ROW_COLUMNS,
+  COUNTED_ROW_ORDER,
+  isCountedSet,
+  newRecordsIn,
+  recordsOfSessions,
+  sessionsFromRows,
+  type CountedRow,
+  type ExerciseRecords,
+  type RecordName,
+} from "./recordsQueries";
 
 /** One exercise on All records. */
 export interface AllRecordsExercise {
@@ -44,35 +54,38 @@ function valuedRecords(records: ExerciseRecords): number {
 export function allRecords(unit: Unit): AllRecords {
   const rows = db
     .select({
+      ...COUNTED_ROW_COLUMNS,
       exerciseId: exercises.id,
       name: exercises.name,
       equipment: exercises.equipment,
       muscles: exercises.muscles,
       loadType: exercises.loadType,
-      weight: sets.weight,
-      reps: sets.reps,
-      date: workouts.date,
       startedAt: workouts.startedAt,
-      workoutId: workouts.id,
-      position: workoutExercises.position,
     })
     .from(sets)
     .innerJoin(workoutExercises, eq(workoutExercises.id, sets.workoutExerciseId))
     .innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
     .innerJoin(exercises, eq(exercises.id, workoutExercises.exerciseId))
     .where(and(eq(sets.done, true), eq(sets.isWarmup, false), eq(workouts.inProgress, false)))
+    .orderBy(...COUNTED_ROW_ORDER)
     .all();
 
+  // One query for every exercise: group its rows (already in History's order) and derive everything from them.
+  const rowsOf = new Map<number, CountedRow[]>();
   const latest = new Map<number, (typeof rows)[number]>();
   for (const row of rows) {
     if (!isCountedSet(row, row.loadType)) continue;
+    const own = rowsOf.get(row.exerciseId);
+    if (own) own.push(row);
+    else rowsOf.set(row.exerciseId, [row]);
     const best = latest.get(row.exerciseId);
     if (!best || isLater(row, best)) latest.set(row.exerciseId, row);
   }
 
   const result: AllRecordsExercise[] = [];
   for (const row of [...latest.values()].sort((a, b) => (isLater(a, b) ? -1 : 1))) {
-    const records = exerciseRecords(row.exerciseId, unit);
+    const sessions = sessionsFromRows(rowsOf.get(row.exerciseId) ?? [], row.loadType);
+    const records = recordsOfSessions(sessions, row.loadType, unit);
     if (!records) continue;
     result.push({
       exerciseId: row.exerciseId,
@@ -81,7 +94,7 @@ export function allRecords(unit: Unit): AllRecords {
       muscleGroup: muscleGroupsOf(row.muscles)[0] ?? null,
       lastDoneDate: row.date,
       records,
-      newRecords: newRecordNames(row.workoutId, row.exerciseId),
+      newRecords: newRecordsIn(sessions, row.workoutId, row.loadType)?.tags ?? [],
     });
   }
   return {
@@ -98,15 +111,4 @@ function isLater(
   if (a.startedAt !== b.startedAt) return a.startedAt > b.startedAt;
   if (a.workoutId !== b.workoutId) return a.workoutId > b.workoutId;
   return a.position > b.position;
-}
-
-/** The Records the workout set for this exercise, from the records module's tags (never from dates). */
-function newRecordNames(workoutId: number, exerciseId: number): RecordName[] {
-  const tags = workoutRecordTags(workoutId);
-  return db
-    .select({ id: workoutExercises.id })
-    .from(workoutExercises)
-    .where(and(eq(workoutExercises.workoutId, workoutId), eq(workoutExercises.exerciseId, exerciseId)))
-    .all()
-    .flatMap(({ id }) => tags[id] ?? []);
 }
