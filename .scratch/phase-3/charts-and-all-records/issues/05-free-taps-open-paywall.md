@@ -4,10 +4,10 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Both taps open the Paywall directly; the "comes with Pro, in a later update" sheet is removed.
-- [ ] After buying, the lifter lands back on Progress with the live chart; nothing opens by itself.
-- [ ] After a refund the chart is the blurred preview again and records and history stay.
-- [ ] The Pro check lives in the one Pro-gate place, with no scattered `isPro` checks.
-- [ ] Type check, lint and tests pass.
+- [x] Both taps open the Paywall directly; the "comes with Pro, in a later update" sheet is removed.
+- [x] After buying, the lifter lands back on Progress with the live chart; nothing opens by itself.
+- [x] After a refund the chart is the blurred preview again and records and history stay.
+- [x] The Pro check lives in the one Pro-gate place, with no scattered `isPro` checks.
+- [x] Type check, lint and tests pass.
