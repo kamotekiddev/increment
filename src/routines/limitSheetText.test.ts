@@ -13,7 +13,7 @@ describe("limit pop-up text", () => {
   it("lists the three benefits from the board", () => {
     expect(LIMIT_SHEET_BENEFITS).toEqual([
       "Unlimited routines",
-      "Custom exercises and plate calculator",
+      "Custom exercises and export",
       "Charts, records and automatic backups",
     ]);
   });

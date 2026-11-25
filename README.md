@@ -28,7 +28,7 @@ Increment is an offline mobile workout tracker for iOS and Android, built around
 | Move to a new phone (backup and restore) | – | ✓ |
 | Automatic backups (choose how often) | – | ✓ |
 | Export to CSV or PDF | – | ✓ |
-| Plate calculator and warm-ups | – | ✓ |
+| Warm-ups | – | ✓ |
 
 Pro is a one-time, non-consumable in-app purchase that works offline. The price is still to be decided.
 
