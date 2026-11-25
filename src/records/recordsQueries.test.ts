@@ -355,6 +355,21 @@ describe("chartSeries", () => {
     expect(chartSeries(bench, "weight", "last20", "kg")?.points).toHaveLength(12);
   });
 
+  it("counts Last N over plottable workouts only (skipped workouts do not use up the range)", () => {
+    const bench = exercise("Bench");
+    // 12 workouts; days 9 and 10 have only 15-rep sets, so they have no Est. 1RM.
+    for (let day = 0; day < 12; day++) {
+      const reps = day === 9 || day === 10 ? 15 : 5;
+      save({ day, lifts: [{ exerciseId: bench, sets: [{ w: 60 + day, r: reps }] }] });
+    }
+    const last8 = chartSeries(bench, "oneRepMax", "last8", "kg");
+    expect(last8?.points).toHaveLength(8);
+    expect(last8?.points[0].date).toBe("2026-11-03");
+    expect(last8?.points[7].date).toBe("2026-11-12");
+    expect(chartSeries(bench, "oneRepMax", "last20", "kg")?.points).toHaveLength(10);
+    expect(chartSeries(bench, "oneRepMax", "all", "kg")?.points).toHaveLength(10);
+  });
+
   it("charts Weight, Est. 1RM and Volume from known sets", () => {
     const bench = exercise("Bench");
     // Heaviest 100; Epley 100 x 5 = 116.67 and 90 x 10 = 120; volume 500 + 900.
