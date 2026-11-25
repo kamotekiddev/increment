@@ -4,10 +4,10 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** built
 
-- [ ] The references from routine exercises, workout exercises and sets to an exercise cascade on delete ([ADR 0005](../../../../docs/adr/0005-deleting-a-custom-exercise-deletes-its-history.md)), with a migration that keeps all existing rows.
-- [ ] A test: deleting an exercise removes its routine rows, Workout exercises and sets, and leaves every other exercise, routine and workout alone.
-- [ ] The migration test and the seed tests still pass, and library exercises are unchanged.
-- [ ] `docs/architecture.md` data model line for these tables says they cascade.
-- [ ] Type check, lint and tests pass.
+- [x] The references from routine exercises, workout exercises and sets to an exercise cascade on delete ([ADR 0005](../../../../docs/adr/0005-deleting-a-custom-exercise-deletes-its-history.md)), with a migration that keeps all existing rows.
+- [x] A test: deleting an exercise removes its routine rows, Workout exercises and sets, and leaves every other exercise, routine and workout alone.
+- [x] The migration test and the seed tests still pass, and library exercises are unchanged.
+- [x] `docs/architecture.md` data model line for these tables says they cascade.
+- [x] Type check, lint and tests pass.
