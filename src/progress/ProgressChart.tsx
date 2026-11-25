@@ -1,11 +1,12 @@
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { useMemo, useState } from "react";
 import { Pressable, View, type GestureResponderEvent } from "react-native";
 import Svg, { Circle, Path, Rect } from "react-native-svg";
 
-import { Text } from "@/components";
+import { BottomSheet, Text } from "@/components";
 import { shortDateLabel } from "@/history/historyQueries";
 import { chartSeriesFrom, chartSource, type ChartMetric, type ChartRange } from "@/records/recordsQueries";
-import { chart, fontFamily, fontSize, lineHeight, opacity, radius, spacing, useColors } from "@/theme";
+import { chart, fontFamily, fontSize, lineHeight, minTouch, opacity, radius, spacing, useColors } from "@/theme";
 import type { Unit } from "@/units";
 
 import { chartGeometry, nearestPointIndex } from "./chartGeometry";
@@ -25,10 +26,10 @@ const BODYWEIGHT_TOGGLE: { metric: ChartMetric; label: string }[] = [
   { metric: "repsInWorkout", label: "Reps in a workout" },
 ];
 
-const RANGES: { range: ChartRange; label: string }[] = [
-  { range: "last8", label: "Last 8" },
-  { range: "last20", label: "Last 20" },
-  { range: "all", label: "All" },
+const RANGES: { range: ChartRange; label: string; title: string; detail: string }[] = [
+  { range: "last8", label: "Last 8", title: "Last 8 workouts", detail: "The latest 8, the closest look at now" },
+  { range: "last20", label: "Last 20", title: "Last 20 workouts", detail: "A few months of progress" },
+  { range: "all", label: "All", title: "All workouts", detail: "Every workout you've logged" },
 ];
 
 /** `1,920` or `62.5`: thousands commas on the whole part, never the runtime's Intl data (as the Records card). */
@@ -39,7 +40,7 @@ const number = (n: number) => {
 
 /**
  * The live chart of an exercise (weighted or bodyweight) (variant A): the metric toggle above, a line with a soft fill and dots below.
- * Opens on Weight over the latest 8 workouts; the range button cycles Last 8 / Last 20 / All and a tap on a dot reads
+ * Opens on Weight over the latest 8 workouts; the range dropdown (a sheet) picks Last 8 / Last 20 / All and a tap on a dot reads
  * its date and value (the last point by default). Re-read when `readKey` changes (Progress passes a fresh hero each read).
  */
 export function ProgressChart({
@@ -83,7 +84,11 @@ export function ProgressChart({
     if (index >= 0) setTapped({ key: selectionKey, index });
   };
   const rangeLabel = RANGES.find((r) => r.range === range)?.label;
-  const cycleRange = () => setRange(RANGES[(RANGES.findIndex((r) => r.range === range) + 1) % RANGES.length].range);
+  const [rangeOpen, setRangeOpen] = useState(false);
+  const chooseRange = (next: ChartRange) => {
+    setRange(next);
+    setRangeOpen(false);
+  };
   const values = points.map((p) => p.value);
   const message =
     metric === "oneRepMax" && points.length === 0 && (series?.workouts ?? 0) > 0
@@ -181,7 +186,7 @@ export function ProgressChart({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Range: ${rangeLabel}. Tap to change.`}
-          onPress={cycleRange}
+          onPress={() => setRangeOpen(true)}
           style={({ pressed }) => ({
             paddingHorizontal: spacing.md,
             paddingVertical: spacing.sm,
@@ -190,9 +195,53 @@ export function ProgressChart({
             opacity: pressed ? opacity.pressed : 1,
           })}
         >
-          <Text style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.caption }}>{`${rangeLabel} ▾`}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: spacing.xs }}>
+            <Text style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.caption }}>{rangeLabel}</Text>
+            <Ionicons name="chevron-down" size={14} color={colors.iconFaint} />
+          </View>
         </Pressable>
       </View>
+      <BottomSheet visible={rangeOpen} onDismiss={() => setRangeOpen(false)}>
+        <View style={{ gap: spacing.xs }}>
+          <Text variant="title">Chart range</Text>
+          <Text tone="muted" style={{ fontSize: fontSize.small }}>
+            How many workouts of this exercise the chart shows.
+          </Text>
+        </View>
+        <View style={{ gap: spacing.sm }}>
+          {RANGES.map((r) => {
+            const on = r.range === range;
+            return (
+              <Pressable
+                key={r.range}
+                accessibilityRole="button"
+                accessibilityLabel={`${r.title}. ${r.detail}`}
+                accessibilityState={{ selected: on }}
+                onPress={() => chooseRange(r.range)}
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: spacing.md,
+                  minHeight: minTouch + spacing.lg,
+                  paddingHorizontal: spacing.lg,
+                  paddingVertical: spacing.sm,
+                  borderRadius: radius.row,
+                  backgroundColor: on ? colors.accentTint : colors.card,
+                  opacity: pressed ? opacity.pressed : 1,
+                })}
+              >
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={{ fontFamily: fontFamily.semibold }}>{r.title}</Text>
+                  <Text tone="muted" style={{ fontSize: fontSize.small }}>
+                    {r.detail}
+                  </Text>
+                </View>
+                {on ? <Ionicons name="checkmark-circle" size={24} color={colors.accent} /> : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      </BottomSheet>
     </View>
   );
 }

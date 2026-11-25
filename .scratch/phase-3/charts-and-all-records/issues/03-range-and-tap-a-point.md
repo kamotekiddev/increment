@@ -6,6 +6,6 @@
 
 **Status:** resolved
 
-- [x] The range button cycles Last 8 / Last 20 / All; "Last N" means the latest N plottable workouts of the metric (read tests for 12 workouts at each range).
+- [x] The range dropdown (a sheet, as the Exercise picker) chooses Last 8 / Last 20 / All; "Last N" means the latest N plottable workouts of the metric (read tests for 12 workouts at each range).
 - [x] Tapping a dot shows its date and value above the chart; the last point is selected by default; changing metric or range clears the selection.
 - [x] Type check, lint and tests pass.
