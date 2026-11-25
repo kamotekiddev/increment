@@ -4,7 +4,7 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [x] The records read module returns one point per finished workout for the chosen metric in the current unit, oldest first, using the Phase 2 counted-set rules (tests against an in-memory database: Last 8 returns the latest 8, each metric on known sets, a null Est. 1RM workout skipped, warm-up/unchecked/discarded/in-progress sets never counted, lb and kg compared in kg).
 - [x] A pure geometry function turns points into scaled coordinates, y-axis ticks and the line and fill paths, and does not throw on 0 or 1 point or equal values (tests).
