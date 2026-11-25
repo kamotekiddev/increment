@@ -92,6 +92,13 @@
       "when": 1795514289484,
       "tag": "0012_pro_unlock_screen_owed",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "6",
+      "when": 1795597558471,
+      "tag": "0013_exercise_delete_cascade",
+      "breakpoints": true
     }
   ]
 }

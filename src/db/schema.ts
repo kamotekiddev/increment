@@ -35,7 +35,7 @@ export const routineExercises = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     routineId: integer("routine_id").notNull().references(() => routines.id, { onDelete: "cascade" }),
-    exerciseId: integer("exercise_id").notNull().references(() => exercises.id),
+    exerciseId: integer("exercise_id").notNull().references(() => exercises.id, { onDelete: "cascade" }),
     position: integer("position").notNull(),
     sets: integer("sets").notNull(),
     repMin: integer("rep_min").notNull(),
@@ -82,7 +82,7 @@ export const workoutExercises = sqliteTable(
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     workoutId: integer("workout_id").notNull().references(() => workouts.id, { onDelete: "cascade" }),
-    exerciseId: integer("exercise_id").notNull().references(() => exercises.id),
+    exerciseId: integer("exercise_id").notNull().references(() => exercises.id, { onDelete: "cascade" }),
     position: integer("position").notNull(),
     /** The Target shown at the start; null when none existed (first workout). */
     targetWeightKg: real("target_weight_kg"),
@@ -118,7 +118,7 @@ export const sets = sqliteTable(
       .notNull()
       .references(() => workoutExercises.id, { onDelete: "cascade" }),
     /** Denormalised so records can be queried per exercise without a join. */
-    exerciseId: integer("exercise_id").notNull().references(() => exercises.id),
+    exerciseId: integer("exercise_id").notNull().references(() => exercises.id, { onDelete: "cascade" }),
     idx: integer("idx").notNull(),
     /** The number as typed (135 for 135 lb), never converted or rounded on save. A blank weight is 0 until typed. */
     weight: real("weight").notNull(),

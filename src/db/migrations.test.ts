@@ -151,3 +151,55 @@ describe("migration 0012: Pro unlocked can be owed", () => {
     expect(sqlite.prepare("SELECT unlock_screen_owed FROM entitlements").get()).toEqual({ unlock_screen_owed: 0 });
   });
 });
+
+/** Migration 0013: exercise references cascade on delete (ADR 0005), by table rebuild. */
+describe("migration 0013: exercise references cascade", () => {
+  function migratedDb() {
+    const { sqlite, migrateTo } = createDbAtMigration(12);
+    sqlite.prepare("INSERT INTO exercises (id, name, equipment, load_type) VALUES (1, 'Bench press', 'barbell', 'weighted')").run();
+    sqlite.prepare("INSERT INTO exercises (id, name, equipment, load_type, is_custom) VALUES (2, 'Ring rows', 'bodyweight', 'bodyweight', 1)").run();
+    sqlite.prepare("INSERT INTO routines (id, name, days, position) VALUES (1, 'Push', 5, 0)").run();
+    sqlite.prepare("INSERT INTO routine_exercises (id, routine_id, exercise_id, position, sets, rep_min, rep_max, rest_s, rule, step_kg) VALUES (1, 1, 1, 0, 3, 8, 10, 90, '{}', 2)").run();
+    sqlite.prepare("INSERT INTO routine_exercises (id, routine_id, exercise_id, position, sets, rep_min, rep_max, rest_s, rule) VALUES (2, 1, 2, 1, 3, 8, 10, 90, '{}')").run();
+    sqlite.prepare("INSERT INTO workouts (id, started_at, date, in_progress) VALUES (1, 1, '2026-11-01', 0)").run();
+    sqlite.prepare("INSERT INTO workout_exercises (id, workout_id, exercise_id, position, target_weight_kg, is_deload) VALUES (1, 1, 1, 0, 60, 1)").run();
+    sqlite.prepare("INSERT INTO workout_exercises (id, workout_id, exercise_id, position) VALUES (2, 1, 2, 1)").run();
+    sqlite.prepare("INSERT INTO sets (id, workout_exercise_id, exercise_id, idx, weight, weight_unit, reps, done) VALUES (1, 1, 1, 0, 60, 'kg', 8, 1)").run();
+    sqlite.prepare("INSERT INTO sets (id, workout_exercise_id, exercise_id, idx, weight, weight_unit, reps, done) VALUES (2, 2, 2, 0, 0, 'kg', 8, 1)").run();
+    migrateTo(13);
+    return sqlite;
+  }
+
+  it("keeps every row of the three rebuilt tables", () => {
+    const sqlite = migratedDb();
+    const count = (t: string) => (sqlite.prepare(`SELECT COUNT(*) AS n FROM ${t}`).get() as { n: number }).n;
+    expect([count("routine_exercises"), count("workout_exercises"), count("sets")]).toEqual([2, 2, 2]);
+    expect(sqlite.prepare("SELECT step_kg FROM routine_exercises WHERE id = 1").get()).toEqual({ step_kg: 2 });
+    expect(sqlite.prepare("SELECT target_weight_kg, is_deload FROM workout_exercises WHERE id = 1").get()).toEqual({ target_weight_kg: 60, is_deload: 1 });
+    expect(sqlite.prepare("SELECT weight, reps, done FROM sets WHERE id = 1").get()).toEqual({ weight: 60, reps: 8, done: 1 });
+  });
+
+  it("keeps every index", () => {
+    const sqlite = migratedDb();
+    const indexes = (sqlite.prepare("SELECT name FROM sqlite_master WHERE type = 'index' AND name NOT LIKE 'sqlite_%'").all() as { name: string }[]).map((i) => i.name);
+    expect(indexes).toEqual(
+      expect.arrayContaining([
+        "routine_exercises_routine_idx",
+        "routine_exercises_routine_exercise_uniq",
+        "workout_exercises_unique",
+        "sets_exercise_idx",
+        "sets_workout_exercise_idx",
+      ]),
+    );
+  });
+
+  it("then deleting an exercise cascades to its rows only", () => {
+    const sqlite = migratedDb();
+    sqlite.pragma("foreign_keys = ON");
+    sqlite.prepare("DELETE FROM exercises WHERE id = 2").run();
+    expect(sqlite.prepare("SELECT exercise_id FROM routine_exercises").all()).toEqual([{ exercise_id: 1 }]);
+    expect(sqlite.prepare("SELECT exercise_id FROM workout_exercises").all()).toEqual([{ exercise_id: 1 }]);
+    expect(sqlite.prepare("SELECT exercise_id FROM sets").all()).toEqual([{ exercise_id: 1 }]);
+    expect(sqlite.prepare("SELECT COUNT(*) AS n FROM workouts").get()).toEqual({ n: 1 });
+  });
+});
