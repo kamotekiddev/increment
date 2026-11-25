@@ -31,7 +31,7 @@ The "2 free routines used" pop-up gets its See Pro button linking to the Paywall
 - A Workout in progress on it may be finished first.
 - Deleting an older routine unlocks the next one, and buying or restoring Pro unlocks them all.
 
-### 3 · Custom exercises (grilled 2026-11-25, spec: `.scratch/phase-3/custom-exercises/spec.md`)
+### 3 · Custom exercises (built, phone check pending; grilled 2026-11-25, spec: `.scratch/phase-3/custom-exercises/spec.md`)
 Create, edit and delete a custom exercise (Pro). Delete removes it from routines and deletes its history ([ADR 0005](../../docs/adr/0005-deleting-a-custom-exercise-deletes-its-history.md)). The "No search results" state gets its create shortcut. A free lifter can open the form, but Unlock Pro replaces Save and opens the Paywall.
 
 ### 4 · Charts and All records
