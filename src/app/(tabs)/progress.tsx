@@ -4,9 +4,9 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components";
+import { useIsPro } from "@/pro";
 import { ExercisePicker } from "@/progress/ExercisePicker";
 import { EmptyRecordsCard, FirstRecordCard } from "@/progress/FirstRecordCard";
-import { useIsPro } from "@/pro";
 import { useUnit } from "@/settings/useUnit";
 import { lockedTapDestination } from "@/progress/proTap";
 import { ProgressHero } from "@/progress/ProgressHero";
@@ -26,6 +26,8 @@ export default function ProgressScreen() {
     const destination = lockedTapDestination(isPro);
     if (destination) router.push(destination);
   };
+  /** "See all records": All records for Pro, the Paywall for a free lifter. */
+  const openAllRecords = () => (isPro ? router.push("/records") : onLockedTap());
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
@@ -71,7 +73,7 @@ export default function ProgressScreen() {
                   onProPress={onLockedTap}
                   liveChart={isPro && progress.loadType === "weighted" ? { exerciseId: progress.exerciseId, unit } : undefined}
                 />
-                <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={onLockedTap} />
+                <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={openAllRecords} />
               </>
             ) : (
               <>
