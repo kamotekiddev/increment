@@ -4,8 +4,8 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved (owner approved variant A and the RecordsAll banner, 2026-11-25)
 
-- [ ] Frame A is renamed to the final Progress chart frame, with the PROTOTYPE label and scenario chips removed.
-- [ ] `RecordsAll` banner reads "N records · N new" (no "this week").
-- [ ] The owner has reviewed both frames.
+- [x] Frame A is renamed to the final Progress chart frame, with the PROTOTYPE label and scenario chips removed.
+- [x] `RecordsAll` banner reads "N records · N new" (no "this week").
+- [x] The owner has reviewed both frames.
