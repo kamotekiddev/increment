@@ -25,6 +25,6 @@ export function deleteExerciseText(name: string, info: ExerciseDeleteInfo): Dele
   const warning =
     info.workoutCount === 0
       ? "It has no workout history. This can't be recovered."
-      : `Its history, ${info.workoutCount} ${noun}, is deleted for good. This can't be recovered.`;
+      : `Its sets in ${info.workoutCount} ${noun} are deleted for good. This can't be recovered.`;
   return { title, body, warning, blocked: false };
 }

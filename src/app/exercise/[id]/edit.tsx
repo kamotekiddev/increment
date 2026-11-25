@@ -85,11 +85,17 @@ function EditExerciseForm({ exercise }: { exercise: Exercise }) {
   function confirmDelete() {
     if (deleting.current) return;
     deleting.current = true;
-    const result = deleteCustomExercise(db, exercise.id);
-    if (result === "in-progress") {
-      deleting.current = false;
-      setDeleteInfo(exerciseDeleteInfo(db, exercise.id));
-      return;
+    let deleted = false;
+    try {
+      const result = deleteCustomExercise(db, exercise.id);
+      if (result === "in-progress") {
+        setDeleteInfo(exerciseDeleteInfo(db, exercise.id));
+        return;
+      }
+      deleted = result === "deleted";
+    } finally {
+      // Stay locked only after a successful delete (the screen is leaving); any other path re-arms Delete.
+      if (!deleted) deleting.current = false;
     }
     setDeleteInfo(null);
     // Leave Edit and the Exercise detail under it: the exercise is gone.

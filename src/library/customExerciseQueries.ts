@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 
 import type { Db, SelectInsertDb } from "@/db/client";
-import { exercises, routineExercises, sets } from "@/db/schema";
+import { exercises, routineExercises, sets, workoutExercises } from "@/db/schema";
 
 import type { CustomExerciseRow } from "./customExerciseDraft";
 import type { ExerciseNameRef } from "./customExerciseName";
@@ -31,11 +31,12 @@ export function updateCustomExercise(db: Pick<Db, "update">, id: number, row: Cu
 }
 
 /**
- * Whether the exercise is "used": in any routine, or with any set row (logged, or pre-filled in a workout in
+ * Whether the exercise is "used": in any routine, with any set row, or in any workout (logged, or pre-filled in a workout in
  * progress). A used exercise can't switch to or from Bodyweight equipment.
  */
 export function isExerciseUsed(db: SelectInsertDb, id: number): boolean {
   const inRoutine = db.select({ id: routineExercises.id }).from(routineExercises).where(eq(routineExercises.exerciseId, id)).limit(1).all();
   if (inRoutine.length > 0) return true;
-  return db.select({ id: sets.id }).from(sets).where(eq(sets.exerciseId, id)).limit(1).all().length > 0;
+  if (db.select({ id: sets.id }).from(sets).where(eq(sets.exerciseId, id)).limit(1).all().length > 0) return true;
+  return db.select({ id: workoutExercises.id }).from(workoutExercises).where(eq(workoutExercises.exerciseId, id)).limit(1).all().length > 0;
 }

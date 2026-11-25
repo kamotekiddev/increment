@@ -29,6 +29,12 @@ describe("validateExerciseName", () => {
     expect(validateExerciseName("  Landmine press  ", existing)).toEqual({ ok: false, reason: "duplicate" });
   });
 
+  it("collapses runs of whitespace in the saved name and the comparison", () => {
+    expect(validateExerciseName("Ring   rows\t x", existing)).toEqual({ ok: true, name: "Ring rows x" });
+    expect(validateExerciseName("Landmine   press", existing)).toEqual({ ok: false, reason: "duplicate" });
+    expect(validateExerciseName("Landmine press", [{ id: 9, name: "Landmine  Press" }])).toEqual({ ok: false, reason: "duplicate" });
+  });
+
   it("lets an edit keep its own name but not take another's", () => {
     expect(validateExerciseName("landmine press", existing, 2).ok).toBe(true);
     expect(validateExerciseName("Landmine press", existing, 1)).toEqual({ ok: false, reason: "duplicate" });

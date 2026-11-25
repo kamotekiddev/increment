@@ -5,7 +5,7 @@ describe("deleteExerciseText", () => {
     expect(deleteExerciseText("Landmine press", { routineNames: ["Push day A", "Pull day B"], workoutCount: 6, inProgress: false })).toEqual({
       title: "Delete Landmine press?",
       body: "It will be removed from Push day A and Pull day B.",
-      warning: "Its history, 6 workouts, is deleted for good. This can't be recovered.",
+      warning: "Its sets in 6 workouts are deleted for good. This can't be recovered.",
       blocked: false,
     });
   });
@@ -13,7 +13,7 @@ describe("deleteExerciseText", () => {
   it("joins three or more routines with commas and 'and'", () => {
     expect(deleteExerciseText("X", { routineNames: ["A", "B", "C"], workoutCount: 1, inProgress: false })).toMatchObject({
       body: "It will be removed from A, B and C.",
-      warning: "Its history, 1 workout, is deleted for good. This can't be recovered.",
+      warning: "Its sets in 1 workout are deleted for good. This can't be recovered.",
     });
   });
 

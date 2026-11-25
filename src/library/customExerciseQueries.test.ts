@@ -106,4 +106,12 @@ describe("isExerciseUsed", () => {
     expect(isExerciseUsed(db, id)).toBe(true);
     expect(isExerciseUsed(db, other)).toBe(false);
   });
+
+  it("is true when it is in a workout with no sets", () => {
+    const db = createTestDb();
+    const id = insertCustomExercise(db, newExerciseRow({ name: "A", group: "Core", equipment: "other", steps: [] }));
+    const workout = db.insert(workouts).values({ startedAt: 1, date: "2026-11-01", inProgress: true }).returning().get();
+    db.insert(workoutExercises).values({ workoutId: workout.id, exerciseId: id, position: 0 }).run();
+    expect(isExerciseUsed(db, id)).toBe(true);
+  });
 });
