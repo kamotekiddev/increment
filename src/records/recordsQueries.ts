@@ -256,3 +256,65 @@ export function exerciseRecords(exerciseId: number, unit: Unit): ExerciseRecords
     mostVolume: { value: Math.round(fromKg(volume.volumeKg, unit)), date: volume.date },
   };
 }
+
+/** What a chart plots. Weighted exercises use the first three, bodyweight exercises the last two. */
+export type ChartMetric = "weight" | "oneRepMax" | "volume" | "repsInSet" | "repsInWorkout";
+/** How much history a chart shows: the latest 8 or 20 plottable workouts, or all of them. */
+export type ChartRange = "last8" | "last20" | "all";
+
+/** One finished workout on the chart. `date` is `YYYY-MM-DD`. */
+export interface ChartPoint {
+  date: string;
+  value: number;
+}
+
+export interface ChartSeries {
+  /** Oldest first, one per finished workout that has a value for the metric. */
+  points: ChartPoint[];
+  /** Finished workouts with a counted set, plottable or not (tells "no 1RM yet" from "starts after your second workout"). */
+  workouts: number;
+}
+
+const WEIGHTED_METRICS: ChartMetric[] = ["weight", "oneRepMax", "volume"];
+const RANGE_LENGTH: Record<ChartRange, number> = { last8: 8, last20: 20, all: Infinity };
+
+const oneDecimal = (n: number) => Math.round(n * 10) / 10;
+
+/**
+ * The chart of an exercise: one point per finished workout with a value for the metric, oldest first, in `unit`
+ * (counted sets, kg comparison and the 12-rep cap are the Records rules). Weight keeps one decimal; 1-rep max and
+ * volume are whole numbers. A workout with no value is skipped, never 0. Null for an unknown exercise; throws when
+ * the metric does not fit the exercise's load type.
+ */
+export function chartSeries(exerciseId: number, metric: ChartMetric, range: ChartRange, unit: Unit): ChartSeries | null {
+  const loadType = loadTypeOf(exerciseId);
+  if (!loadType) return null;
+  if (WEIGHTED_METRICS.includes(metric) !== (loadType === "weighted")) {
+    throw new Error(`Metric ${metric} does not fit a ${loadType} exercise`);
+  }
+  const sessions = sessionsOf(exerciseId, loadType);
+  const points: ChartPoint[] = [];
+  for (const s of sessions) {
+    let value: number | null;
+    switch (metric) {
+      case "weight":
+        value = s.heaviest ? oneDecimal(fromKg(s.heaviest.kg, unit)) : null;
+        break;
+      case "oneRepMax":
+        value = s.oneRepMaxKg === null ? null : Math.round(fromKg(s.oneRepMaxKg, unit));
+        break;
+      case "volume":
+        value = Math.round(fromKg(s.volumeKg, unit));
+        break;
+      case "repsInSet":
+        value = s.mostRepsInSet;
+        break;
+      case "repsInWorkout":
+        value = s.totalReps;
+        break;
+    }
+    if (value !== null) points.push({ date: s.date, value });
+  }
+  const n = RANGE_LENGTH[range];
+  return { points: points.length > n ? points.slice(points.length - n) : points, workouts: sessions.length };
+}

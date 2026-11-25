@@ -1,7 +1,7 @@
 import type { Db } from "@/db/client";
 import { exercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 
-import { exerciseRecords, workoutRecordTags } from "./recordsQueries";
+import { chartSeries, exerciseRecords, workoutRecordTags } from "./recordsQueries";
 
 // The module reads the app's `db`; point that at an in-memory database with every migration applied.
 jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
@@ -341,5 +341,80 @@ describe("exerciseRecords", () => {
       mostRepsInSet: { value: 10, date: "2026-11-03" },
       mostRepsInWorkout: { value: 15, date: "2026-11-01" },
     });
+  });
+});
+
+describe("chartSeries", () => {
+  it("Last 8 of 12 workouts returns the latest 8, oldest first; All returns every one; Last 20 returns 12", () => {
+    const bench = exercise("Bench");
+    for (let day = 0; day < 12; day++) save({ day, lifts: [{ exerciseId: bench, sets: [{ w: 60 + day, r: 5 }] }] });
+    const last8 = chartSeries(bench, "weight", "last8", "kg");
+    expect(last8?.points.map((p) => p.value)).toEqual([64, 65, 66, 67, 68, 69, 70, 71]);
+    expect(last8?.points[0].date).toBe("2026-11-05");
+    expect(chartSeries(bench, "weight", "all", "kg")?.points).toHaveLength(12);
+    expect(chartSeries(bench, "weight", "last20", "kg")?.points).toHaveLength(12);
+  });
+
+  it("charts Weight, Est. 1RM and Volume from known sets", () => {
+    const bench = exercise("Bench");
+    // Heaviest 100; Epley 100 x 5 = 116.67 and 90 x 10 = 120; volume 500 + 900.
+    save({ day: 0, lifts: [{ exerciseId: bench, sets: [{ w: 100, r: 5 }, { w: 90, r: 10 }] }] });
+    expect(chartSeries(bench, "weight", "all", "kg")?.points).toEqual([{ date: "2026-11-01", value: 100 }]);
+    expect(chartSeries(bench, "oneRepMax", "all", "kg")?.points).toEqual([{ date: "2026-11-01", value: 120 }]);
+    expect(chartSeries(bench, "volume", "all", "kg")?.points).toEqual([{ date: "2026-11-01", value: 1400 }]);
+  });
+
+  it("skips a workout with no Est. 1RM (all sets above 12 reps) but still counts it for Volume", () => {
+    const bench = exercise("Bench");
+    save({ day: 0, lifts: [{ exerciseId: bench, sets: [{ w: 50, r: 10 }] }] });
+    save({ day: 1, lifts: [{ exerciseId: bench, sets: [{ w: 40, r: 15 }] }] });
+    save({ day: 2, lifts: [{ exerciseId: bench, sets: [{ w: 60, r: 8 }] }] });
+    const oneRepMax = chartSeries(bench, "oneRepMax", "all", "kg");
+    expect(oneRepMax?.points.map((p) => p.date)).toEqual(["2026-11-01", "2026-11-03"]);
+    expect(oneRepMax?.workouts).toBe(3);
+    expect(chartSeries(bench, "volume", "all", "kg")?.points.map((p) => p.value)).toEqual([500, 600, 480]);
+  });
+
+  it("never counts warm-up, unchecked or in-progress sets", () => {
+    const bench = exercise("Bench");
+    save({
+      day: 0,
+      lifts: [{ exerciseId: bench, sets: [{ w: 100, r: 5, warmup: true }, { w: 90, r: 5, done: false }, { w: 50, r: 5 }] }],
+    });
+    save({ day: 1, inProgress: true, lifts: [{ exerciseId: bench, sets: [{ w: 200, r: 5 }] }] });
+    expect(chartSeries(bench, "weight", "all", "kg")?.points).toEqual([{ date: "2026-11-01", value: 50 }]);
+  });
+
+  it("compares lb against kg in kg and shows the current unit", () => {
+    const bench = exercise("Bench");
+    save({ day: 0, lifts: [{ exerciseId: bench, sets: [{ w: 135, r: 5, unit: "lb" }] }] });
+    save({ day: 1, lifts: [{ exerciseId: bench, sets: [{ w: 60, r: 5, unit: "kg" }] }] });
+    expect(chartSeries(bench, "weight", "all", "lb")?.points.map((p) => p.value)).toEqual([135, 132.3]);
+    expect(chartSeries(bench, "weight", "all", "kg")?.points.map((p) => p.value)).toEqual([61.2, 60]);
+    expect(chartSeries(bench, "volume", "all", "kg")?.points.map((p) => p.value)).toEqual([306, 300]);
+  });
+
+  it("charts a bodyweight exercise by reps and refuses weighted metrics (and the reverse)", () => {
+    const pullUp = exercise("Pull-up", "bodyweight");
+    const bench = exercise("Bench");
+    save({ day: 0, lifts: [{ exerciseId: pullUp, sets: [{ w: 0, r: 8 }, { w: 0, r: 6 }] }] });
+    expect(chartSeries(pullUp, "repsInSet", "all", "kg")?.points).toEqual([{ date: "2026-11-01", value: 8 }]);
+    expect(chartSeries(pullUp, "repsInWorkout", "all", "kg")?.points).toEqual([{ date: "2026-11-01", value: 14 }]);
+    expect(() => chartSeries(pullUp, "weight", "all", "kg")).toThrow();
+    expect(() => chartSeries(bench, "repsInSet", "all", "kg")).toThrow();
+  });
+
+  it("charts a custom exercise like a library one", () => {
+    const custom = db.insert(exercises).values({ name: "Mine", equipment: "barbell", loadType: "weighted", isCustom: true }).returning().get().id;
+    save({ day: 0, lifts: [{ exerciseId: custom, sets: [{ w: 20, r: 5 }] }] });
+    expect(chartSeries(custom, "weight", "all", "kg")?.points).toHaveLength(1);
+  });
+
+  it("reports how many workouts counted, for the fewer-than-2-points message; null for an unknown exercise", () => {
+    const bench = exercise("Bench");
+    expect(chartSeries(bench, "weight", "last8", "kg")).toEqual({ points: [], workouts: 0 });
+    save({ day: 0, lifts: [{ exerciseId: bench, sets: [{ w: 50, r: 5 }] }] });
+    expect(chartSeries(bench, "weight", "last8", "kg")?.workouts).toBe(1);
+    expect(chartSeries(9999, "weight", "last8", "kg")).toBeNull();
   });
 });

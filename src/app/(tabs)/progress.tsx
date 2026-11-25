@@ -8,6 +8,7 @@ import { Text } from "@/components";
 import { useIsPro } from "@/pro";
 import { ExercisePicker } from "@/progress/ExercisePicker";
 import { EmptyRecordsCard, FirstRecordCard } from "@/progress/FirstRecordCard";
+import { useUnit } from "@/settings/useUnit";
 import { ProNoticeSheet } from "@/progress/ProNoticeSheet";
 import { ProgressHero } from "@/progress/ProgressHero";
 import { RecordsCard } from "@/progress/RecordsCard";
@@ -19,8 +20,9 @@ export default function ProgressScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const progress = useExerciseProgress();
-  const [proNotice, setProNotice] = useState(false);
   const isPro = useIsPro();
+  const { unit } = useUnit();
+  const [proNotice, setProNotice] = useState(false);
   /** "See all records": All records for Pro; the free path stays the Pro notice (ticket 05 swaps it for the Paywall). */
   const openAllRecords = () => (isPro ? router.push("/records") : setProNotice(true));
   return (
@@ -63,7 +65,11 @@ export default function ProgressScreen() {
             <ExercisePicker exerciseId={progress.exerciseId} name={progress.name} equipment={progress.equipment} />
             {progress.hero ? (
               <>
-                <ProgressHero hero={progress.hero} onProPress={() => setProNotice(true)} />
+                <ProgressHero
+                  hero={progress.hero}
+                  onProPress={() => setProNotice(true)}
+                  liveChart={isPro && progress.loadType === "weighted" ? { exerciseId: progress.exerciseId, unit } : undefined}
+                />
                 <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={openAllRecords} />
               </>
             ) : (
