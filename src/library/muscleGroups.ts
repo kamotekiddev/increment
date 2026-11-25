@@ -20,7 +20,17 @@ const GROUP_BY_MUSCLE: Record<string, MuscleGroup> = {
   adductors: "Legs",
   abductors: "Legs",
   abdominals: "Core",
+  // What a custom exercise stores: its main muscle group, lowercase (`groupToMuscle`).
+  back: "Back",
+  legs: "Legs",
+  arms: "Arms",
+  core: "Core",
 };
+
+/** Pure: how a custom exercise stores its main muscle group, e.g. "Back" -> "back". */
+export function groupToMuscle(group: MuscleGroup): string {
+  return group.toLowerCase();
+}
 
 /** Pure: the broad groups for a list of muscles, each once, in the order first met. Unknown muscles are skipped. */
 export function muscleGroupsOf(muscles: readonly string[]): MuscleGroup[] {

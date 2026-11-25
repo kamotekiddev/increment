@@ -1,10 +1,23 @@
 import exercises from "@/db/library/exercises.json";
 
-import { capitalise, MUSCLE_GROUPS, muscleGroupsOf } from "./muscleGroups";
+import { capitalise, groupToMuscle, MUSCLE_GROUPS, muscleGroupsOf } from "./muscleGroups";
 
 describe("MUSCLE_GROUPS", () => {
   it("lists the six groups in chip order", () => {
     expect(MUSCLE_GROUPS).toEqual(["Chest", "Back", "Legs", "Shoulders", "Arms", "Core"]);
+  });
+});
+
+describe("custom exercise muscles", () => {
+  it("knows the lowercase group names a custom exercise stores", () => {
+    for (const group of MUSCLE_GROUPS) {
+      expect(muscleGroupsOf([group.toLowerCase()])).toEqual([group]);
+    }
+  });
+
+  it("stores a group as its lowercase name", () => {
+    expect(groupToMuscle("Back")).toBe("back");
+    expect(groupToMuscle("Core")).toBe("core");
   });
 });
 

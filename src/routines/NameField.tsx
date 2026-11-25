@@ -14,10 +14,12 @@ export interface NameFieldProps {
   autoFocus?: boolean;
   /** The larger type of New routine (18) or Edit routine (22). */
   inputSize: number;
+  /** Spoken label of the field. Defaults to "Routine name". */
+  accessibilityLabel?: string;
 }
 
 /** The routine name: a label over a white 56 pt field, with an accent ring while focused and an inline error. */
-export function NameField({ value, onChangeText, onBlur, onSubmitEditing, placeholder, error, autoFocus, inputSize }: NameFieldProps) {
+export function NameField({ value, onChangeText, onBlur, onSubmitEditing, placeholder, error, autoFocus, inputSize, accessibilityLabel = "Routine name" }: NameFieldProps) {
   const colors = useColors();
   const [focused, setFocused] = useState(false);
   return (
@@ -35,7 +37,7 @@ export function NameField({ value, onChangeText, onBlur, onSubmitEditing, placeh
         }}
         onSubmitEditing={onSubmitEditing}
         placeholder={placeholder}
-        accessibilityLabel="Routine name"
+        accessibilityLabel={accessibilityLabel}
         returnKeyType="done"
         autoFocus={autoFocus}
         style={{

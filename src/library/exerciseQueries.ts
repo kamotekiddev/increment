@@ -12,21 +12,29 @@ export type Exercise = typeof exercises.$inferSelect;
 /** A list row: the summary plus the load type (the routine picker needs it for the default rule). */
 export type LibraryExercise = ExerciseSummary & { loadType: Exercise["loadType"]; equipment: string };
 
-/** Every exercise in the library, loaded once. Empty until the query returns. */
+/** Every exercise, library and custom, reloaded each time the screen gains focus. Empty until the query returns. */
 export function useExercises(): LibraryExercise[] {
   const [rows, setRows] = useState<LibraryExercise[]>([]);
 
-  useEffect(() => {
-    db.select({
-      id: exercises.id,
-      name: exercises.name,
-      muscles: exercises.muscles,
-      loadType: exercises.loadType,
-      equipment: exercises.equipment,
-    })
-      .from(exercises)
-      .then(setRows);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let live = true;
+      db.select({
+        id: exercises.id,
+        name: exercises.name,
+        muscles: exercises.muscles,
+        loadType: exercises.loadType,
+        equipment: exercises.equipment,
+      })
+        .from(exercises)
+        .then((result) => {
+          if (live) setRows(result);
+        });
+      return () => {
+        live = false;
+      };
+    }, []),
+  );
 
   return rows;
 }

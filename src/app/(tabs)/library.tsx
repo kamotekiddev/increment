@@ -2,7 +2,7 @@ import { router } from "expo-router";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Text } from "@/components";
+import { RoundButton, Text } from "@/components";
 import { ExerciseBrowser } from "@/library/ExerciseBrowser";
 import { useExercises, useRoutineCounts } from "@/library/exerciseQueries";
 import { spacing, textStyle, useColors } from "@/theme";
@@ -15,13 +15,20 @@ export default function LibraryScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top + spacing.xl }}>
-      <Text
-        variant="heading"
-        accessibilityRole="header"
-        style={[textStyle.screenTitle, { paddingHorizontal: spacing.xl, paddingBottom: spacing.md }]}
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: spacing.xl,
+          paddingBottom: spacing.md,
+        }}
       >
-        Library
-      </Text>
+        <Text variant="heading" accessibilityRole="header" style={textStyle.screenTitle}>
+          Library
+        </Text>
+        <RoundButton icon="add" label="Create custom exercise" filled onPress={() => router.push("/exercise/new")} />
+      </View>
       <ExerciseBrowser
         exercises={exercises}
         routineCounts={routineCounts}

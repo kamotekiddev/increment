@@ -47,9 +47,11 @@ export default function ExerciseDetailScreen() {
                 <Pill label={capitalise(exercise.equipment)} tone="plain" />
               </View>
             </View>
-            <Text variant="title" style={{ marginTop: spacing.sm }}>
-              How to
-            </Text>
+            {exercise.instructions.length > 0 ? (
+              <Text variant="title" style={{ marginTop: spacing.sm }}>
+                How to
+              </Text>
+            ) : null}
             <View style={{ gap: spacing.md, paddingHorizontal: spacing.xs }}>
               {exercise.instructions.map((step, index) => (
                 <View key={index} style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>
