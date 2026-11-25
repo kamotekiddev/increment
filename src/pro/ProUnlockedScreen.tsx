@@ -9,7 +9,7 @@ import { fontFamily, fontSize, lineHeight, minTouch, opacity, pro, radius, size,
 import { proScreensOnTop } from "./proRoutes";
 
 /** What Pro includes, as listed on Pro unlocked. */
-const INCLUDED = ["Unlimited routines", "Charts and records", "Automatic backups", "Custom exercises, export and plate calculator"];
+const INCLUDED = ["Unlimited routines", "Charts and records", "Automatic backups", "Custom exercises and export"];
 
 /** One faint ring behind the hero's check. */
 function Ring({ diameter, width, ringOpacity }: { diameter: number; width: number; ringOpacity: number }) {

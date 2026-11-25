@@ -43,7 +43,6 @@ const ROWS: { feature: string; free: Cell; pro: Cell }[] = [
   { feature: "Charts and records", free: false, pro: true },
   { feature: "Custom exercises", free: false, pro: true },
   { feature: "Export to CSV or PDF", free: false, pro: true },
-  { feature: "Plate calculator", free: false, pro: true },
 ];
 
 function CellValue({ value, inPro }: { value: Cell; inPro: boolean }) {

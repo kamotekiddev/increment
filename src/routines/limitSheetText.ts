@@ -9,6 +9,6 @@ export const LIMIT_SHEET_BODY = "Get unlimited routines with Pro. One payment, y
 
 export const LIMIT_SHEET_BENEFITS = [
   "Unlimited routines",
-  "Custom exercises and plate calculator",
+  "Custom exercises and export",
   "Charts, records and automatic backups",
 ] as const;

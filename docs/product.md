@@ -81,7 +81,7 @@ Welcome → Goal → Experience → Schedule → Equipment → Units → Your pl
 | Move to a new phone | – | ✓ |
 | Automatic backups | – | ✓ |
 | Export to CSV or PDF | – | ✓ |
-| Plate calculator and warm-ups | – | ✓ |
+| Warm-ups | – | ✓ |
 
 Rules:
 - **Backups are Pro-only.** A free user cannot create a backup file in any way; the backup row in Settings is locked and opens the paywall.
