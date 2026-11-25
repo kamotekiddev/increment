@@ -5,9 +5,9 @@ import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Text } from "@/components";
+import { useIsPro } from "@/pro";
 import { ExercisePicker } from "@/progress/ExercisePicker";
 import { EmptyRecordsCard, FirstRecordCard } from "@/progress/FirstRecordCard";
-import { useIsPro } from "@/pro";
 import { useUnit } from "@/settings/useUnit";
 import { ProNoticeSheet } from "@/progress/ProNoticeSheet";
 import { ProgressHero } from "@/progress/ProgressHero";
@@ -23,6 +23,8 @@ export default function ProgressScreen() {
   const isPro = useIsPro();
   const { unit } = useUnit();
   const [proNotice, setProNotice] = useState(false);
+  /** "See all records": All records for Pro; the free path stays the Pro notice (ticket 05 swaps it for the Paywall). */
+  const openAllRecords = () => (isPro ? router.push("/records") : setProNotice(true));
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
@@ -68,7 +70,7 @@ export default function ProgressScreen() {
                   onProPress={() => setProNotice(true)}
                   liveChart={isPro && progress.loadType === "weighted" ? { exerciseId: progress.exerciseId, unit } : undefined}
                 />
-                <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={() => setProNotice(true)} />
+                <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={openAllRecords} />
               </>
             ) : (
               <>
