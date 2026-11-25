@@ -5,6 +5,9 @@ import Svg, { Path } from "react-native-svg";
 import { Text } from "@/components";
 import { fontFamily, fontSize, lineHeight, opacity, radius, spacing, useColors } from "@/theme";
 
+import type { Unit } from "@/units";
+
+import { ProgressChart } from "./ProgressChart";
 import type { Hero } from "./progressQueries";
 
 /** The locked chart preview: a fixed picture, never drawn from the lifter's data. */
@@ -49,7 +52,16 @@ function ChartPreview({ onPress }: { onPress: () => void }) {
 }
 
 /** The white hero card: the last workout's top set, the "New record" pill, the comparison line and the chart preview. */
-export function ProgressHero({ hero, onProPress }: { hero: Hero; onProPress: () => void }) {
+export function ProgressHero({
+  hero,
+  onProPress,
+  liveChart,
+}: {
+  hero: Hero;
+  onProPress: () => void;
+  /** Set for a Pro lifter: draws the live chart in place of the locked preview. `loadType` picks the metrics (weighted by default). */
+  liveChart?: { exerciseId: number; unit: Unit; loadType?: "weighted" | "bodyweight" };
+}) {
   const colors = useColors();
   return (
     <View style={{ gap: spacing.md, padding: 20, borderRadius: radius.hero, backgroundColor: colors.card }}>
@@ -91,7 +103,11 @@ export function ProgressHero({ hero, onProPress }: { hero: Hero; onProPress: () 
       <Text tone="muted" style={{ fontSize: fontSize.small, lineHeight: lineHeight.detail }}>
         {hero.line}
       </Text>
-      <ChartPreview onPress={onProPress} />
+      {liveChart ? (
+        <ProgressChart key={liveChart.exerciseId} exerciseId={liveChart.exerciseId} unit={liveChart.unit} loadType={liveChart.loadType} readKey={hero} />
+      ) : (
+        <ChartPreview onPress={onProPress} />
+      )}
     </View>
   );
 }

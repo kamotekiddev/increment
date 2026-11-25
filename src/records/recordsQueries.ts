@@ -53,7 +53,7 @@ interface CountedSet {
 }
 
 /** What one Workout did on one exercise, for the Records. */
-interface Session {
+export interface Session {
   workoutId: number;
   date: string;
   /** The first Workout exercise of the exercise in this Workout: where its tags go. */
@@ -92,22 +92,48 @@ export function isCountedSet(set: { reps: number; weight: number }, loadType: "w
  */
 function sessionsOf(exerciseId: number, loadType: "weighted" | "bodyweight"): Session[] {
   const rows = db
-    .select({
-      workoutId: workouts.id,
-      date: workouts.date,
-      workoutExerciseId: workoutExercises.id,
-      position: workoutExercises.position,
-      weight: sets.weight,
-      unit: sets.weightUnit,
-      reps: sets.reps,
-    })
+    .select(COUNTED_ROW_COLUMNS)
     .from(sets)
     .innerJoin(workoutExercises, eq(workoutExercises.id, sets.workoutExerciseId))
     .innerJoin(workouts, eq(workouts.id, workoutExercises.workoutId))
     .where(and(eq(sets.exerciseId, exerciseId), eq(sets.done, true), eq(sets.isWarmup, false), eq(workouts.inProgress, false)))
-    .orderBy(asc(workouts.startedAt), asc(workouts.id), asc(workoutExercises.position), asc(sets.idx), asc(sets.id))
+    .orderBy(...COUNTED_ROW_ORDER)
     .all();
+  return sessionsFromRows(rows, loadType);
+}
 
+/** The columns `sessionsFromRows` reads, so a caller that already loads sets of many exercises can reuse it. */
+export const COUNTED_ROW_COLUMNS = {
+  workoutId: workouts.id,
+  date: workouts.date,
+  workoutExerciseId: workoutExercises.id,
+  position: workoutExercises.position,
+  weight: sets.weight,
+  unit: sets.weightUnit,
+  reps: sets.reps,
+};
+
+/** The order `sessionsFromRows` needs its rows in: earliest start first (History's order). */
+export const COUNTED_ROW_ORDER = [
+  asc(workouts.startedAt),
+  asc(workouts.id),
+  asc(workoutExercises.position),
+  asc(sets.idx),
+  asc(sets.id),
+] as const;
+
+export interface CountedRow {
+  workoutId: number;
+  date: string;
+  workoutExerciseId: number;
+  position: number;
+  weight: number;
+  unit: Unit;
+  reps: number;
+}
+
+/** Groups the done Working sets of one exercise (in `COUNTED_ROW_ORDER`) into per-Workout sessions. Pure. */
+export function sessionsFromRows(rows: CountedRow[], loadType: "weighted" | "bodyweight"): Session[] {
   const sessions = new Map<number, Session>();
   for (const row of rows) {
     if (!isCountedSet(row, loadType)) continue;
@@ -175,17 +201,29 @@ export function workoutRecordTags(workoutId: number): WorkoutRecordTags {
 
   const result: WorkoutRecordTags = {};
   for (const exerciseId of exerciseIds) {
-    const sessions = sessionsOf(exerciseId, loadTypes.get(exerciseId) === "bodyweight" ? "bodyweight" : "weighted");
-    const index = sessions.findIndex((s) => s.workoutId === workoutId);
-    // No counted set in this Workout, or nothing earlier to beat.
-    if (index <= 0) continue;
-    const current = sessions[index];
-    const earlier = sessions.slice(0, index);
-    const tags =
-      loadTypes.get(exerciseId) === "bodyweight" ? bodyweightTags(current, earlier) : weightedTags(current, earlier);
-    if (tags.length > 0) result[current.workoutExerciseId] = tags;
+    const loadType = loadTypes.get(exerciseId) === "bodyweight" ? "bodyweight" : "weighted";
+    const found = newRecordsIn(sessionsOf(exerciseId, loadType), workoutId, loadType);
+    if (found) result[found.workoutExerciseId] = found.tags;
   }
   return result;
+}
+
+/**
+ * The Records `workoutId` set among an exercise's `sessions` (earliest first), with the Workout exercise id they
+ * belong to; null when the Workout has no counted set of it, is its first, or set none. Pure.
+ */
+export function newRecordsIn(
+  sessions: Session[],
+  workoutId: number,
+  loadType: "weighted" | "bodyweight",
+): { workoutExerciseId: number; tags: RecordName[] } | null {
+  const index = sessions.findIndex((s) => s.workoutId === workoutId);
+  // No counted set in this Workout, or nothing earlier to beat.
+  if (index <= 0) return null;
+  const current = sessions[index];
+  const earlier = sessions.slice(0, index);
+  const tags = loadType === "bodyweight" ? bodyweightTags(current, earlier) : weightedTags(current, earlier);
+  return tags.length > 0 ? { workoutExerciseId: current.workoutExerciseId, tags } : null;
 }
 
 function weightedTags(current: Session, earlier: Session[]): RecordName[] {
@@ -218,7 +256,11 @@ function bodyweightTags(current: Session, earlier: Session[]): RecordName[] {
 export function exerciseRecords(exerciseId: number, unit: Unit): ExerciseRecords | null {
   const loadType = loadTypeOf(exerciseId);
   if (!loadType) return null;
-  const sessions = sessionsOf(exerciseId, loadType);
+  return recordsOfSessions(sessionsOf(exerciseId, loadType), loadType, unit);
+}
+
+/** `exerciseRecords` from sessions already loaded (earliest first). Pure. */
+export function recordsOfSessions(sessions: Session[], loadType: "weighted" | "bodyweight", unit: Unit): ExerciseRecords | null {
   if (sessions.length === 0) return null;
 
   if (loadType === "bodyweight") {
@@ -255,4 +297,81 @@ export function exerciseRecords(exerciseId: number, unit: Unit): ExerciseRecords
       oneRepMax?.oneRepMaxKg == null ? null : { value: Math.round(fromKg(oneRepMax.oneRepMaxKg, unit)), date: oneRepMax.date },
     mostVolume: { value: Math.round(fromKg(volume.volumeKg, unit)), date: volume.date },
   };
+}
+
+/** What a chart plots. Weighted exercises use the first three, bodyweight exercises the last two. */
+export type ChartMetric = "weight" | "oneRepMax" | "volume" | "repsInSet" | "repsInWorkout";
+/** How much history a chart shows: the latest 8 or 20 plottable workouts, or all of them. */
+export type ChartRange = "last8" | "last20" | "all";
+
+/** One finished workout on the chart. `date` is `YYYY-MM-DD`. */
+export interface ChartPoint {
+  date: string;
+  value: number;
+}
+
+export interface ChartSeries {
+  /** Oldest first, one per finished workout that has a value for the metric. */
+  points: ChartPoint[];
+  /** Finished workouts with a counted set, plottable or not (tells "no 1RM yet" from "starts after your second workout"). */
+  workouts: number;
+}
+
+const WEIGHTED_METRICS: ChartMetric[] = ["weight", "oneRepMax", "volume"];
+const RANGE_LENGTH: Record<ChartRange, number> = { last8: 8, last20: 20, all: Infinity };
+
+const oneDecimal = (n: number) => Math.round(n * 10) / 10;
+
+/**
+ * The chart of an exercise: one point per finished workout with a value for the metric, oldest first, in `unit`
+ * (counted sets, kg comparison and the 12-rep cap are the Records rules). Weight keeps one decimal; 1-rep max and
+ * volume are whole numbers. A workout with no value is skipped, never 0. Null for an unknown exercise; throws when
+ * the metric does not fit the exercise's load type.
+ */
+export function chartSeries(exerciseId: number, metric: ChartMetric, range: ChartRange, unit: Unit): ChartSeries | null {
+  const source = chartSource(exerciseId);
+  return source && chartSeriesFrom(source, metric, range, unit);
+}
+
+/** What `chartSeriesFrom` plots: an exercise's load type and its sessions, read once. Sessions are kg, so it is unit-free. */
+export interface ChartSource {
+  loadType: "weighted" | "bodyweight";
+  sessions: Session[];
+}
+
+/** Reads an exercise's sessions once, so a chart can switch metric, range and unit in memory. Null for an unknown exercise. */
+export function chartSource(exerciseId: number): ChartSource | null {
+  const loadType = loadTypeOf(exerciseId);
+  return loadType ? { loadType, sessions: sessionsOf(exerciseId, loadType) } : null;
+}
+
+/** `chartSeries` from a `ChartSource`, with no query. Throws when the metric does not fit the load type. */
+export function chartSeriesFrom({ loadType, sessions }: ChartSource, metric: ChartMetric, range: ChartRange, unit: Unit): ChartSeries {
+  if (WEIGHTED_METRICS.includes(metric) !== (loadType === "weighted")) {
+    throw new Error(`Metric ${metric} does not fit a ${loadType} exercise`);
+  }
+  const points: ChartPoint[] = [];
+  for (const s of sessions) {
+    let value: number | null;
+    switch (metric) {
+      case "weight":
+        value = s.heaviest ? oneDecimal(fromKg(s.heaviest.kg, unit)) : null;
+        break;
+      case "oneRepMax":
+        value = s.oneRepMaxKg === null ? null : Math.round(fromKg(s.oneRepMaxKg, unit));
+        break;
+      case "volume":
+        value = Math.round(fromKg(s.volumeKg, unit));
+        break;
+      case "repsInSet":
+        value = s.mostRepsInSet;
+        break;
+      case "repsInWorkout":
+        value = s.totalReps;
+        break;
+    }
+    if (value !== null) points.push({ date: s.date, value });
+  }
+  const n = RANGE_LENGTH[range];
+  return { points: points.length > n ? points.slice(points.length - n) : points, workouts: sessions.length };
 }

@@ -13,8 +13,8 @@ The roadmap's "rule panel" is not a feature here: it became free for everyone in
 | 1 | Pro purchase and restore | Phase 2 |
 | 2 | Routine limit upgrade | 1 |
 | 3 | Custom exercises | 1 |
-| 4 | Charts and All records | 1 |
-| 5 | Plate calculator | 1 |
+| 4 | Charts and All records (built, phone check pending) | 1 |
+| 5 | ~~Plate calculator~~ (removed from Pro in PR #31) | 1 |
 | 6 | Backup and restore | 1 |
 | 7 | Automatic backups | 6 |
 | 8 | Export and delete all data | 1 |
@@ -34,10 +34,10 @@ The "2 free routines used" pop-up gets its See Pro button linking to the Paywall
 ### 3 · Custom exercises (built, phone check pending; grilled 2026-11-25, spec: `.scratch/phase-3/custom-exercises/spec.md`)
 Create, edit and delete a custom exercise (Pro). Delete removes it from routines and deletes its history ([ADR 0005](../../docs/adr/0005-deleting-a-custom-exercise-deletes-its-history.md)). The "No search results" state gets its create shortcut. A free lifter can open the form, but Unlock Pro replaces Save and opens the Paywall.
 
-### 4 · Charts and All records
-The Progress tab's blurred chart preview becomes the real chart for Pro (weight, estimated 1-rep max and volume over time, per exercise), and the All records screen opens from the Records card. Free users keep the locked preview, top set, pills and Records card as in Phase 2.
+### 4 · Charts and All records (built, phone check pending; grilled 2026-11-25, spec: `.scratch/phase-3/charts-and-all-records/spec.md`)
+The Progress tab's blurred chart preview becomes the real chart for Pro (weight, estimated 1-rep max and volume over time, per exercise; reps for a bodyweight exercise), and the All records screen opens from the Records card. Free users keep the locked preview, top set, pills and Records card as in Phase 2, and tapping the preview or "See all records" opens the Paywall.
 
-### 5 · Plate calculator
+### 5 · Plate calculator (removed from Pro in PR #31, not built)
 A plate calculator button on the live workout opens a calculator (Pro) that shows the plates per side for the set's weight, plus "Your gym's plates" (moved here from Phase 2 feature 2). A separate function from the engine and `src/units`: it never changes a Target or a Jump. Open for its spec: a free lifter opening the Paywall from the calculator is on top of the live workout, so buying there would show Pro unlocked over the workout. Feature 1's "never over a live workout" rule doesn't see a Paywall opened from the workout, so this spec decides what happens.
 
 ### 6 · Backup and restore

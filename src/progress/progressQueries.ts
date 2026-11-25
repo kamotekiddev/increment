@@ -173,7 +173,7 @@ export interface RecordRow {
 }
 
 /** `1,920`: whole number with thousands commas, without depending on the runtime's Intl data. */
-function thousands(n: number): string {
+export function thousands(n: number): string {
   return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 

@@ -155,6 +155,21 @@ export const deck = {
 /** Minimum touch target, in points. */
 export const minTouch = 44;
 
+/** The live Progress chart: line and dot weights, the soft fill, the metric toggle's inset and the empty box. */
+export const chart = {
+  fillOpacity: 0.12,
+  lineWidth: 2.4,
+  dotStroke: 1.5,
+  dotRadius: 2.6,
+  dotSelectedRadius: 5,
+  toggleGap: 2,
+  togglePadding: 3,
+  emptyHeight: 120,
+  emptyPaddingX: 28,
+  /** No fill: the invisible tap layer and the off toggle tab. */
+  clear: "transparent",
+} as const;
+
 /** Opacity for interactive states. One disabled value everywhere. */
 export const opacity = { pressed: 0.85, disabled: 0.4, locked: 0.5, onAccentSoft: 0.85 } as const;
 
