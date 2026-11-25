@@ -14,7 +14,7 @@ The roadmap's "rule panel" is not a feature here: it became free for everyone in
 | 2 | Routine limit upgrade | 1 |
 | 3 | Custom exercises | 1 |
 | 4 | Charts and All records | 1 |
-| 5 | Plate calculator | 1 |
+| 5 | ~~Plate calculator~~ (removed from Pro in PR #31) | 1 |
 | 6 | Backup and restore | 1 |
 | 7 | Automatic backups | 6 |
 | 8 | Export and delete all data | 1 |
@@ -34,7 +34,7 @@ The "2 free routines used" pop-up gets its See Pro button linking to the Paywall
 ### 3 · Custom exercises (built, phone check pending; grilled 2026-11-25, spec: `.scratch/phase-3/custom-exercises/spec.md`)
 Create, edit and delete a custom exercise (Pro). Delete removes it from routines and deletes its history ([ADR 0005](../../docs/adr/0005-deleting-a-custom-exercise-deletes-its-history.md)). The "No search results" state gets its create shortcut. A free lifter can open the form, but Unlock Pro replaces Save and opens the Paywall.
 
-### 4 · Charts and All records
+### 4 · Charts and All records (grilled 2026-11-25, spec: `.scratch/phase-3/charts-and-all-records/spec.md`)
 The Progress tab's blurred chart preview becomes the real chart for Pro (weight, estimated 1-rep max and volume over time, per exercise), and the All records screen opens from the Records card. Free users keep the locked preview, top set, pills and Records card as in Phase 2.
 
 ### 5 · Plate calculator
