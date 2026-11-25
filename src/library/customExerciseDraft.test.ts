@@ -1,4 +1,4 @@
-import { canSubmit, newExerciseRow, type ExerciseDraft } from "./customExerciseDraft";
+import { canSubmit, draftFromExercise, newExerciseRow, type ExerciseDraft } from "./customExerciseDraft";
 
 const draft: ExerciseDraft = {
   name: "  Landmine press ",
@@ -22,6 +22,24 @@ describe("newExerciseRow", () => {
 
   it("gives Bodyweight equipment the bodyweight load type", () => {
     expect(newExerciseRow({ ...draft, equipment: "bodyweight" }).loadType).toBe("bodyweight");
+  });
+});
+
+describe("draftFromExercise", () => {
+  it("fills the form from a stored custom exercise", () => {
+    expect(
+      draftFromExercise({ name: "Landmine press", muscles: ["shoulders"], equipment: "barbell", instructions: ["Press up"] }),
+    ).toEqual({ name: "Landmine press", group: "Shoulders", equipment: "barbell", steps: ["Press up"] });
+  });
+
+  it("leaves the muscle empty when none is stored", () => {
+    expect(draftFromExercise({ name: "X", muscles: [], equipment: "other", instructions: [] }).group).toBeNull();
+  });
+
+  it("round-trips through newExerciseRow", () => {
+    const stored = { name: "Ring rows", muscles: ["back"], equipment: "bodyweight", instructions: ["Hang"] };
+    const row = newExerciseRow(draftFromExercise(stored));
+    expect(row).toMatchObject({ ...stored, loadType: "bodyweight" });
   });
 });
 

@@ -23,10 +23,12 @@ export interface ExerciseHeroProps {
   routines: number;
   /** The back button, top left. */
   back: ReactNode;
+  /** Top right: the Edit button of a custom exercise. When set, the routine count pill is not shown. */
+  action?: ReactNode;
 }
 
 /** The white card at the top of Exercise detail: the art, the back button and the routine count. */
-export function ExerciseHero({ equipment, routines, back }: ExerciseHeroProps) {
+export function ExerciseHero({ equipment, routines, back, action }: ExerciseHeroProps) {
   const colors = useColors();
   return (
     <View
@@ -56,7 +58,8 @@ export function ExerciseHero({ equipment, routines, back }: ExerciseHeroProps) {
         </View>
       )}
       <View style={{ position: "absolute", left: spacing.md, top: spacing.md }}>{back}</View>
-      {routines > 0 ? (
+      {action ? <View style={{ position: "absolute", right: spacing.md, top: spacing.md }}>{action}</View> : null}
+      {routines > 0 && !action ? (
         <View
           style={{
             position: "absolute",

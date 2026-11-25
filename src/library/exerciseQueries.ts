@@ -1,6 +1,6 @@
 import { count, eq } from "drizzle-orm";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { db } from "@/db/client";
 import { exercises, routineExercises } from "@/db/schema";
@@ -63,16 +63,24 @@ export function useRoutineCounts(): ReadonlyMap<number, number> {
   return counts;
 }
 
-/** One exercise by id: undefined while loading, null when no exercise has that id. */
+/** One exercise by id: undefined while loading, null when no exercise has that id. Reloaded on focus, so an edit shows on return. */
 export function useExercise(id: number): Exercise | null | undefined {
   const [exercise, setExercise] = useState<Exercise | null | undefined>(undefined);
 
-  useEffect(() => {
-    db.select()
-      .from(exercises)
-      .where(eq(exercises.id, id))
-      .then((rows) => setExercise(rows[0] ?? null));
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      let live = true;
+      db.select()
+        .from(exercises)
+        .where(eq(exercises.id, id))
+        .then((rows) => {
+          if (live) setExercise(rows[0] ?? null);
+        });
+      return () => {
+        live = false;
+      };
+    }, [id]),
+  );
 
   return exercise;
 }

@@ -2,7 +2,7 @@ import type { LoadType } from "@/engine";
 
 import { loadTypeForEquipment } from "./customExerciseEquipment";
 import { cleanSteps } from "./exerciseSteps";
-import { groupToMuscle, type MuscleGroup } from "./muscleGroups";
+import { groupToMuscle, muscleGroupsOf, type MuscleGroup } from "./muscleGroups";
 
 /** What the New exercise form holds. `group` and `equipment` are null until a chip is picked. */
 export interface ExerciseDraft {
@@ -20,6 +20,21 @@ export interface CustomExerciseRow {
   equipment: string;
   loadType: LoadType;
   instructions: string[];
+}
+
+/** Pure: the Edit form's starting values from a stored custom exercise. */
+export function draftFromExercise(exercise: {
+  name: string;
+  muscles: readonly string[];
+  equipment: string;
+  instructions: readonly string[];
+}): ExerciseDraft {
+  return {
+    name: exercise.name,
+    group: muscleGroupsOf(exercise.muscles)[0] ?? null,
+    equipment: exercise.equipment,
+    steps: [...exercise.instructions],
+  };
 }
 
 /** Pure: whether the form may be saved: a valid name, a muscle and equipment picked. */
