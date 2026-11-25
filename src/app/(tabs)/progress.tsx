@@ -7,6 +7,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Text } from "@/components";
 import { ExercisePicker } from "@/progress/ExercisePicker";
 import { EmptyRecordsCard, FirstRecordCard } from "@/progress/FirstRecordCard";
+import { useIsPro } from "@/pro";
+import { useUnit } from "@/settings/useUnit";
 import { ProNoticeSheet } from "@/progress/ProNoticeSheet";
 import { ProgressHero } from "@/progress/ProgressHero";
 import { RecordsCard } from "@/progress/RecordsCard";
@@ -18,6 +20,8 @@ export default function ProgressScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const progress = useExerciseProgress();
+  const isPro = useIsPro();
+  const { unit } = useUnit();
   const [proNotice, setProNotice] = useState(false);
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -59,7 +63,11 @@ export default function ProgressScreen() {
             <ExercisePicker exerciseId={progress.exerciseId} name={progress.name} equipment={progress.equipment} />
             {progress.hero ? (
               <>
-                <ProgressHero hero={progress.hero} onProPress={() => setProNotice(true)} />
+                <ProgressHero
+                  hero={progress.hero}
+                  onProPress={() => setProNotice(true)}
+                  liveChart={isPro && progress.loadType === "weighted" ? { exerciseId: progress.exerciseId, unit } : undefined}
+                />
                 <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={() => setProNotice(true)} />
               </>
             ) : (
