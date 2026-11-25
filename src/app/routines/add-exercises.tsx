@@ -5,6 +5,7 @@ import { View } from "react-native";
 import { Button, RoundButton, ScreenHeader } from "@/components";
 import { db } from "@/db/client";
 import { defaultRule, type OverloadRule } from "@/engine";
+import { createdPick, newExerciseParams } from "@/library/createFlow";
 import { ExerciseBrowser } from "@/library/ExerciseBrowser";
 import { exerciseMeta } from "@/library/exerciseMeta";
 import { useExercises, type LibraryExercise } from "@/library/exerciseQueries";
@@ -19,7 +20,7 @@ import { pastExercises } from "@/workout/workoutQueries";
 
 export default function AddExercisesScreen() {
   const colors = useColors();
-  const { routineId: param } = useLocalSearchParams<{ routineId: string }>();
+  const { routineId: param, created } = useLocalSearchParams<{ routineId: string; created?: string }>();
   const routineId = Number(param);
   const exercises = useExercises();
   const { defaultRestS } = useDefaultRest();
@@ -32,6 +33,18 @@ export default function AddExercisesScreen() {
   useEffect(() => {
     loadRoutineExercises(routineId).then((rows) => setAddedIds(new Set(rows.map((r) => r.exerciseId))));
   }, [routineId]);
+
+  // Back from New exercise with the saved exercise: pick it and open its setup, once its row has loaded.
+  const createdExercise = useMemo(() => createdPick(exercises, created), [exercises, created]);
+  const [handledCreated, setHandledCreated] = useState<string>();
+  if (createdExercise && created !== handledCreated) {
+    setHandledCreated(created);
+    setPicked(createdExercise);
+    setOpen(true);
+  }
+  useEffect(() => {
+    if (created && created === handledCreated) router.setParams({ created: undefined });
+  }, [created, handledCreated]);
 
   const rule = useMemo(() => defaultRule(picked?.loadType ?? "weighted"), [picked]);
   // Finished workouts of this exercise in this routine (one removed and added back), for the rule panel's preview.
@@ -67,6 +80,9 @@ export default function AddExercisesScreen() {
             bottomInset={BOTTOM_ACTION_CLEARANCE}
             exercises={exercises}
             disabledIds={addedIds}
+            onCreate={(name) =>
+              router.push({ pathname: "/exercise/new", params: newExerciseParams(name, routineId) })
+            }
             onSelect={(exercise) => {
               setPicked(exercise);
               setOpen(true);

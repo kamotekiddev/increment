@@ -3,15 +3,37 @@ import { useMemo, useState } from "react";
 import { Pressable, TextInput, View } from "react-native";
 
 import { Button, Text } from "@/components";
-import { fontFamily, fontSize, minTouch, radius, size, spacing, useColors } from "@/theme";
+import {
+  fontFamily,
+  fontSize,
+  minTouch,
+  radius,
+  size,
+  spacing,
+  useColors,
+} from "@/theme";
 
-import { emptyMessage, isFiltering, NO_FILTERS, resultCount, toggleChip } from "./browseState";
+import {
+  createRowName,
+  emptyMessage,
+  isFiltering,
+  NO_FILTERS,
+  resultCount,
+  toggleChip,
+} from "./browseState";
 import { ChipRow } from "./ChipRow";
+import { CreateRow } from "./CreateRow";
 import { ExerciseList } from "./ExerciseList";
-import { filterExercises, type ExerciseFilter, type ExerciseSummary } from "./filterExercises";
+import {
+  filterExercises,
+  type ExerciseFilter,
+  type ExerciseSummary,
+} from "./filterExercises";
 import { MUSCLE_GROUPS } from "./muscleGroups";
 
-export interface ExerciseBrowserProps<T extends ExerciseSummary = ExerciseSummary> {
+export interface ExerciseBrowserProps<
+  T extends ExerciseSummary = ExerciseSummary,
+> {
   exercises: T[];
   /** What happens when a row is tapped. */
   onSelect: (exercise: T) => void;
@@ -23,6 +45,8 @@ export interface ExerciseBrowserProps<T extends ExerciseSummary = ExerciseSummar
   picker?: boolean;
   /** Extra space under the last row, for a fixed action bar. */
   bottomInset?: number;
+  /** Opens New exercise with this name. When given, the no-match card is followed by a "Create “{search}”" row. */
+  onCreate?: (name: string) => void;
 }
 
 /** Search box, muscle group chips, the A-Z list and the no-match card with Clear filters. */
@@ -33,11 +57,15 @@ export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
   routineCounts,
   picker = false,
   bottomInset,
+  onCreate,
 }: ExerciseBrowserProps<T>) {
   const colors = useColors();
   const [filter, setFilter] = useState<ExerciseFilter>(NO_FILTERS);
 
-  const visible = useMemo(() => filterExercises(exercises, filter), [exercises, filter]);
+  const visible = useMemo(
+    () => filterExercises(exercises, filter),
+    [exercises, filter],
+  );
   const showCount = !picker && isFiltering(filter) && visible.length > 0;
 
   const header = (
@@ -51,51 +79,78 @@ export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
         label="Muscle group"
         options={MUSCLE_GROUPS}
         active={filter.group}
-        onToggle={(group) => setFilter({ ...filter, group: toggleChip(filter.group, group) })}
+        onToggle={(group) =>
+          setFilter({ ...filter, group: toggleChip(filter.group, group) })
+        }
         onClear={() => setFilter({ ...filter, group: null })}
       />
       {showCount ? (
-        <Text variant="caption" tone="muted" style={{ paddingHorizontal: spacing.xl, fontSize: fontSize.small, fontFamily: fontFamily.medium }}>
+        <Text
+          variant="caption"
+          tone="muted"
+          style={{
+            paddingHorizontal: spacing.xl,
+            fontSize: fontSize.small,
+            fontFamily: fontFamily.medium,
+          }}
+        >
           {resultCount(visible.length)}
         </Text>
       ) : null}
     </View>
   );
 
+  const createName = onCreate ? createRowName(filter) : null;
   const empty =
     exercises.length === 0 ? undefined : (
-      <View
-        style={{
-          marginHorizontal: spacing.xl,
-          paddingTop: spacing.xl,
-          paddingBottom: spacing.xl,
-          paddingHorizontal: spacing.xl,
-          gap: spacing.md,
-          alignItems: "center",
-          borderRadius: radius.card,
-          backgroundColor: colors.card,
-        }}
-      >
+      <>
         <View
           style={{
-            width: size.emptyIcon,
-            height: size.emptyIcon,
-            borderRadius: radius.inset,
+            marginHorizontal: spacing.xl,
+            paddingTop: spacing.xl,
+            paddingBottom: spacing.xl,
+            paddingHorizontal: spacing.xl,
+            gap: spacing.md,
             alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: colors.accentTint,
+            borderRadius: radius.card,
+            backgroundColor: colors.card,
           }}
         >
-          <Ionicons name="search" size={28} color={colors.accent} />
+          <View
+            style={{
+              width: size.emptyIcon,
+              height: size.emptyIcon,
+              borderRadius: radius.inset,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: colors.accentTint,
+            }}
+          >
+            <Ionicons name="search" size={28} color={colors.accent} />
+          </View>
+          <Text
+            variant="title"
+            style={{ fontFamily: fontFamily.semibold, textAlign: "center" }}
+          >
+            {emptyMessage(filter)}
+          </Text>
+          <Text
+            tone="muted"
+            style={{ fontSize: fontSize.label, textAlign: "center" }}
+          >
+            Check the spelling, or clear the filters.
+          </Text>
+          <Button
+            label="Clear filters"
+            variant="outlined"
+            stretch
+            onPress={() => setFilter(NO_FILTERS)}
+          />
         </View>
-        <Text variant="title" style={{ fontFamily: fontFamily.semibold, textAlign: "center" }}>
-          {emptyMessage(filter)}
-        </Text>
-        <Text tone="muted" style={{ fontSize: fontSize.label, textAlign: "center" }}>
-          Check the spelling, or clear the filters.
-        </Text>
-        <Button label="Clear filters" variant="outlined" stretch onPress={() => setFilter(NO_FILTERS)} />
-      </View>
+        {createName && onCreate ? (
+          <CreateRow name={createName} onPress={() => onCreate(createName)} />
+        ) : null}
+      </>
     );
 
   return (
@@ -113,7 +168,15 @@ export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
 }
 
 /** The white pill search box with a search icon, an accent ring while focused, and a clear button. */
-function SearchField({ value, onChange, compact }: { value: string; onChange: (text: string) => void; compact: boolean }) {
+function SearchField({
+  value,
+  onChange,
+  compact,
+}: {
+  value: string;
+  onChange: (text: string) => void;
+  compact: boolean;
+}) {
   const colors = useColors();
   const [focused, setFocused] = useState(false);
   const height = compact ? size.searchCompact : size.search;
@@ -158,7 +221,12 @@ function SearchField({ value, onChange, compact }: { value: string; onChange: (t
           accessibilityRole="button"
           accessibilityLabel="Clear search"
           onPress={() => onChange("")}
-          style={{ width: minTouch, height: minTouch, alignItems: "center", justifyContent: "center" }}
+          style={{
+            width: minTouch,
+            height: minTouch,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           <Ionicons name="close-circle" size={20} color={colors.iconFaint} />
         </Pressable>

@@ -3,6 +3,7 @@ import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { RoundButton, Text } from "@/components";
+import { newExerciseParams } from "@/library/createFlow";
 import { ExerciseBrowser } from "@/library/ExerciseBrowser";
 import { useExercises, useRoutineCounts } from "@/library/exerciseQueries";
 import { spacing, textStyle, useColors } from "@/theme";
@@ -32,6 +33,7 @@ export default function LibraryScreen() {
       <ExerciseBrowser
         exercises={exercises}
         routineCounts={routineCounts}
+        onCreate={(name) => router.push({ pathname: "/exercise/new", params: newExerciseParams(name) })}
         onSelect={(exercise) =>
           router.push({ pathname: "/exercise/[id]", params: { id: String(exercise.id) } })
         }
