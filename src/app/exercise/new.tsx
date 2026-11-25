@@ -4,6 +4,7 @@ import { ScrollView, View } from "react-native";
 
 import { Button, Pill, RoundButton, ScreenHeader } from "@/components";
 import { db } from "@/db/client";
+import { afterSaveTarget } from "@/library/createFlow";
 import { ChoiceChips } from "@/library/ChoiceChips";
 import { canSubmit, newExerciseRow, type ExerciseDraft } from "@/library/customExerciseDraft";
 import { EQUIPMENT_CHOICES } from "@/library/customExerciseEquipment";
@@ -24,7 +25,7 @@ const MUSCLE_CHOICES = MUSCLE_GROUPS.map((group) => ({ label: group, value: grou
  */
 export default function NewExerciseScreen() {
   const colors = useColors();
-  const { name: initialName } = useLocalSearchParams<{ name?: string }>();
+  const { name: initialName, routineId } = useLocalSearchParams<{ name?: string; routineId?: string }>();
   const button = useSaveButtonKind();
   const [draft, setDraft] = useState<ExerciseDraft>({
     name: initialName ?? "",
@@ -44,8 +45,9 @@ export default function NewExerciseScreen() {
     if (saving || !ready) return;
     setSaving(true);
     try {
-      insertCustomExercise(db, newExerciseRow(draft));
-      router.back();
+      const target = afterSaveTarget(routineId, insertCustomExercise(db, newExerciseRow(draft)));
+      if (target.kind === "picker") router.dismissTo({ pathname: "/routines/add-exercises", params: target.params });
+      else router.back();
     } finally {
       setSaving(false);
     }

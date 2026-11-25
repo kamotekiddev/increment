@@ -1,4 +1,25 @@
-import { emptyMessage, isFiltering, resultCount, routineCountLabel, toggleChip } from "./browseState";
+import {
+  createRowLabel,
+  createRowName,
+  emptyMessage,
+  isFiltering,
+  NO_FILTERS,
+  resultCount,
+  routineCountLabel,
+  toggleChip,
+} from "./browseState";
+
+describe("createRowName / createRowLabel", () => {
+  it("offers the trimmed search text", () => {
+    expect(createRowName({ search: "  landmine ", group: "Chest" })).toBe("landmine");
+    expect(createRowLabel("landmine")).toBe("Create “landmine”");
+  });
+
+  it("offers nothing without search text", () => {
+    expect(createRowName({ search: "   ", group: "Chest" })).toBeNull();
+    expect(createRowName(NO_FILTERS)).toBeNull();
+  });
+});
 
 describe("toggleChip", () => {
   it("selects a chip when none is active", () => {

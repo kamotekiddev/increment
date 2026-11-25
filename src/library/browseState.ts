@@ -22,6 +22,17 @@ export function routineCountLabel(count: number): string {
   return `${count} ${count === 1 ? "routine" : "routines"}`;
 }
 
+/** The name the no-match Create row offers: the trimmed search text, or null when nothing is typed. */
+export function createRowName({ search }: ExerciseFilter): string | null {
+  const text = search.trim();
+  return text.length > 0 ? text : null;
+}
+
+/** The Create row title, e.g. Create “landmine”. */
+export function createRowLabel(name: string): string {
+  return `Create “${name}”`;
+}
+
 /** The empty-state title, e.g. No match for “press” with Arms. */
 export function emptyMessage({ search, group }: ExerciseFilter): string {
   const text = search.trim();
