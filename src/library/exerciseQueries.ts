@@ -1,6 +1,6 @@
 import { count, eq } from "drizzle-orm";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { db } from "@/db/client";
 import { exercises, routineExercises } from "@/db/schema";
@@ -12,21 +12,29 @@ export type Exercise = typeof exercises.$inferSelect;
 /** A list row: the summary plus the load type (the routine picker needs it for the default rule). */
 export type LibraryExercise = ExerciseSummary & { loadType: Exercise["loadType"]; equipment: string };
 
-/** Every exercise in the library, loaded once. Empty until the query returns. */
+/** Every exercise, library and custom, reloaded each time the screen gains focus. Empty until the query returns. */
 export function useExercises(): LibraryExercise[] {
   const [rows, setRows] = useState<LibraryExercise[]>([]);
 
-  useEffect(() => {
-    db.select({
-      id: exercises.id,
-      name: exercises.name,
-      muscles: exercises.muscles,
-      loadType: exercises.loadType,
-      equipment: exercises.equipment,
-    })
-      .from(exercises)
-      .then(setRows);
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      let live = true;
+      db.select({
+        id: exercises.id,
+        name: exercises.name,
+        muscles: exercises.muscles,
+        loadType: exercises.loadType,
+        equipment: exercises.equipment,
+      })
+        .from(exercises)
+        .then((result) => {
+          if (live) setRows(result);
+        });
+      return () => {
+        live = false;
+      };
+    }, []),
+  );
 
   return rows;
 }
@@ -55,16 +63,24 @@ export function useRoutineCounts(): ReadonlyMap<number, number> {
   return counts;
 }
 
-/** One exercise by id: undefined while loading, null when no exercise has that id. */
+/** One exercise by id: undefined while loading, null when no exercise has that id. Reloaded on focus, so an edit shows on return. */
 export function useExercise(id: number): Exercise | null | undefined {
   const [exercise, setExercise] = useState<Exercise | null | undefined>(undefined);
 
-  useEffect(() => {
-    db.select()
-      .from(exercises)
-      .where(eq(exercises.id, id))
-      .then((rows) => setExercise(rows[0] ?? null));
-  }, [id]);
+  useFocusEffect(
+    useCallback(() => {
+      let live = true;
+      db.select()
+        .from(exercises)
+        .where(eq(exercises.id, id))
+        .then((rows) => {
+          if (live) setExercise(rows[0] ?? null);
+        });
+      return () => {
+        live = false;
+      };
+    }, [id]),
+  );
 
   return exercise;
 }

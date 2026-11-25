@@ -52,11 +52,11 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Screen | Notes |
 |---|---|
 | Library | Search and filters |
-| No search results | Message naming what was searched, with a Clear filters button (create shortcut arrives with custom exercises in Phase 3) |
+| No search results | Message naming what was searched, with a Clear filters button (a "Create “{search}”" row follows it, in the Library and the routine picker, shown only while there is search text; a free lifter sees a grey Pro tag on it; it opens New exercise with the Name pre-filled; the Library header has a **+**, the picker none) |
 | Exercise detail | How-to only (no History tab; history is per Workout, see Workout history) |
-| Create custom exercise (Pro) | |
-| Edit custom exercise (Pro) | |
-| Delete custom exercise (Pro) | Removed from routines, history kept |
+| Create custom exercise (Pro) | Name, Main muscle chips, Equipment chips (the six), "How to do it" as one box per step. No "How you track it" (equipment decides it). Opened from the Library **+** or the no-match Create row; a free lifter can fill it in, but "Unlock Pro" (lock icon) replaces Save and opens the Paywall; typed values stay. Built for the Library **+** (route `/exercise/new`, `?name=` pre-fills the Name); and the no-match Create row. Save from the Library returns to the list (the new exercise is in it); Save from the routine picker returns to the picker with the new exercise picked and its setup sheet open; Cancel returns to where it was opened. Buying Pro from its Unlock Pro button ends on this screen (Start using Pro dismisses the Paywall and Pro unlocked), with everything typed kept, and Save now shown. Names are checked against every library and custom exercise ("You already have an exercise called {Name}.", Save off). Exercise detail hides "How to" when a custom exercise has no steps |
+| Edit custom exercise (Pro) | Built (route `/exercise/{id}/edit`), opened by the Edit pill in the top right of Exercise detail, shown for a custom exercise only (it takes the place of the routine-count pill). Same fields as Create, filled in, title "Edit exercise" with a Custom pill. Keeping its own name is not a clash. "Used" means in a routine or any set row: then Bodyweight can't be switched to or from (chips dimmed, note "Bodyweight can't be switched once the exercise is used."), other switches stay open; the load type follows the equipment on save. Delete exercise sits under the fields and opens the Delete sheet. A free lifter sees "Unlock Pro" in place of Save changes and nothing is saved. Detail, routines and the workout read the new values when next opened |
+| Delete custom exercise | Built. Sheet from Edit: "Delete {Name}?", "It will be removed from A and B." (or "It isn't in any routine."), a red box "Its sets in 6 workouts are deleted for good. This can't be recovered." ("It has no workout history." with none), Delete exercise and Cancel. Blocked while it is in a Workout in progress: the text becomes "{Name} is in your workout in progress. Finish or discard it first." and the red button is disabled. Free lifters can delete. One transaction deletes it, its routine exercises, workout exercises and sets, and the finished workouts it leaves empty; routines keep their other exercises in order (a routine left empty stays). Leaves Edit and detail afterwards |
 
 ## 5 · Progress and Pro
 | Screen | Notes |
@@ -83,7 +83,6 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 
 ## Known linking gaps on the canvas
 These connections aren't yet wired up on the canvas:
-- The Edit button on a custom exercise → Edit custom exercise
 - "See all records" on Progress → All records
 - The plate calculator button on Live workout → Plate calculator
 - New routine → the 2-routine limit pop-up

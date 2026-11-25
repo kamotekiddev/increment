@@ -81,8 +81,12 @@ A deliberately lighter workout, scheduled every N weeks when the lifter turns it
 _Avoid_: Recovery week, reset
 
 **Load type**:
-Whether an exercise progresses by weight or by reps only: weighted or bodyweight. An exercise done both with and without added weight is two exercises (for example Pull-up and Weighted pull-up).
+Whether an exercise progresses by weight or by reps only: weighted or bodyweight. An exercise done both with and without added weight is two exercises (for example Pull-up and Weighted pull-up). A Custom exercise gets it from its equipment: Bodyweight is bodyweight, anything else is weighted.
 _Avoid_: Exercise type, category
+
+**Custom exercise**:
+An exercise the lifter made themselves (Pro), with a name, one main muscle group, equipment and optional how-to steps. Its name can't match any library exercise or another Custom exercise. Deleting it removes it from every Routine and deletes all its Workout exercises, sets and Records for good.
+_Avoid_: User exercise, own exercise
 
 **Workout exercise**:
 One exercise within one workout, holding the Target that was shown and whether the lifter accepted the offered Step.

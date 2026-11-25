@@ -3,6 +3,7 @@ import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Pill, RoundButton, Text } from "@/components";
+import { EditExerciseButton } from "@/library/EditExerciseButton";
 import { ExerciseHero } from "@/library/ExerciseHero";
 import { useExercise, useRoutineCounts } from "@/library/exerciseQueries";
 import { capitalise } from "@/library/muscleGroups";
@@ -35,6 +36,11 @@ export default function ExerciseDetailScreen() {
               equipment={exercise.equipment}
               routines={routineCounts.get(exercise.id) ?? 0}
               back={back}
+              action={
+                exercise.isCustom ? (
+                  <EditExerciseButton onPress={() => router.push(`/exercise/${exercise.id}/edit`)} />
+                ) : undefined
+              }
             />
             <View style={{ gap: 10 }}>
               <Text variant="heading" accessibilityRole="header" style={textStyle.screenTitle}>
@@ -47,9 +53,11 @@ export default function ExerciseDetailScreen() {
                 <Pill label={capitalise(exercise.equipment)} tone="plain" />
               </View>
             </View>
-            <Text variant="title" style={{ marginTop: spacing.sm }}>
-              How to
-            </Text>
+            {exercise.instructions.length > 0 ? (
+              <Text variant="title" style={{ marginTop: spacing.sm }}>
+                How to
+              </Text>
+            ) : null}
             <View style={{ gap: spacing.md, paddingHorizontal: spacing.xs }}>
               {exercise.instructions.map((step, index) => (
                 <View key={index} style={{ flexDirection: "row", gap: 14, alignItems: "flex-start" }}>

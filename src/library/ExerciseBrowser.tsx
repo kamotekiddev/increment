@@ -5,8 +5,9 @@ import { Pressable, TextInput, View } from "react-native";
 import { Button, Text } from "@/components";
 import { fontFamily, fontSize, minTouch, radius, size, spacing, useColors } from "@/theme";
 
-import { emptyMessage, isFiltering, NO_FILTERS, resultCount, toggleChip } from "./browseState";
+import { createRowName, emptyMessage, isFiltering, NO_FILTERS, resultCount, toggleChip } from "./browseState";
 import { ChipRow } from "./ChipRow";
+import { CreateRow } from "./CreateRow";
 import { ExerciseList } from "./ExerciseList";
 import { filterExercises, type ExerciseFilter, type ExerciseSummary } from "./filterExercises";
 import { MUSCLE_GROUPS } from "./muscleGroups";
@@ -23,6 +24,8 @@ export interface ExerciseBrowserProps<T extends ExerciseSummary = ExerciseSummar
   picker?: boolean;
   /** Extra space under the last row, for a fixed action bar. */
   bottomInset?: number;
+  /** Opens New exercise with this name. When given, the no-match card is followed by a "Create “{search}”" row. */
+  onCreate?: (name: string) => void;
 }
 
 /** Search box, muscle group chips, the A-Z list and the no-match card with Clear filters. */
@@ -33,6 +36,7 @@ export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
   routineCounts,
   picker = false,
   bottomInset,
+  onCreate,
 }: ExerciseBrowserProps<T>) {
   const colors = useColors();
   const [filter, setFilter] = useState<ExerciseFilter>(NO_FILTERS);
@@ -62,7 +66,7 @@ export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
     </View>
   );
 
-  const empty =
+  const noMatchCard =
     exercises.length === 0 ? undefined : (
       <View
         style={{
@@ -97,6 +101,13 @@ export function ExerciseBrowser<T extends ExerciseSummary = ExerciseSummary>({
         <Button label="Clear filters" variant="outlined" stretch onPress={() => setFilter(NO_FILTERS)} />
       </View>
     );
+  const createName = onCreate ? createRowName(filter) : null;
+  const empty = noMatchCard && (
+    <>
+      {noMatchCard}
+      {createName && onCreate ? <CreateRow name={createName} onPress={() => onCreate(createName)} /> : null}
+    </>
+  );
 
   return (
     <ExerciseList

@@ -23,6 +23,8 @@ function apply(sqlite: Database.Database, tag: string): void {
 export function createDbAtMigration(upTo: number): { sqlite: Database.Database; migrateTo: (idx: number) => void } {
   const journal: Journal = JSON.parse(readFileSync(join(FOLDER, "meta/_journal.json"), "utf8"));
   const sqlite = new Database(":memory:");
+  // As in src/db/client.ts: foreign keys are off while migrations run, so a table rebuild cannot cascade-delete rows.
+  sqlite.pragma("foreign_keys = OFF");
   let at = -1;
   const migrateTo = (idx: number) => {
     for (const entry of journal.entries) {
