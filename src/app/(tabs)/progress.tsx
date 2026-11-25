@@ -1,6 +1,5 @@
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import { router } from "expo-router";
-import { useState } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -9,7 +8,7 @@ import { useIsPro } from "@/pro";
 import { ExercisePicker } from "@/progress/ExercisePicker";
 import { EmptyRecordsCard, FirstRecordCard } from "@/progress/FirstRecordCard";
 import { useUnit } from "@/settings/useUnit";
-import { ProNoticeSheet } from "@/progress/ProNoticeSheet";
+import { lockedTapDestination } from "@/progress/proTap";
 import { ProgressHero } from "@/progress/ProgressHero";
 import { RecordsCard } from "@/progress/RecordsCard";
 import { useExerciseProgress } from "@/progress/useExerciseProgress";
@@ -22,9 +21,13 @@ export default function ProgressScreen() {
   const progress = useExerciseProgress();
   const isPro = useIsPro();
   const { unit } = useUnit();
-  const [proNotice, setProNotice] = useState(false);
-  /** "See all records": All records for Pro; the free path stays the Pro notice (ticket 05 swaps it for the Paywall). */
-  const openAllRecords = () => (isPro ? router.push("/records") : setProNotice(true));
+  // A free tap opens the Paywall. Buying returns here (Pro unlocked's "Start using Pro" dismisses back); nothing opens by itself.
+  const onLockedTap = () => {
+    const destination = lockedTapDestination(isPro);
+    if (destination) router.push(destination);
+  };
+  /** "See all records": All records for Pro, the Paywall for a free lifter. */
+  const openAllRecords = () => (isPro ? router.push("/records") : onLockedTap());
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView
@@ -67,7 +70,7 @@ export default function ProgressScreen() {
               <>
                 <ProgressHero
                   hero={progress.hero}
-                  onProPress={() => setProNotice(true)}
+                  onProPress={onLockedTap}
                   liveChart={isPro && progress.loadType === "weighted" ? { exerciseId: progress.exerciseId, unit } : undefined}
                 />
                 <RecordsCard exerciseName={progress.name} rows={progress.records} onProPress={openAllRecords} />
@@ -83,7 +86,6 @@ export default function ProgressScreen() {
           <Text tone="muted">No workouts yet.</Text>
         ) : null}
       </ScrollView>
-      <ProNoticeSheet visible={proNotice} onDismiss={() => setProNotice(false)} />
     </View>
   );
 }
