@@ -83,7 +83,6 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 
 ## Known linking gaps on the canvas
 These connections aren't yet wired up on the canvas:
-- The Edit button on a custom exercise → Edit custom exercise
 - "See all records" on Progress → All records
 - The plate calculator button on Live workout → Plate calculator
 - New routine → the 2-routine limit pop-up
