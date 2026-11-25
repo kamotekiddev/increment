@@ -1,5 +1,5 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 
 import { Button, Pill, RoundButton, ScreenHeader, Text } from "@/components";
@@ -9,6 +9,8 @@ import { canSubmit, draftFromExercise, newExerciseRow, type ExerciseDraft } from
 import { BODYWEIGHT_LOCKED_NOTE, EQUIPMENT_CHOICES, lockedEquipment } from "@/library/customExerciseEquipment";
 import { exerciseNameMessage, validateExerciseName } from "@/library/customExerciseName";
 import { exerciseNameRefs, isExerciseUsed, updateCustomExercise } from "@/library/customExerciseQueries";
+import { DeleteExerciseSheet } from "@/library/DeleteExerciseSheet";
+import { deleteCustomExercise, exerciseDeleteInfo, type ExerciseDeleteInfo } from "@/library/deleteCustomExercise";
 import { useExercise, type Exercise } from "@/library/exerciseQueries";
 import { MUSCLE_GROUPS, type MuscleGroup } from "@/library/muscleGroups";
 import { StepsField } from "@/library/StepsField";
@@ -51,6 +53,7 @@ function EditExerciseForm({ exercise }: { exercise: Exercise }) {
   const button = useSaveButtonKind();
   const [draft, setDraft] = useState<ExerciseDraft>(() => draftFromExercise(exercise));
   const [saving, setSaving] = useState(false);
+  const deleting = useRef(false);
 
   // Read when the screen opens (it is a fresh screen on each visit).
   const existing = useMemo(() => exerciseNameRefs(db), []);
@@ -72,8 +75,27 @@ function EditExerciseForm({ exercise }: { exercise: Exercise }) {
     }
   }
 
-  // Ticket 06 plugs in here: this opens the Delete exercise sheet. Not built yet, so it does nothing.
-  function openDeleteSheet() {}
+  // Read when the sheet opens, so the routines and the workout count are current.
+  const [deleteInfo, setDeleteInfo] = useState<ExerciseDeleteInfo | null>(null);
+
+  function openDeleteSheet() {
+    setDeleteInfo(exerciseDeleteInfo(db, exercise.id));
+  }
+
+  function confirmDelete() {
+    if (deleting.current) return;
+    deleting.current = true;
+    const result = deleteCustomExercise(db, exercise.id);
+    if (result === "in-progress") {
+      deleting.current = false;
+      setDeleteInfo(exerciseDeleteInfo(db, exercise.id));
+      return;
+    }
+    setDeleteInfo(null);
+    // Leave Edit and the Exercise detail under it: the exercise is gone.
+    if (router.canDismiss()) router.dismiss(2);
+    else router.back();
+  }
 
   return (
     <>
@@ -122,6 +144,13 @@ function EditExerciseForm({ exercise }: { exercise: Exercise }) {
           )}
         </BottomAction>
       </View>
+      <DeleteExerciseSheet
+        visible={deleteInfo !== null}
+        name={exercise.name}
+        info={deleteInfo}
+        onConfirm={confirmDelete}
+        onDismiss={() => setDeleteInfo(null)}
+      />
     </>
   );
 }

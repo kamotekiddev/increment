@@ -2,7 +2,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { View } from "react-native";
 
 import { BottomSheet, Button, Text } from "@/components";
-import { fontSize, spacing, useColors } from "@/theme";
+import { fontSize, radius, spacing, useColors } from "@/theme";
 
 export interface DestructiveSheetProps {
   visible: boolean;
@@ -10,12 +10,16 @@ export interface DestructiveSheetProps {
   body: string;
   /** The red button, e.g. "Delete routine" or "Remove". */
   confirmLabel: string;
+  /** A red box under the text, for what is lost for good (Delete exercise). */
+  warning?: string | null;
+  /** Greys out the red button, e.g. while a Workout in progress blocks the action. */
+  confirmDisabled?: boolean;
   onConfirm: () => void;
   onDismiss: () => void;
 }
 
 /** The confirmation used before deleting a routine or removing an exercise: trash icon, text, red action, Cancel. */
-export function DestructiveSheet({ visible, title, body, confirmLabel, onConfirm, onDismiss }: DestructiveSheetProps) {
+export function DestructiveSheet({ visible, title, body, confirmLabel, warning, confirmDisabled, onConfirm, onDismiss }: DestructiveSheetProps) {
   const colors = useColors();
   return (
     <BottomSheet visible={visible} onDismiss={onDismiss}>
@@ -39,7 +43,14 @@ export function DestructiveSheet({ visible, title, body, confirmLabel, onConfirm
           {body}
         </Text>
       </View>
-      <Button label={confirmLabel} variant="danger" large onPress={onConfirm} />
+      {warning ? (
+        <View style={{ backgroundColor: colors.dangerTint, borderRadius: radius.md, paddingHorizontal: spacing.md, paddingVertical: spacing.md }}>
+          <Text variant="label" style={{ color: colors.danger, fontSize: fontSize.small }}>
+            {warning}
+          </Text>
+        </View>
+      ) : null}
+      <Button label={confirmLabel} variant="danger" large disabled={confirmDisabled} onPress={onConfirm} />
       <Button label="Cancel" variant="secondary" large onPress={onDismiss} />
     </BottomSheet>
   );
