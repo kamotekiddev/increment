@@ -12,6 +12,8 @@ export interface BackupFolder {
 
 export interface AutoBackupInput {
   folder: BackupFolder | null;
+  /** The one Pro gate's answer. Not Pro means nothing is written or pruned. */
+  isPro: boolean;
   /** The backup text (from `createBackup`). */
   text: string;
   now: number;
@@ -20,13 +22,14 @@ export interface AutoBackupInput {
   onWritten: (info: { at: number; hash: string }) => void;
 }
 
-export type AutoBackupResult = "saved" | "failed";
+export type AutoBackupResult = "saved" | "failed" | "skipped";
 
 /**
  * Writes one automatic backup file, then prunes the folder to the newest `keep`. A missing folder or a failed write is
- * "failed" (nothing is recorded); a failed delete never turns a written backup into a failure. Never throws.
+ * "failed" (nothing is recorded); not Pro is "skipped" (no write, no prune, settings untouched); a failed delete never turns a written backup into a failure. Never throws.
  */
-export function writeAutoBackup({ folder, text, now, keep, onWritten }: AutoBackupInput): AutoBackupResult {
+export function writeAutoBackup({ folder, isPro, text, now, keep, onWritten }: AutoBackupInput): AutoBackupResult {
+  if (!isPro) return "skipped";
   if (folder === null) return "failed";
   let names: string[];
   try {

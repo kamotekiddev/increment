@@ -2,6 +2,8 @@ import Constants from "expo-constants";
 import { Directory, Paths } from "expo-file-system";
 import { Platform } from "react-native";
 
+import { proStore } from "@/pro";
+
 import { readAutoBackupSettings, writeAutoBackupFolder, writeLastBackupHash } from "./autoBackupSettings";
 import { writeAutoBackup, type AutoBackupResult, type BackupFolder } from "./autoBackupWrite";
 import { createBackup, writeLastBackup } from "./backupQueries";
@@ -59,6 +61,7 @@ export function runAutoBackup(now: number): AutoBackupResult {
     const { text } = createBackup(now, Constants.expoConfig?.version ?? "1.0.0");
     return writeAutoBackup({
       folder: openAutoBackupFolder(),
+      isPro: proStore.getState().isPro,
       text,
       now,
       keep: readAutoBackupSettings().keep,
