@@ -9,7 +9,8 @@ import { fontFamily, fontSize, lineHeight, minTouch, opacity, radius, spacing, u
 
 import { folderLabel, KEEP_OPTIONS, type Keep } from "./autoBackupText";
 import { openAutoBackupFolder, pickAutoBackupFolder, runAutoBackup } from "./autoBackupFolder";
-import { readAutoBackupSettings, writeAutoBackupKeep, writeAutoBackupOn, type AutoBackupSettings } from "./autoBackupSettings";
+import { FREQUENCY_OPTIONS, type Frequency } from "./autoBackupDue";
+import { readAutoBackupSettings, writeAutoBackupFrequency, writeAutoBackupKeep, writeAutoBackupOn, type AutoBackupSettings } from "./autoBackupSettings";
 import { readLastBackup } from "./backupQueries";
 import { lastBackupLabel } from "./backupText";
 
@@ -18,7 +19,7 @@ const IOS_FOLDER_LABEL = "On this iPhone › Increment";
 /**
  * Automatic backups (Pro): the switch, Last backup with Back up now, and Where to save (Folder, Keep). On Android the
  * first turn-on opens the folder picker (backing out leaves it off); on iOS it turns on at once. Turning on and Back up
- * now each write a backup right away. How often and the triggers on Finish and app open come in later tickets.
+ * now each write a backup right away. How often picks when the app writes by itself (see `autoBackupTrigger.ts`).
  */
 export function AutomaticBackupsScreen() {
   const colors = useColors();
@@ -99,6 +100,11 @@ export function AutomaticBackupsScreen() {
     reload();
   }
 
+  function chooseFrequency(frequency: Frequency) {
+    writeAutoBackupFrequency(frequency);
+    reload();
+  }
+
   function chooseKeep(keep: Keep) {
     writeAutoBackupKeep(keep);
     setKeepOpen(false);
@@ -148,6 +154,35 @@ export function AutomaticBackupsScreen() {
             </Text>
           </View>
           <Button label={busy ? "Backing up…" : "Back up now"} icon="cloud-upload-outline" disabled={busy} onPress={onBackUpNow} />
+        </Card>
+
+        <Text tone="muted" style={{ fontSize: fontSize.small, fontFamily: fontFamily.medium, paddingHorizontal: spacing.snug }}>
+          How often
+        </Text>
+        <Card style={{ borderRadius: radius.card }}>
+          {FREQUENCY_OPTIONS.map((option, i) => {
+            const on = option.value === settings.frequency;
+            return (
+              <View key={option.value}>
+                {i > 0 ? <View style={{ height: 1, backgroundColor: colors.line }} /> : null}
+                <Pressable
+                  accessibilityRole="radio"
+                  accessibilityLabel={`${option.label}, ${option.caption}`}
+                  accessibilityState={{ selected: on }}
+                  onPress={() => chooseFrequency(option.value)}
+                  style={({ pressed }) => ({ minHeight: minTouch + spacing.md, flexDirection: "row", alignItems: "center", gap: spacing.md, opacity: pressed ? opacity.pressed : 1 })}
+                >
+                  <View style={{ flex: 1, gap: 2 }}>
+                    <Text style={{ fontFamily: fontFamily.semibold }}>{option.label}</Text>
+                    <Text tone="muted" style={{ fontSize: fontSize.small, lineHeight: lineHeight.small }}>
+                      {option.caption}
+                    </Text>
+                  </View>
+                  <Ionicons name={on ? "radio-button-on" : "radio-button-off"} size={24} color={on ? colors.accent : colors.iconFaint} />
+                </Pressable>
+              </View>
+            );
+          })}
         </Card>
 
         <Text tone="muted" style={{ fontSize: fontSize.small, fontFamily: fontFamily.medium, paddingHorizontal: spacing.snug }}>

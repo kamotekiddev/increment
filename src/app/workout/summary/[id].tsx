@@ -1,8 +1,10 @@
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { scheduleAutoBackup } from "@/backup/autoBackupRun";
+import { summaryClosed, summaryOpened } from "@/backup/autoBackupTrigger";
 import { Button, Card, Pill, Text } from "@/components";
 import { workoutRecordTags, type RecordName } from "@/records/recordsQueries";
 import { useUnit } from "@/settings";
@@ -106,6 +108,15 @@ export default function WorkoutSummaryScreen() {
   const loaded = useSummary(Number(id), unit);
   // Finish has already written the finish timestamps, so the Workout counts as finished here. Nothing is stored.
   const tags = useMemo(() => workoutRecordTags(Number(id)), [id]);
+
+  // No automatic backup runs while the summary is open; closing it (Done, back or swipe) is the "workout finished" moment.
+  useEffect(() => {
+    summaryOpened();
+    return () => {
+      summaryClosed();
+      scheduleAutoBackup("workout-finished");
+    };
+  }, []);
 
   /** Returns to where the workout started (the root when there is nowhere to go back to). */
   function done() {
