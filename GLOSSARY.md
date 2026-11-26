@@ -52,6 +52,10 @@ _Avoid_: Pro routine, paused routine, disabled routine
 Asking the store whether this lifter already bought Pro, for example on a new phone, so it unlocks without paying again. It brings back Pro only, never training data.
 _Avoid_: "Restore" on its own (restoring from a backup is a different thing)
 
+**Backup**:
+A single `.increment` file holding the lifter's finished Workouts, Routines, Custom exercises and settings, made by a Pro lifter to move to a new phone. It never holds the Pro purchase or a Workout in progress. Restoring one replaces everything training-related on the phone and is free for everyone.
+_Avoid_: Export (a CSV or PDF for reading, not for restoring), Restore purchase
+
 **Step**:
 How a Target rises once progression is Earned: add weight (by the Jump), add reps (by the Rep step), or both. It is set per exercise.
 _Avoid_: Progression type, mode
