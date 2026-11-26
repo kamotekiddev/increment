@@ -10,7 +10,8 @@ import { fontFamily, fontSize, lineHeight, minTouch, opacity, radius, spacing, u
 import { folderLabel, KEEP_OPTIONS, type Keep } from "./autoBackupText";
 import { openAutoBackupFolder, pickAutoBackupFolder, runAutoBackup } from "./autoBackupFolder";
 import { FREQUENCY_OPTIONS, type Frequency } from "./autoBackupDue";
-import { readAutoBackupSettings, writeAutoBackupFrequency, writeAutoBackupKeep, writeAutoBackupOn, type AutoBackupSettings } from "./autoBackupSettings";
+import { readAutoBackupFailing, readAutoBackupSettings, writeAutoBackupFrequency, writeAutoBackupKeep, writeAutoBackupOn, type AutoBackupSettings } from "./autoBackupSettings";
+import { recordAutoBackupResult } from "./autoBackupRun";
 import { readLastBackup } from "./backupQueries";
 import { lastBackupLabel } from "./backupText";
 
@@ -27,13 +28,14 @@ export function AutomaticBackupsScreen() {
   const [settings, setSettings] = useState<AutoBackupSettings>(readAutoBackupSettings);
   const [lastBackupAt, setLastBackupAt] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
+  const [failed, setFailed] = useState(readAutoBackupFailing);
   const [keepOpen, setKeepOpen] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
       setSettings(readAutoBackupSettings());
       setLastBackupAt(readLastBackup());
+      setFailed(readAutoBackupFailing());
     }, []),
   );
 
@@ -45,6 +47,7 @@ export function AutomaticBackupsScreen() {
   const reload = () => {
     setSettings(readAutoBackupSettings());
     setLastBackupAt(readLastBackup());
+    setFailed(readAutoBackupFailing());
   };
 
   /** Android with no usable folder opens the picker first. Returns false when the lifter backed out or it failed. */
@@ -56,7 +59,7 @@ export function AutomaticBackupsScreen() {
   async function writeNow(): Promise<void> {
     setBusy(true);
     try {
-      setFailed(runAutoBackup(Date.now()) === "failed");
+      recordAutoBackupResult(runAutoBackup(Date.now()), false);
     } finally {
       setBusy(false);
       reload();

@@ -4,8 +4,8 @@
 
 **Blocked by:** 03
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Failure sets a streak flag once; the alert shows only when the flag goes from clear to set.
-- [ ] Status line "Last backup {date} · Couldn't save: folder unavailable" on the screen.
-- [ ] Unit tests for the streak logic; type check, lint and tests pass.
+- [x] Failure sets a streak flag once; the alert shows only when the flag goes from clear to set.
+- [x] Status line "Last backup {date} · Couldn't save: folder unavailable" on the screen.
+- [x] Unit tests for the streak logic; type check, lint and tests pass.
