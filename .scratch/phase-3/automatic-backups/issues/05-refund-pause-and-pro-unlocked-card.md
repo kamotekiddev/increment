@@ -4,8 +4,8 @@
 
 **Blocked by:** 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Automatic writes read the one Pro gate; no write while not Pro; no pruning while not Pro; settings untouched.
-- [ ] The Pro unlocked card opens the screen and the "no card yet" note in `docs/screens.md` is replaced.
-- [ ] Type check, lint and tests pass.
+- [x] Automatic writes read the one Pro gate; no write while not Pro; no pruning while not Pro; settings untouched.
+- [x] The Pro unlocked card opens the screen and the "no card yet" note in `docs/screens.md` is replaced.
+- [x] Type check, lint and tests pass.
