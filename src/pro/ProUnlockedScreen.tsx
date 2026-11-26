@@ -1,12 +1,17 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useNavigation } from "expo-router";
-import { ScrollView, View } from "react-native";
+import { useRef } from "react";
+import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AUTO_BACKUP_PATH } from "@/backup/backupPro";
 import { Button, Text } from "@/components";
 import { fontFamily, fontSize, lineHeight, minTouch, opacity, pro, radius, size, spacing, textStyle, useColors } from "@/theme";
 
 import { proScreensOnTop } from "./proRoutes";
+
+/** How long a closing Pro screen needs before the next push (the same wait as the limit pop-up's). */
+const DISMISS_SETTLE_MS = 350;
 
 /** What Pro includes, as listed on Pro unlocked. */
 const INCLUDED = ["Unlimited routines", "Charts and records", "Automatic backups", "Custom exercises and export"];
@@ -73,12 +78,32 @@ export function ProUnlockedScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const opening = useRef(false);
 
-  function startUsingPro() {
+  function leave() {
     const routes = navigation.getState()?.routes ?? [];
     const count = Math.max(1, proScreensOnTop(routes.map((r) => r.name)));
     if (router.canDismiss()) router.dismiss(count);
     else router.replace("/");
+  }
+
+  function startUsingPro() {
+    leave();
+  }
+
+  /**
+   * Closes Pro unlocked (and the Paywall under it) like Start using Pro, then opens Automatic backups. The push waits
+   * a fixed time for the dismissal to settle (the same way the limit pop-up waits before opening the Paywall), so it
+   * lands on the stack of the screen the Paywall was opened from and not on a stack that is still closing.
+   */
+  function turnOnAutomaticBackups() {
+    if (opening.current) return;
+    opening.current = true;
+    leave();
+    setTimeout(() => {
+      opening.current = false;
+      router.push(AUTO_BACKUP_PATH);
+    }, DISMISS_SETTLE_MS);
   }
 
   return (
@@ -129,6 +154,39 @@ export function ProUnlockedScreen() {
             </View>
           ))}
         </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Turn on automatic backups"
+          onPress={turnOnAutomaticBackups}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            gap: spacing.md,
+            backgroundColor: colors.accentTint,
+            borderRadius: radius.row,
+            padding: spacing.md + 2,
+          }}
+        >
+          <View
+            style={{
+              width: size.tile,
+              height: size.tile,
+              borderRadius: radius.tile,
+              backgroundColor: colors.accent,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Ionicons name="time-outline" size={size.icon} color={colors.onAccent} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontFamily: fontFamily.semibold, fontSize: fontSize.label }}>Turn on automatic backups</Text>
+            <Text tone="muted" style={{ fontSize: fontSize.small }}>
+              Recommended first step. Takes 10 seconds.
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={size.icon} color={colors.accent} />
+        </Pressable>
       </ScrollView>
       <View style={{ paddingHorizontal: spacing.lg + spacing.xs, paddingTop: spacing.md, paddingBottom: insets.bottom + spacing.lg }}>
         <Button label="Start using Pro" large onPress={startUsingPro} />

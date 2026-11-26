@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 import { db } from "@/db/client";
 import {
@@ -30,6 +30,18 @@ export function readLastBackup(): number | null {
 /** Stores the Last backup date. Call it only once the share sheet reports the share finished. */
 export function writeLastBackup(at: number): void {
   db.insert(settings).values({ key: LAST_BACKUP_KEY, value: at }).onConflictDoUpdate({ target: settings.key, set: { value: at } }).run();
+}
+
+/** When the newest finished workout finished (ms), or null if none: a cheap signal that the data changed. */
+export function latestFinishedAt(): number | null {
+  const row = db
+    .select({ at: workouts.finishedAt })
+    .from(workouts)
+    .where(eq(workouts.inProgress, false))
+    .orderBy(desc(workouts.finishedAt))
+    .limit(1)
+    .get();
+  return row?.at ?? null;
 }
 
 /** The numbers on the Your data stats card. */

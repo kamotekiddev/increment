@@ -56,6 +56,10 @@ _Avoid_: "Restore" on its own (restoring from a backup is a different thing)
 A single `.increment` file holding the lifter's finished Workouts, Routines, Custom exercises and settings, made by a Pro lifter to move to a new phone. It never holds the Pro purchase or a Workout in progress. Restoring one replaces everything training-related on the phone and is free for everyone.
 _Avoid_: Export (a CSV or PDF for reading, not for restoring), Restore purchase
 
+**Automatic backup**:
+A Backup the app makes by itself for a Pro lifter, into one folder, on a schedule they chose: after every workout, daily, weekly or monthly. Daily, weekly and monthly ones are made only when the data has changed since the last Backup. The app keeps the last few automatic backups (3, 5, 10 or 20) and never deletes a Backup the lifter made by hand. A manual Backup and an automatic one share the one Last backup date. Pausing it after a refund keeps its settings and files. They are the only files Files shows on iOS; the database is kept out of that folder.
+_Avoid_: Auto-save, sync, cloud backup (it writes to a folder; whether that folder syncs is the lifter's choice)
+
 **Step**:
 How a Target rises once progression is Earned: add weight (by the Jump), add reps (by the Rep step), or both. It is set per exercise.
 _Avoid_: Progression type, mode
