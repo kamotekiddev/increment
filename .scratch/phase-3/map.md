@@ -16,7 +16,7 @@ The roadmap's "rule panel" is not a feature here: it became free for everyone in
 | 4 | Charts and All records (built, phone check pending) | 1 |
 | 5 | ~~Plate calculator~~ (removed from Pro in PR #31) | 1 |
 | 6 | Backup and restore (built, phone check pending) | 1 |
-| 7 | Automatic backups | 6 |
+| 7 | Automatic backups (grilled, not built) | 6 |
 | 8 | Export and delete all data | 1 |
 
 ### 1 · Pro purchase and restore
@@ -43,8 +43,8 @@ A plate calculator button on the live workout opens a calculator (Pro) that show
 ### 6 · Backup and restore (grilled 2026-11-26, spec: `.scratch/phase-3/backup-and-restore/spec.md`)
 The Your data section in Settings: free state shows the backup row locked, opening the Paywall. Pro creates a single `.increment` file (JSON of every table plus a format version number from day one, every set with `weight` and `weight_unit`), handed to the share sheet (Backup ready). Restore from a file on Your data (free for everyone). Second half of the gate: a backup restores on a new phone.
 
-### 7 · Automatic backups
-Automatic backups (Pro): frequency (after every workout, daily, weekly or monthly), location and number of files kept, checked when the app opens. On iOS to the app's folder or iCloud Drive; on Android to a folder the lifter picks.
+### 7 · Automatic backups (grilled 2026-11-26, spec: `.scratch/phase-3/automatic-backups/spec.md`)
+Automatic backups (Pro): frequency (after every workout, daily, weekly or monthly), location and number of files kept, checked when the app opens. On iOS to the app's own folder (Files › On My iPhone › Increment, no iCloud Drive); on Android to a folder the lifter picks.
 
 ### 8 · Export and delete all data
 Export progress to CSV (all sets) or a PDF progress report via expo-print, through the share sheet (Pro). Delete all data with a typed confirmation, free for everyone; it leaves the Pro entitlement alone.
