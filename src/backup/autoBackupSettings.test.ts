@@ -5,6 +5,7 @@ import {
   readAutoBackupSettings,
   readLastBackupHash,
   writeAutoBackupFolder,
+  writeAutoBackupFrequency,
   writeAutoBackupKeep,
   writeAutoBackupOn,
   writeLastBackupHash,
@@ -19,7 +20,7 @@ beforeEach(() => {
 
 describe("Automatic backups settings", () => {
   it("default to off, Keep 5, no folder", () => {
-    expect(readAutoBackupSettings()).toEqual({ on: false, keep: 5, folder: null });
+    expect(readAutoBackupSettings()).toEqual({ on: false, keep: 5, folder: null, frequency: "afterEvery" });
     expect(readLastBackupHash()).toBeNull();
   });
 
@@ -28,7 +29,9 @@ describe("Automatic backups settings", () => {
     writeAutoBackupKeep(10);
     writeAutoBackupFolder("content://x/tree/Backups");
     writeLastBackupHash("abc");
-    expect(readAutoBackupSettings()).toEqual({ on: true, keep: 10, folder: "content://x/tree/Backups" });
+    expect(readAutoBackupSettings()).toEqual({ on: true, keep: 10, folder: "content://x/tree/Backups", frequency: "afterEvery" });
+    writeAutoBackupFrequency("weekly");
+    expect(readAutoBackupSettings().frequency).toBe("weekly");
     expect(readLastBackupHash()).toBe("abc");
     writeAutoBackupOn(false);
     expect(readAutoBackupSettings().on).toBe(false);

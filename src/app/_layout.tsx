@@ -11,6 +11,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { AppState, View } from "react-native";
 
+import { scheduleAutoBackup } from "@/backup/autoBackupRun";
 import { Text } from "@/components";
 import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
@@ -56,8 +57,12 @@ export default function RootLayout() {
   useEffect(() => {
     if (!dbReady || dbError) return;
     void refreshReminders();
+    scheduleAutoBackup("foreground");
     const sub = AppState.addEventListener("change", (state) => {
-      if (state === "active") void refreshReminders();
+      if (state === "active") {
+        void refreshReminders();
+        scheduleAutoBackup("foreground");
+      }
     });
     const stopProChecks = startProStoreChecks();
     // The lock follows Pro, so the schedule is rebuilt each time Pro switches on or off.
