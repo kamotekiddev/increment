@@ -53,12 +53,12 @@ export function openAutoBackupFolder(): BackupFolder | null {
 }
 
 /**
- * Writes one automatic backup now (always, changed or not): builds the backup, writes the file, sets Last backup and
- * the content fingerprint, then prunes to Keep. Never throws.
+ * Writes one automatic backup now (always, changed or not): builds the backup (unless handed its text), writes the file, sets Last backup and
+ * the content fingerprint, then prunes to Keep. Uses `builtText` when the caller already built the export. Never throws.
  */
-export function runAutoBackup(now: number): AutoBackupResult {
+export function runAutoBackup(now: number, builtText?: string): AutoBackupResult {
   try {
-    const { text } = createBackup(now, Constants.expoConfig?.version ?? "1.0.0");
+    const text = builtText ?? createBackup(now, Constants.expoConfig?.version ?? "1.0.0").text;
     return writeAutoBackup({
       folder: openAutoBackupFolder(),
       isPro: proStore.getState().isPro,

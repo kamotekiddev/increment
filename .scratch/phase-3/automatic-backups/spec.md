@@ -27,6 +27,7 @@ An **Automatic backups** screen, opened from a row on Your data: a Pro switch, "
 11. **Free lifter:** the row on Your data shows a grey Pro tag and opens the Paywall; after buying they land back on Your data. The screen is not shown to a free lifter.
 12. **After a refund:** nothing runs and the row locks again; settings (switch, frequency, Keep, folder) and written files stay; buying Pro again resumes as before.
 13. **Pro unlocked** gets the mockup's "Turn on automatic backups" card ("Recommended first step. Takes 10 seconds.") that opens the Automatic backups screen. Closes the "no card yet" note in `docs/screens.md`.
+14. **The iOS database moves out of Documents** (owner decision 2026-11-26, option A). `app.json` shares `Documents` with Files, and expo-sqlite's default folder on iOS is `Documents/SQLite`, so Files would show the live database and let the lifter delete it. On iOS the database now opens in `Library/Application Support` (not shared); an existing `increment.db` (and its `-wal` and `-shm`) is moved there once, before it opens: only when the old one exists and the new one does not, never overwriting, copied and size-checked before the old files are deleted, and if the move fails the old location keeps being used. Android is unchanged. Backups stay in `Documents` and are the only thing Files shows.
 
 ## Implementation Notes
 
