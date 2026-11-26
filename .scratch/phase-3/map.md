@@ -15,7 +15,7 @@ The roadmap's "rule panel" is not a feature here: it became free for everyone in
 | 3 | Custom exercises | 1 |
 | 4 | Charts and All records (built, phone check pending) | 1 |
 | 5 | ~~Plate calculator~~ (removed from Pro in PR #31) | 1 |
-| 6 | Backup and restore | 1 |
+| 6 | Backup and restore (built, phone check pending) | 1 |
 | 7 | Automatic backups | 6 |
 | 8 | Export and delete all data | 1 |
 

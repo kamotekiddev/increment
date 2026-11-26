@@ -84,7 +84,7 @@ Welcome → Goal → Experience → Schedule → Equipment → Units → Your pl
 | Warm-ups | – | ✓ |
 
 Rules:
-- **Backups are Pro-only.** A free user cannot create a backup file in any way; the backup row in Settings is locked and opens the paywall.
+- **Backups are Pro-only to create.** A free user cannot create a backup file in any way; Create backup on Your data is locked and opens the paywall. **Restoring a backup is free for everyone** (a new phone starts Free). A backup never carries the Pro purchase or a Workout in progress, and restore is blocked while a Workout in progress exists.
 - Automatic backups run after every workout, daily, weekly or monthly, checked when the app opens. The last N files are kept. On iOS they go to the app's folder or iCloud Drive; on Android, to a folder the user picks.
 - Paywall copy: "Unlock Pro · [Price]" with "One-time payment. No subscription. Works offline." Restore purchase is on the paywall (reached after onboarding from the Increment Pro card at the top of Settings) and, in Phase 4, on Welcome back.
 - **Paywall states:** loading (button disabled, spinner), loaded (the store's localized price), offline ("Connect to the internet to buy Pro."), Payment pending (Android cash or bank payments, iOS Ask to Buy; Pro switches on by itself once the store confirms, even if the app was closed) and in flight. Cancelling the store's sheet changes nothing; any other failure shows "Purchase didn't go through" and says nothing was charged. Restore purchase answers with Pro unlocked, Payment pending, "No purchase found" (check the Apple ID or Google account) or "Couldn't reach the App Store / Google Play".
