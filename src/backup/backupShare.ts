@@ -1,8 +1,8 @@
-import { File, Paths } from "expo-file-system";
+import { Directory, File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Platform, Share } from "react-native";
 
-import type { ShareResult } from "./backupText";
+import { uniqueFileName, type FolderSaveResult, type ShareResult } from "./backupText";
 
 /** A backup file written to the app's cache, ready to share. */
 export interface BackupFile {
@@ -26,6 +26,33 @@ export function deleteCachedFile(uri: string): void {
   } catch {
     // The cache is cleared by the system anyway.
   }
+}
+
+/**
+ * Android: lets the lifter pick a folder and writes the backup there as `fileName` (a unique name if the folder already
+ * has one). The picker rejects with code ERR_PICKER_CANCELLED when the lifter backs out: that is "cancelled", not an
+ * error. The file is created as application/octet-stream so Android keeps the `.increment` name as typed (a text type
+ * like text/plain makes the provider append `.txt`). Never throws.
+ */
+export async function saveBackupToFolder(fileName: string, text: string): Promise<FolderSaveResult> {
+  let directory: Directory;
+  try {
+    directory = await Directory.pickDirectoryAsync();
+  } catch (e) {
+    return isPickerCancelled(e) ? "cancelled" : "failed";
+  }
+  try {
+    const existing = directory.list().map((entry) => entry.name);
+    const file = directory.createFile(uniqueFileName(fileName, existing), "application/octet-stream");
+    file.write(text);
+    return "saved";
+  } catch {
+    return "failed";
+  }
+}
+
+function isPickerCancelled(e: unknown): boolean {
+  return typeof e === "object" && e !== null && (e as { code?: unknown }).code === "ERR_PICKER_CANCELLED";
 }
 
 /**

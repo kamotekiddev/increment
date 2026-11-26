@@ -10,7 +10,7 @@ A lifter who gets a new phone loses every workout. The roadmap's Phase 3 gate sa
 
 ## Solution
 
-Settings gets a **Your data** row that opens a Your data screen: a stats card (workouts, sets, records, and "Last backup" or "No backup yet"), a Backup card with **Create backup** (Pro) and a **Restore from a backup** row (free for everyone). Create backup builds one `.increment` file and hands it to the share sheet ("Backup ready"). Restore picks a file, checks it all, shows what is inside and replaces the phone's training data in one step.
+Settings gets a **Your data** row that opens a Your data screen: a stats card (workouts, sets, records, and "Last backup" or "No backup yet"), a Backup card with **Create backup** (Pro) and a **Restore from a backup** row (free for everyone). Create backup builds one `.increment` file and hands it to the share sheet ("Backup ready"; on Android it also offers Save to a folder, decision 7). Restore picks a file, checks it all, shows what is inside and replaces the phone's training data in one step.
 
 ## Owner decisions (2026-11-26)
 
@@ -20,7 +20,7 @@ Settings gets a **Your data** row that opens a Your data screen: a stats card (w
 4. **Validate everything first, then replace in one all-or-nothing step.** A file from a newer format version is refused ("This backup is from a newer Increment. Update the app to restore it."). A file that isn't an Increment backup, is cut off or breaks a rule (for example a set pointing at a workout not in the file) is refused ("This file isn't a valid Increment backup."). Nothing changes on a refusal or if the write fails. An older version is migrated up.
 5. **Reminders restore as saved**, then the app re-plans them (`refreshReminders`). Restore never asks for notification permission; if it isn't granted the existing "Reminders denied" state shows.
 6. **Plain JSON, no password.** File name `Increment backup 14 Nov 2026.increment`.
-7. **"Last backup" updates only when the share sheet reports the share finished**; a cancel leaves "No backup yet" or the old date. The date lives in the `settings` key/value table and is not in the file.
+7. **"Last backup" updates only when the share sheet reports the share finished**; a cancel leaves "No backup yet" or the old date. **Android (owner decision 2026-11-26):** its share sheet has no "Save to device" and can't report an outcome, so Backup ready has a primary **Save to a folder** (system folder picker, file written there, a taken name becomes "... (2).increment") and a secondary **Share**. On Android Last backup is set only when the folder save succeeds; sharing never sets it; a cancelled pick changes nothing and shows no error; a failed write shows a plain error. iOS is unchanged. The date lives in the `settings` key/value table and is not in the file.
 8. **Your data shows only what works**: stats card, Create backup, Restore from a backup. Automatic backups (feature 7) and CSV, PDF and Delete all data (feature 8) add their rows when built.
 9. **After buying from the locked Create backup**, the lifter lands back on Your data with Create backup unlocked; nothing starts by itself.
 

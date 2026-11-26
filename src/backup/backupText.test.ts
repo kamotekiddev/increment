@@ -1,4 +1,13 @@
-import { fileSizeText, lastBackupAfterShare, lastBackupLabel, settingsSummary, storedLine } from "./backupText";
+import {
+  fileSizeText,
+  lastBackupAfterFolderSave,
+  lastBackupAfterShare,
+  lastBackupAfterShareOn,
+  lastBackupLabel,
+  settingsSummary,
+  storedLine,
+  uniqueFileName,
+} from "./backupText";
 
 const NOV_14 = new Date(2026, 10, 14, 9, 30).getTime();
 
@@ -30,6 +39,44 @@ describe("lastBackupAfterShare", () => {
   });
   it("changes nothing when the share failed", () => {
     expect(lastBackupAfterShare("failed", NOV_14, OLD)).toBe(OLD);
+  });
+});
+
+describe("uniqueFileName", () => {
+  const NAME = "Increment backup 14 Nov 2026.increment";
+  it("keeps the name when the folder has no file with it", () => {
+    expect(uniqueFileName(NAME, [])).toBe(NAME);
+    expect(uniqueFileName(NAME, ["Other.increment"])).toBe(NAME);
+  });
+  it("adds (2) before the extension when the name is taken", () => {
+    expect(uniqueFileName(NAME, [NAME])).toBe("Increment backup 14 Nov 2026 (2).increment");
+  });
+  it("counts up past the numbers already taken", () => {
+    const taken = [NAME, "Increment backup 14 Nov 2026 (2).increment", "Increment backup 14 Nov 2026 (3).increment"];
+    expect(uniqueFileName(NAME, taken)).toBe("Increment backup 14 Nov 2026 (4).increment");
+  });
+});
+
+describe("lastBackupAfterFolderSave", () => {
+  const OLD = new Date(2026, 9, 1).getTime();
+  it("moves to now only when the file was written", () => {
+    expect(lastBackupAfterFolderSave("saved", NOV_14, OLD)).toBe(NOV_14);
+  });
+  it("keeps the old date on a cancelled pick or a failed write", () => {
+    expect(lastBackupAfterFolderSave("cancelled", NOV_14, OLD)).toBe(OLD);
+    expect(lastBackupAfterFolderSave("failed", NOV_14, null)).toBeNull();
+  });
+});
+
+describe("lastBackupAfterShareOn", () => {
+  const OLD = new Date(2026, 9, 1).getTime();
+  it("on iOS follows the share result", () => {
+    expect(lastBackupAfterShareOn("ios", "shared", NOV_14, OLD)).toBe(NOV_14);
+    expect(lastBackupAfterShareOn("ios", "dismissed", NOV_14, OLD)).toBe(OLD);
+  });
+  it("on Android sharing never sets it, the sheet cannot report the outcome", () => {
+    expect(lastBackupAfterShareOn("android", "shared", NOV_14, OLD)).toBe(OLD);
+    expect(lastBackupAfterShareOn("android", "shared", NOV_14, null)).toBeNull();
   });
 });
 

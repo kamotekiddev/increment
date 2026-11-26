@@ -22,6 +22,34 @@ export function lastBackupAfterShare(result: ShareResult, now: number, previous:
   return result === "shared" ? now : previous;
 }
 
+/** How a folder save ended: written, the lifter backed out of the folder pick, or the write failed. */
+export type FolderSaveResult = "saved" | "cancelled" | "failed";
+
+/** The stored Last backup date after an Android folder save: only a written file moves it. */
+export function lastBackupAfterFolderSave(result: FolderSaveResult, now: number, previous: number | null): number | null {
+  return result === "saved" ? now : previous;
+}
+
+/**
+ * The Last backup rule for the Share button per platform. iOS follows the share sheet's result. Android's sheet can't
+ * report the outcome, so sharing there never sets it (only a folder save does).
+ */
+export function lastBackupAfterShareOn(os: string, result: ShareResult, now: number, previous: number | null): number | null {
+  return os === "android" ? previous : lastBackupAfterShare(result, now, previous);
+}
+
+/** `name` if no file in the folder has it, else "name (2).ext", "name (3).ext"... (the number goes before the extension). */
+export function uniqueFileName(name: string, existing: readonly string[]): string {
+  const taken = new Set(existing);
+  if (!taken.has(name)) return name;
+  const dot = name.lastIndexOf(".");
+  const base = dot > 0 ? name.slice(0, dot) : name;
+  const ext = dot > 0 ? name.slice(dot) : "";
+  let n = 2;
+  while (taken.has(`${base} (${n})${ext}`)) n += 1;
+  return `${base} (${n})${ext}`;
+}
+
 /** The Settings line on Backup ready, like "kg, 2:30 rest". */
 export function settingsSummary(unit: Unit, defaultRestS: number): string {
   const minutes = Math.floor(defaultRestS / 60);
