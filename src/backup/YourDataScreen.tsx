@@ -12,6 +12,7 @@ import { fontFamily, fontSize, lineHeight, radius, size, spacing, useColors } fr
 import { createBackup, readLastBackup, yourDataStats, type YourDataStats } from "./backupQueries";
 import { writeBackupFile } from "./backupShare";
 import { storedLine } from "./backupText";
+import { RestoreCard } from "./RestoreCard";
 import { useReadyBackup } from "./readyStore";
 
 /**
@@ -94,6 +95,7 @@ export function YourDataScreen() {
             <Button label="Unlock backups with Pro" icon="lock-closed-outline" large onPress={() => router.push("/paywall")} />
           )}
         </Card>
+        <RestoreCard />
       </ScrollView>
     </View>
   );
