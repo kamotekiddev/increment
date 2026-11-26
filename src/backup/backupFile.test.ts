@@ -150,6 +150,43 @@ describe("parseBackup refusals", () => {
     }
   });
 
+  it("refuses values outside the app's own limits as not a backup", () => {
+    const cases: ((f: ReturnType<typeof good>) => void)[] = [
+      (f) => { f.routine_exercises[0].rule = { v: 1, kind: "double" }; },
+      (f) => { f.routine_exercises[0].rule.repStep = 9; },
+      (f) => { f.routines[0].days = 128; },
+      (f) => { f.routines[0].days = -1; },
+      (f) => { f.routine_exercises[0].sets = 0; },
+      (f) => { f.routine_exercises[0].sets = 11; },
+      (f) => { f.routine_exercises[0].rep_min = 11; f.routine_exercises[0].rep_max = 10; },
+      (f) => { f.routine_exercises[0].rep_max = 31; },
+      (f) => { f.routine_exercises[0].rest_s = 0; },
+      (f) => { f.routine_exercises[0].rest_s = 601; },
+      (f) => { f.workouts[0].feeling = 9; },
+      (f) => { f.workouts[0].date = "1 Nov 2026"; },
+      (f) => { f.workouts[0].date = "2026-13-40"; },
+      (f) => { f.sets[0].weight = -5; },
+      (f) => { f.sets[0].reps = -1; },
+      (f) => { f.workout_exercises[0].target_weight_kg = -1; },
+      (f) => { f.user_settings.default_rest_s = -1; },
+      (f) => { f.user_settings.reminder_time_min = 1440; },
+    ];
+    for (const mutate of cases) {
+      const f = good();
+      mutate(f);
+      expect(parseBackup(JSON.stringify(f))).toMatchObject({ ok: false, reason: "not_backup", message: "This file isn't a valid Increment backup." });
+    }
+  });
+
+  it("refuses a repeated exercise in a routine or a workout position as a broken reference", () => {
+    const dupRoutine = good();
+    dupRoutine.routine_exercises[1].exercise_id = dupRoutine.routine_exercises[0].exercise_id;
+    expect(parseBackup(JSON.stringify(dupRoutine))).toMatchObject({ ok: false, reason: "broken_reference" });
+    const dupWorkout = good();
+    dupWorkout.workout_exercises.push({ ...dupWorkout.workout_exercises[0], id: 777 });
+    expect(parseBackup(JSON.stringify(dupWorkout))).toMatchObject({ ok: false, reason: "broken_reference" });
+  });
+
   it("gives each refusal its own message", () => {
     const f = good();
     const msgs = [

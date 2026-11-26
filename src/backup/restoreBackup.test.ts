@@ -2,10 +2,10 @@ import type { Db } from "@/db/client";
 import { entitlements, exercises, routineExercises, routines, sets, settings, userSettings, workoutExercises, workouts } from "@/db/schema";
 
 import { buildBackup, parseBackup, type BackupData } from "./backupFile";
-import { restoreBackup } from "./restoreBackup";
+import { MissingLibraryExerciseError, restoreBackup } from "./restoreBackup";
 import { createTestDb } from "../../test-support/testDb";
 
-const RULE = { v: 1, kind: "double" } as never;
+const RULE = { v: 1, step: "weight", repStep: 1, sessionsToEarn: 3 } as const;
 
 /** A phone with two seeded library exercises (slugs bench, squat) and the settings rows restore must keep. */
 function phone(libraryIds: { bench: number; squat: number }): Db {
@@ -98,7 +98,7 @@ describe("restoreBackup", () => {
     const text = backupFrom(phone({ bench: 1, squat: 2 }));
     const target = createTestDb();
     target.insert(routines).values({ name: "Keep", position: 0 }).run();
-    expect(() => restoreBackup(target, parsed(text))).toThrow();
+    expect(() => restoreBackup(target, parsed(text))).toThrow(MissingLibraryExerciseError);
     expect(target.select().from(routines).all().map((r) => r.name)).toEqual(["Keep"]);
   });
 

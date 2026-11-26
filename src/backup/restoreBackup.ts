@@ -9,6 +9,14 @@ export type RestoreResult = "restored" | "workout-in-progress";
 
 const USER_SETTINGS_ROW_ID = 1;
 
+/** The backup uses a library exercise this version of the app doesn't have (a newer library than this build). */
+export class MissingLibraryExerciseError extends Error {
+  constructor(readonly slug: string) {
+    super(`Library exercise "${slug}" is not on this phone.`);
+    this.name = "MissingLibraryExerciseError";
+  }
+}
+
 /** True while a Workout in progress exists on the phone. */
 export function hasWorkoutInProgress(db: Pick<Db, "select">): boolean {
   return db.select({ id: workouts.id }).from(workouts).where(eq(workouts.inProgress, true)).limit(1).all().length > 0;
@@ -33,7 +41,7 @@ export function restoreBackup(db: Db, data: BackupData): RestoreResult {
         .from(exercises)
         .where(and(isNotNull(exercises.slug), eq(exercises.slug, ref.slug), eq(exercises.isCustom, false)))
         .get();
-      if (!local) throw new Error(`Library exercise "${ref.slug}" is not on this phone.`);
+      if (!local) throw new MissingLibraryExerciseError(ref.slug);
       exerciseMap.set(ref.id, local.id);
     }
 

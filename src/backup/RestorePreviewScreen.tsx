@@ -6,12 +6,15 @@ import { Alert, Pressable, ScrollView, View } from "react-native";
 import { Button, Card, RoundButton, ScreenHeader, Text } from "@/components";
 import { db } from "@/db/client";
 import { refreshReminders } from "@/reminders";
+import { reminderStore, unitStore, workoutStore } from "@/settings";
 import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
 
 import { backupCounts } from "./backupFile";
 import { fileSizeText, settingsSummary } from "./backupText";
-import { restoreBackup } from "./restoreBackup";
+import { MissingLibraryExerciseError, restoreBackup } from "./restoreBackup";
 import { usePickedBackup } from "./restoreStore";
+
+const MISSING_LIBRARY_MESSAGE = "This backup uses exercises this version doesn't have. Update the app to restore it.";
 
 /**
  * Restore a backup: what the picked file holds and the warning that restoring replaces the training data on this
@@ -36,11 +39,19 @@ export function RestorePreviewScreen() {
         Alert.alert("Workout in progress", "Finish or discard your workout first.");
         return;
       }
+      // The settings stores cache the old row; reload them so the restored values show and are never written back over it.
+      unitStore.getState().load();
+      workoutStore.getState().load();
+      reminderStore.getState().load();
       void refreshReminders();
       close();
       Alert.alert("Backup restored", "Your routines, workouts, custom exercises and settings are back.");
-    } catch {
-      Alert.alert("Couldn’t restore the backup", "Your data is unchanged. Try again in a moment.");
+    } catch (e) {
+      if (e instanceof MissingLibraryExerciseError) {
+        Alert.alert("Couldn’t restore the backup", MISSING_LIBRARY_MESSAGE);
+      } else {
+        Alert.alert("Couldn’t restore the backup", "Your data is unchanged. Try again in a moment.");
+      }
     } finally {
       setBusy(false);
     }

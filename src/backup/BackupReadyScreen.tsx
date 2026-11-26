@@ -9,7 +9,7 @@ import { Button, RoundButton, Text } from "@/components";
 import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
 
 import { readLastBackup, writeLastBackup } from "./backupQueries";
-import { shareBackupFile } from "./backupShare";
+import { deleteCachedFile, shareBackupFile } from "./backupShare";
 import { fileSizeText, lastBackupAfterShare } from "./backupText";
 import { useReadyBackup } from "./readyStore";
 
@@ -30,6 +30,7 @@ export function BackupReadyScreen() {
   const [busy, setBusy] = useState(false);
 
   function close() {
+    if (ready) deleteCachedFile(ready.file.uri);
     router.back();
     useReadyBackup.getState().set(null);
   }

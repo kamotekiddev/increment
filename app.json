@@ -34,12 +34,7 @@
         }
       ],
       "expo-sqlite",
-      [
-        "expo-notifications",
-        {
-          "enableRemoteNotifications": false
-        }
-      ],
+      ["expo-notifications", { "enableRemoteNotifications": false }],
       "expo-iap",
       "expo-web-browser",
       "expo-sharing"

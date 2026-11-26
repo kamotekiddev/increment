@@ -10,6 +10,7 @@ import { db } from "@/db/client";
 import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
 
 import { parseBackup } from "./backupFile";
+import { deleteCachedFile } from "./backupShare";
 import { hasWorkoutInProgress } from "./restoreBackup";
 import { usePickedBackup } from "./restoreStore";
 
@@ -47,9 +48,11 @@ export function RestoreCard() {
       try {
         text = await new File(asset.uri).text();
       } catch {
+        deleteCachedFile(asset.uri);
         setNotice({ title: "Can’t restore this file", message: "This file couldn’t be read.", icon: "document-outline" });
         return;
       }
+      deleteCachedFile(asset.uri);
       const parsed = parseBackup(text);
       if (!parsed.ok) {
         setNotice({

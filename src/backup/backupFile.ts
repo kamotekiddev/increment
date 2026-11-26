@@ -1,4 +1,6 @@
+import { parseOverloadRule } from "../engine";
 import type { OverloadRule } from "../engine/types";
+import { SETUP_LIMITS } from "../routines/routineSetup";
 import type { exercises, routineExercises, routines, sets, userSettings, workoutExercises, workouts } from "../db/schema";
 
 /**
@@ -297,6 +299,53 @@ function uniqueIds(rows: { id: number }[]): Set<number> | undefined {
   return ids.size === rows.length ? ids : undefined;
 }
 
+const MAX_DAYS_MASK = 0b1111111;
+const MAX_MINUTE_OF_DAY = 1439;
+const MAX_FEELING = 5;
+
+const isDate = (v: string): boolean => {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if (!m) return false;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const date = new Date(Date.UTC(y, mo - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
+};
+const within = (v: number, min: number, max: number): boolean => v >= min && v <= max;
+const nonNeg = (v: number | null): boolean => v === null || v >= 0;
+
+/** The app's own limits (`SETUP_LIMITS`, the days bitmask, the Reminder time), with room for anything the app can save. */
+function inRange(
+  routineRows: RoutineRow[],
+  routineExerciseRows: RoutineExerciseRow[],
+  workoutRows: { date: string; feeling: number | null }[],
+  workoutExerciseRows: WorkoutExerciseRow[],
+  setRows: SetRow[],
+  settingsRow: Omit<UserSettingsRow, "id"> | null,
+): boolean {
+  const L = SETUP_LIMITS;
+  return (
+    routineRows.every((r) => within(r.days, 0, MAX_DAYS_MASK)) &&
+    routineExerciseRows.every(
+      (r) =>
+        within(r.sets, L.setsMin, L.setsMax) &&
+        within(r.repMin, L.repsMin, L.repsMax) &&
+        within(r.repMax, L.repsMin, L.repsMax) &&
+        r.repMin <= r.repMax &&
+        within(r.restS, L.restMinS, L.restMaxS) &&
+        nonNeg(r.stepKg) &&
+        nonNeg(r.stepLb),
+    ) &&
+    workoutRows.every((w) => isDate(w.date) && (w.feeling === null || within(w.feeling, 1, MAX_FEELING))) &&
+    workoutExerciseRows.every(
+      (we) => nonNeg(we.targetWeightKg) && nonNeg(we.targetReps) && nonNeg(we.acceptedTargetWeightKg) && nonNeg(we.acceptedTargetReps),
+    ) &&
+    setRows.every((s) => s.weight >= 0 && s.reps >= 0) &&
+    (settingsRow === null || (settingsRow.defaultRestS >= 0 && within(settingsRow.reminderTimeMin, 0, MAX_MINUTE_OF_DAY)))
+  );
+}
+
+const hasDuplicate = (keys: string[]): boolean => new Set(keys).size !== keys.length;
+
 /**
  * Reads a backup's text. Checks everything (version, shape, ids, foreign keys) before returning any row, so the
  * caller either gets all of it or a refusal with a plain message. Never throws. Anything the file says about Pro
@@ -342,6 +391,11 @@ export function parseBackup(text: string): ParseResult {
     return refuse("not_backup");
   }
 
+  const rules = routineExerciseRows.map((r) => parseOverloadRule(r.rule));
+  if (rules.some((r) => r === null) || !inRange(routineRows, routineExerciseRows, workoutRows, workoutExerciseRows, setRows, userSettingsRow)) {
+    return refuse("not_backup");
+  }
+
   const customExercises: ExerciseRow[] = customRows.map((e) => ({ ...e, slug: null, isCustom: true }));
   const routineIds = uniqueIds(routineRows);
   const exerciseIds = uniqueIds([...customExercises, ...library]);
@@ -357,12 +411,18 @@ export function parseBackup(text: string): ParseResult {
     workoutExerciseRows.every((we) => workoutIds.has(we.workoutId) && exerciseIds.has(we.exerciseId)) &&
     setRows.every((s) => weIds.has(s.workoutExerciseId) && exerciseIds.has(s.exerciseId));
   if (!intact) return refuse("broken_reference");
+  if (
+    hasDuplicate(routineExerciseRows.map((r) => `${r.routineId}:${r.exerciseId}`)) ||
+    hasDuplicate(workoutExerciseRows.map((we) => `${we.workoutId}:${we.exerciseId}:${we.position}`))
+  ) {
+    return refuse("broken_reference");
+  }
 
   const data: BackupData = {
     customExercises,
     libraryExercises: library,
     routines: routineRows,
-    routineExercises: routineExerciseRows.map((r) => ({ ...r, rule: r.rule as OverloadRule })),
+    routineExercises: routineExerciseRows.map((r, i) => ({ ...r, rule: rules[i] as OverloadRule })),
     workouts: workoutRows.map((w) => ({ ...w, finishedAt: w.finishedAt as number })),
     workoutExercises: workoutExerciseRows,
     sets: setRows,

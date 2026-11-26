@@ -18,6 +18,16 @@ export function writeBackupFile(fileName: string, text: string): BackupFile {
   return { uri: file.uri, bytes: file.size };
 }
 
+/** Deletes a cached copy (the backup written to share, or the file just picked). Best effort: never throws. */
+export function deleteCachedFile(uri: string): void {
+  try {
+    const file = new File(uri);
+    if (file.exists) file.delete();
+  } catch {
+    // The cache is cleared by the system anyway.
+  }
+}
+
 /**
  * Opens the share sheet for the file and says how it ended. iOS reports whether the lifter finished or dismissed the
  * sheet (React Native's `Share`). Android's share sheet reports nothing back, and expo-sharing resolves when it
