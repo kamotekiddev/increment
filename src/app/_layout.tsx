@@ -88,6 +88,7 @@ export default function RootLayout() {
       <Stack.Screen name="(tabs)" />
       <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
       <Stack.Screen name="pro-unlocked" options={{ presentation: "modal" }} />
+      <Stack.Screen name="backup-ready" options={{ presentation: "modal" }} />
     </Stack>
   );
 }
