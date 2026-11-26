@@ -7,6 +7,7 @@ import { ProCard } from "@/settings/ProCard";
 import { ReminderCard } from "@/settings/ReminderCard";
 import { UnitCard } from "@/settings/UnitCard";
 import { WorkoutCard } from "@/settings/WorkoutCard";
+import { YourDataRow } from "@/settings/YourDataRow";
 import { spacing, useColors } from "@/theme";
 
 export default function SettingsScreen() {
@@ -19,6 +20,7 @@ export default function SettingsScreen() {
         <UnitCard />
         <WorkoutCard />
         <ReminderCard />
+        <YourDataRow />
         {__DEV__ ? <DeveloperCard /> : null}
       </ScrollView>
     </View>
