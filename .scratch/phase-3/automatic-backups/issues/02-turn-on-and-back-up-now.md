@@ -4,11 +4,11 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Pure, unit-tested: auto file name (unique within a folder listing), prune list (oldest beyond Keep, only the auto prefix, a manual file and a stranger untouched).
-- [ ] iOS writes to the app Documents folder (`app.json` sets `UIFileSharingEnabled` and `LSSupportsOpeningDocumentsInPlace`); Android writes to the stored picked folder; a missing or revoked folder is a failure result, never a throw.
-- [ ] A write sets `last_backup_at` (shared with manual backups) and `last_backup_hash`, then prunes.
-- [ ] Back up now always writes, is disabled while writing, and opens the picker first on Android with no folder.
-- [ ] Settings stored in the `settings` table, no migration.
-- [ ] Type check, lint and tests pass.
+- [x] Pure, unit-tested: auto file name (unique within a folder listing), prune list (oldest beyond Keep, only the auto prefix, a manual file and a stranger untouched).
+- [x] iOS writes to the app Documents folder (`app.json` sets `UIFileSharingEnabled` and `LSSupportsOpeningDocumentsInPlace`); Android writes to the stored picked folder; a missing or revoked folder is a failure result, never a throw.
+- [x] A write sets `last_backup_at` (shared with manual backups) and `last_backup_hash`, then prunes.
+- [x] Back up now always writes, is disabled while writing, and opens the picker first on Android with no folder.
+- [x] Settings stored in the `settings` table, no migration.
+- [x] Type check, lint and tests pass.

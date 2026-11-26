@@ -1,6 +1,16 @@
 import { PAYWALL_PATH } from "@/pro/proRoutes";
 
-import { createBackupButton } from "./backupPro";
+import { autoBackupRow, createBackupButton } from "./backupPro";
+
+describe("autoBackupRow", () => {
+  it("opens Automatic backups for a Pro lifter", () => {
+    expect(autoBackupRow(true)).toEqual({ showProTag: false, path: "/automatic-backups" });
+  });
+
+  it("shows the grey Pro tag and opens the Paywall for a free lifter", () => {
+    expect(autoBackupRow(false)).toEqual({ showProTag: true, path: PAYWALL_PATH });
+  });
+});
 
 describe("createBackupButton", () => {
   it("is Create backup for a Pro lifter, with nothing to open", () => {

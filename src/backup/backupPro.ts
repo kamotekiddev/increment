@@ -8,6 +8,14 @@ export interface CreateBackupButton {
   paywall: typeof PAYWALL_PATH | null;
 }
 
+/** The Automatic backups screen. */
+export const AUTO_BACKUP_PATH = "/automatic-backups";
+
+/** The Automatic backups row on Your data: a free lifter gets a grey Pro tag and the Paywall, never the screen. */
+export function autoBackupRow(isPro: boolean): { showProTag: boolean; path: typeof AUTO_BACKUP_PATH | typeof PAYWALL_PATH } {
+  return isPro ? { showProTag: false, path: AUTO_BACKUP_PATH } : { showProTag: true, path: PAYWALL_PATH };
+}
+
 export function createBackupButton(isPro: boolean): CreateBackupButton {
   return isPro
     ? { label: "Create backup", icon: "share-outline", paywall: null }

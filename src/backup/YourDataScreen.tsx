@@ -2,14 +2,14 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import Constants from "expo-constants";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
+import { Alert, Pressable, ScrollView, View } from "react-native";
 
-import { Button, Card, RoundButton, ScreenHeader, Text } from "@/components";
+import { Button, Card, Pill, RoundButton, ScreenHeader, Text } from "@/components";
 import { useIsPro } from "@/pro";
 import { useUnit } from "@/settings";
-import { fontFamily, fontSize, lineHeight, radius, size, spacing, useColors } from "@/theme";
+import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
 
-import { createBackupButton } from "./backupPro";
+import { autoBackupRow, createBackupButton } from "./backupPro";
 import { createBackup, readLastBackup, yourDataStats, type YourDataStats } from "./backupQueries";
 import { writeBackupFile } from "./backupShare";
 import { storedLine } from "./backupText";
@@ -22,7 +22,9 @@ import { useReadyBackup } from "./readyStore";
  */
 export function YourDataScreen() {
   const colors = useColors();
-  const createBackupBtn = createBackupButton(useIsPro());
+  const isPro = useIsPro();
+  const createBackupBtn = createBackupButton(isPro);
+  const autoRow = autoBackupRow(isPro);
   const { unit } = useUnit();
   const [stats, setStats] = useState<YourDataStats>({ workouts: 0, sets: 0, records: 0 });
   const [lastBackupAt, setLastBackupAt] = useState<number | null>(null);
@@ -96,6 +98,19 @@ export function YourDataScreen() {
             large
             onPress={() => (createBackupBtn.paywall ? router.push(createBackupBtn.paywall) : onCreateBackup())}
           />
+        </Card>
+        <Card style={{ borderRadius: radius.card, paddingVertical: 0 }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Automatic backups"
+            onPress={() => router.push(autoRow.path)}
+            style={({ pressed }) => ({ minHeight: size.pickerRow, flexDirection: "row", alignItems: "center", gap: spacing.md, opacity: pressed ? opacity.pressed : 1 })}
+          >
+            <Ionicons name="sync-outline" size={size.icon + 2} color={colors.ink} />
+            <Text style={{ flex: 1, fontSize: fontSize.body, fontFamily: fontFamily.semibold }}>Automatic backups</Text>
+            {autoRow.showProTag ? <Pill label="Pro" tone="neutral" /> : null}
+            <Ionicons name="chevron-forward" size={size.check} color={colors.iconFaint} />
+          </Pressable>
         </Card>
         <RestoreCard />
       </ScrollView>
