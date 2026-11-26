@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Platform, Pressable, ScrollView, View } from "react-native";
+import { Alert, Platform, Pressable, ScrollView, View } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -46,6 +46,8 @@ export function BackupReadyScreen() {
     try {
       const result = await shareBackupFile(ready.file);
       storeLastBackup(lastBackupAfterShareOn(Platform.OS, result, Date.now(), readLastBackup()));
+      // iOS reports a finished share; Android can't, so its Share button never confirms or closes.
+      if (result === "shared" && !isAndroid) finish("Backup shared", "Your backup file was shared.");
     } finally {
       setBusy(false);
     }
@@ -59,9 +61,16 @@ export function BackupReadyScreen() {
       const result = await saveBackupToFolder(ready.backup.fileName, ready.backup.text);
       if (result === "failed") setError("Couldn't save the backup there. Try another folder, or use Share.");
       storeLastBackup(lastBackupAfterFolderSave(result, Date.now(), readLastBackup()));
+      if (result === "saved") finish("Backup saved", "Your backup is in the folder you chose.");
     } finally {
       setBusy(false);
     }
+  }
+
+  /** The backup is safe: close Backup ready, then confirm over the Your data screen. */
+  function finish(title: string, message: string) {
+    close();
+    Alert.alert(title, message);
   }
 
   function storeLastBackup(next: number | null) {
