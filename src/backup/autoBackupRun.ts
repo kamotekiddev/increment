@@ -7,16 +7,16 @@ import { proStore } from "@/pro";
 import { runAutoBackup } from "./autoBackupFolder";
 import { readAutoBackupFailing, readAutoBackupSettings, readLastBackupHash, writeAutoBackupFailing } from "./autoBackupSettings";
 import { checkAutoBackup, type Trigger, type TriggerEnv, type TriggerResult } from "./autoBackupTrigger";
-import { contentFingerprint } from "./autoBackupText";
 import { FAILURE_ALERT_TITLE, failureAlertBody, nextStreak } from "./autoBackupStreak";
-import { createBackup, readLastBackup } from "./backupQueries";
+import { createBackup, latestFinishedAt, readLastBackup } from "./backupQueries";
 
 const realEnv: TriggerEnv = {
   isPro: () => proStore.getState().isPro,
   settings: () => readAutoBackupSettings(),
   lastBackupAt: readLastBackup,
   lastHash: readLastBackupHash,
-  fingerprint: (now) => contentFingerprint(createBackup(now, Constants.expoConfig?.version ?? "1.0.0").text),
+  latestFinishedAt,
+  buildText: (now) => createBackup(now, Constants.expoConfig?.version ?? "1.0.0").text,
   run: runAutoBackup,
 };
 

@@ -1,5 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useNavigation } from "expo-router";
+import { useRef } from "react";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -8,6 +9,9 @@ import { Button, Text } from "@/components";
 import { fontFamily, fontSize, lineHeight, minTouch, opacity, pro, radius, size, spacing, textStyle, useColors } from "@/theme";
 
 import { proScreensOnTop } from "./proRoutes";
+
+/** How long a closing Pro screen needs before the next push (the same wait as the limit pop-up's). */
+const DISMISS_SETTLE_MS = 350;
 
 /** What Pro includes, as listed on Pro unlocked. */
 const INCLUDED = ["Unlimited routines", "Charts and records", "Automatic backups", "Custom exercises and export"];
@@ -74,6 +78,7 @@ export function ProUnlockedScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const opening = useRef(false);
 
   function leave() {
     const routes = navigation.getState()?.routes ?? [];
@@ -86,10 +91,19 @@ export function ProUnlockedScreen() {
     leave();
   }
 
-  /** Closes Pro unlocked (and the Paywall under it) like Start using Pro, then opens Automatic backups. */
+  /**
+   * Closes Pro unlocked (and the Paywall under it) like Start using Pro, then opens Automatic backups. The push waits
+   * a fixed time for the dismissal to settle (the same way the limit pop-up waits before opening the Paywall), so it
+   * lands on the stack of the screen the Paywall was opened from and not on a stack that is still closing.
+   */
   function turnOnAutomaticBackups() {
+    if (opening.current) return;
+    opening.current = true;
     leave();
-    router.push(AUTO_BACKUP_PATH);
+    setTimeout(() => {
+      opening.current = false;
+      router.push(AUTO_BACKUP_PATH);
+    }, DISMISS_SETTLE_MS);
   }
 
   return (

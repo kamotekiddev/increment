@@ -8,6 +8,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Button, RoundButton, Text } from "@/components";
 import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
 
+import { contentFingerprint } from "./autoBackupText";
+import { writeLastBackupHash } from "./autoBackupSettings";
 import { readLastBackup, writeLastBackup } from "./backupQueries";
 import { deleteCachedFile, saveBackupToFolder, shareBackupFile } from "./backupShare";
 import { fileSizeText, lastBackupAfterFolderSave, lastBackupAfterShareOn } from "./backupText";
@@ -73,8 +75,11 @@ export function BackupReadyScreen() {
     Alert.alert(title, message);
   }
 
+  /** A backup that counts moves Last backup and stores the content fingerprint, so "changed" is judged from it. */
   function storeLastBackup(next: number | null) {
-    if (next !== null && next !== readLastBackup()) writeLastBackup(next);
+    if (next === null || next === readLastBackup() || !ready) return;
+    writeLastBackup(next);
+    writeLastBackupHash(contentFingerprint(ready.backup.text));
   }
 
   if (!ready) return null;

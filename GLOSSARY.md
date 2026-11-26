@@ -57,7 +57,7 @@ A single `.increment` file holding the lifter's finished Workouts, Routines, Cus
 _Avoid_: Export (a CSV or PDF for reading, not for restoring), Restore purchase
 
 **Automatic backup**:
-A Backup the app makes by itself for a Pro lifter, into one folder, on a schedule they chose: after every workout, daily, weekly or monthly. Daily, weekly and monthly ones are made only when the data has changed since the last Backup. The app keeps the last few automatic backups (3, 5, 10 or 20) and never deletes a Backup the lifter made by hand. A manual Backup and an automatic one share the one Last backup date. Pausing it after a refund keeps its settings and files.
+A Backup the app makes by itself for a Pro lifter, into one folder, on a schedule they chose: after every workout, daily, weekly or monthly. Daily, weekly and monthly ones are made only when the data has changed since the last Backup. The app keeps the last few automatic backups (3, 5, 10 or 20) and never deletes a Backup the lifter made by hand. A manual Backup and an automatic one share the one Last backup date. Pausing it after a refund keeps its settings and files. They are the only files Files shows on iOS; the database is kept out of that folder.
 _Avoid_: Auto-save, sync, cloud backup (it writes to a folder; whether that folder syncs is the lifter's choice)
 
 **Step**:

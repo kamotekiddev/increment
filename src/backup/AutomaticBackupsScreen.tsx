@@ -1,7 +1,7 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Platform, Pressable, ScrollView, View } from "react-native";
+import { Alert, Platform, Pressable, ScrollView, View } from "react-native";
 
 import { BottomSheet, Button, Card, RoundButton, ScreenHeader, SettingsSwitch, Text } from "@/components";
 import { useIsPro } from "@/pro";
@@ -10,7 +10,7 @@ import { fontFamily, fontSize, lineHeight, minTouch, opacity, radius, spacing, u
 import { folderLabel, KEEP_OPTIONS, type Keep } from "./autoBackupText";
 import { openAutoBackupFolder, pickAutoBackupFolder, runAutoBackup } from "./autoBackupFolder";
 import { FREQUENCY_OPTIONS, type Frequency } from "./autoBackupDue";
-import { readAutoBackupFailing, readAutoBackupSettings, writeAutoBackupFrequency, writeAutoBackupKeep, writeAutoBackupOn, type AutoBackupSettings } from "./autoBackupSettings";
+import { readAutoBackupFailing, readAutoBackupSettings, writeAutoBackupFailing, writeAutoBackupFrequency, writeAutoBackupKeep, writeAutoBackupOn, type AutoBackupSettings } from "./autoBackupSettings";
 import { recordAutoBackupResult } from "./autoBackupRun";
 import { readLastBackup } from "./backupQueries";
 import { lastBackupLabel } from "./backupText";
@@ -50,10 +50,21 @@ export function AutomaticBackupsScreen() {
     setFailed(readAutoBackupFailing());
   };
 
+  /**
+   * Opens the Android folder picker. A new folder clears the failure flag (the old failure was about the old folder); a
+   * failed pick (not a back-out) says so plainly. Returns true when a folder was picked.
+   */
+  async function pickFolder(): Promise<boolean> {
+    const result = await pickAutoBackupFolder();
+    if (result === "picked") writeAutoBackupFailing(false);
+    else if (result === "failed") Alert.alert("Couldn't use that folder", "Pick another folder and try again.");
+    return result === "picked";
+  }
+
   /** Android with no usable folder opens the picker first. Returns false when the lifter backed out or it failed. */
   async function ensureFolder(): Promise<boolean> {
     if (Platform.OS !== "android" || openAutoBackupFolder() !== null) return true;
-    return (await pickAutoBackupFolder()) === "picked";
+    return pickFolder();
   }
 
   async function writeNow(): Promise<void> {
@@ -70,6 +81,7 @@ export function AutomaticBackupsScreen() {
     if (busy) return;
     if (!next) {
       writeAutoBackupOn(false);
+      writeAutoBackupFailing(false);
       reload();
       return;
     }
@@ -98,7 +110,7 @@ export function AutomaticBackupsScreen() {
   async function onChangeFolder() {
     if (busy || Platform.OS !== "android") return;
     setBusy(true);
-    await pickAutoBackupFolder();
+    await pickFolder();
     setBusy(false);
     reload();
   }
@@ -115,7 +127,7 @@ export function AutomaticBackupsScreen() {
   }
 
   const folderText = Platform.OS === "ios" ? IOS_FOLDER_LABEL : settings.folder ? folderLabel(settings.folder) : "Choose a folder";
-  const statusText = failed ? `${lastBackupLabel(lastBackupAt)} · Couldn't save: folder unavailable` : lastBackupLabel(lastBackupAt);
+  const statusText = failed ? `${lastBackupLabel(lastBackupAt)} · Couldn't save the latest backup` : lastBackupLabel(lastBackupAt);
 
   const row = (label: string, value: string, onPress?: () => void) => (
     <Pressable
