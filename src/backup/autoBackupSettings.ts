@@ -12,6 +12,7 @@ const KEEP_KEY = "auto_backup_keep";
 const FOLDER_KEY = "auto_backup_folder";
 const HASH_KEY = "last_backup_hash";
 const FREQUENCY_KEY = "auto_backup_frequency";
+const FAILING_KEY = "auto_backup_failing";
 
 function read(key: string): unknown {
   return db.select().from(settings).where(eq(settings.key, key)).get()?.value;
@@ -53,3 +54,7 @@ export function readLastBackupHash(): string | null {
 }
 
 export const writeLastBackupHash = (hash: string): void => write(HASH_KEY, hash);
+
+/** True while automatic backups are failing (set by the first failure of a streak, cleared by a success). */
+export const readAutoBackupFailing = (): boolean => read(FAILING_KEY) === true;
+export const writeAutoBackupFailing = (failing: boolean): void => write(FAILING_KEY, failing);
