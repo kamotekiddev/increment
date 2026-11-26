@@ -9,6 +9,7 @@ import { useIsPro } from "@/pro";
 import { useUnit } from "@/settings";
 import { fontFamily, fontSize, lineHeight, radius, size, spacing, useColors } from "@/theme";
 
+import { createBackupButton } from "./backupPro";
 import { createBackup, readLastBackup, yourDataStats, type YourDataStats } from "./backupQueries";
 import { writeBackupFile } from "./backupShare";
 import { storedLine } from "./backupText";
@@ -20,7 +21,7 @@ import { useReadyBackup } from "./readyStore";
  */
 export function YourDataScreen() {
   const colors = useColors();
-  const isPro = useIsPro();
+  const createBackupBtn = createBackupButton(useIsPro());
   const { unit } = useUnit();
   const [stats, setStats] = useState<YourDataStats>({ workouts: 0, sets: 0, records: 0 });
   const [lastBackupAt, setLastBackupAt] = useState<number | null>(null);
@@ -88,11 +89,12 @@ export function YourDataScreen() {
               </Text>
             </View>
           </View>
-          {isPro ? (
-            <Button label="Create backup" icon="share-outline" large onPress={onCreateBackup} />
-          ) : (
-            <Button label="Unlock backups with Pro" icon="lock-closed-outline" large onPress={() => router.push("/paywall")} />
-          )}
+          <Button
+            label={createBackupBtn.label}
+            icon={createBackupBtn.icon}
+            large
+            onPress={() => (createBackupBtn.paywall ? router.push(createBackupBtn.paywall) : onCreateBackup())}
+          />
         </Card>
       </ScrollView>
     </View>
