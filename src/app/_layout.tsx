@@ -22,6 +22,13 @@ import { useReminderTap } from "@/reminders/useReminderTap";
 import { spacing, useColors } from "@/theme";
 import { setupRestNotifications } from "@/workout/restNotification";
 
+/**
+ * A fresh install opens "/" (the tabs), which is protected until onboarding is done. Without an anchor Expo Router falls back to
+ * the first screen it finds (the Paywall, a modal, so GO_BACK has nowhere to go); with one it lands on Welcome. Once onboarded,
+ * Welcome is protected and the first available screen, the tabs, is used.
+ */
+export const unstable_settings = { anchor: "welcome" };
+
 SplashScreen.preventAutoHideAsync();
 setupRestNotifications();
 
