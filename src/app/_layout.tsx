@@ -44,7 +44,6 @@ export default function RootLayout() {
   const proError = dbReady ? loadProOnce() : null;
   const onboardedError = dbReady ? loadOnboardedOnce() : null;
   const dbError = openError ?? unitError ?? workoutError ?? reminderError ?? proError ?? onboardedError;
-  const onboarded = useOnboarded();
 
   const fontsDone = fontsLoaded || fontError != null;
   const done = fontsDone && (dbReady || dbError != null);
@@ -90,6 +89,15 @@ export default function RootLayout() {
     );
   }
 
+  return <RootStack />;
+}
+
+/**
+ * Mounted only after the startup reads, so it never subscribes to the onboarding store while `loadOnboardedOnce` sets it
+ * during RootLayout's render (a store update from inside a render of a subscribed component is a React error).
+ */
+function RootStack() {
+  const onboarded = useOnboarded();
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {/* Welcome until onboarding is done, then the tabs. Each guard removes the other side from the history, so the
