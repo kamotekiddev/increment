@@ -60,7 +60,7 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 ### Settings
 - Units, default rest, show previous set, keep screen awake, light and dark theme, reminders.
 - **Default rest** (15 s to 10:00, default 1:30) is the rest a newly added exercise starts with; exercises already in a routine never change. **Show previous set** (on by default) shows the Last column in the live workout. **Keep screen awake** (on by default) keeps the screen lit while a live workout is open.
-- Your data: backup, automatic backups, export, delete all data (with a typed confirmation).
+- Your data: backup, restore, automatic backups, Export your progress (Pro; CSV or PDF report), and Delete all data (free for everyone, typed DELETE confirmation, keeps Pro and saved backup files).
 
 ### Onboarding
 Welcome → Goal → Experience → Schedule → Equipment → Units → Your plan → Reminders, with a Quick start path for people who skip.
@@ -80,11 +80,12 @@ Welcome → Goal → Experience → Schedule → Equipment → Units → Your pl
 | Custom exercises | – | ✓ |
 | Move to a new phone | – | ✓ |
 | Automatic backups | – | ✓ |
-| Export to CSV or PDF | – | ✓ |
+| Export your progress (CSV or PDF report) | – | ✓ |
 | Warm-ups | – | ✓ |
 
 Rules:
 - **Backups are Pro-only to create.** A free user cannot create a backup file in any way; Create backup on Your data is locked and opens the paywall. **Restoring a backup is free for everyone** (a new phone starts Free). A backup never carries the Pro purchase or a Workout in progress, and restore is blocked while a Workout in progress exists.
+- **Export is Pro-only; Delete all data is free.** Export your progress writes a CSV (every done set of finished workouts, weights as typed with a unit and a `weight_kg` column) or a PDF report (totals, Records, a chart per exercise) for 30 days, 3 months or all time. After a refund the row locks again; anything already exported stays. Delete all data removes everything the lifter made and resets preferences, but never the Pro purchase or saved backup files, and is blocked while a Workout in progress exists. See `.scratch/phase-3/export-and-delete/spec.md`.
 - Automatic backups run after every workout, daily, weekly or monthly, checked when the app opens. The last N files are kept. On iOS they go to the app's own folder (visible in the Files app, no iCloud Drive; the database itself is kept out of that folder); on Android, to a folder the user picks. Daily, weekly and monthly ones are made only if the data changed. See `.scratch/phase-3/automatic-backups/spec.md`.
 - Paywall copy: "Unlock Pro · [Price]" with "One-time payment. No subscription. Works offline." Restore purchase is on the paywall (reached after onboarding from the Increment Pro card at the top of Settings) and, in Phase 4, on Welcome back.
 - **Paywall states:** loading (button disabled, spinner), loaded (the store's localized price), offline ("Connect to the internet to buy Pro."), Payment pending (Android cash or bank payments, iOS Ask to Buy; Pro switches on by itself once the store confirms, even if the app was closed) and in flight. Cancelling the store's sheet changes nothing; any other failure shows "Purchase didn't go through" and says nothing was charged. Restore purchase answers with Pro unlocked, Payment pending, "No purchase found" (check the Apple ID or Google account) or "Couldn't reach the App Store / Google Play".
