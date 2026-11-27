@@ -45,7 +45,7 @@ The one-time purchase that unlocks the paid features. It works offline.
 _Avoid_: Premium, subscription, paid plan
 
 **Locked routine**:
-A Routine past the lifter's 2 oldest (by when it was created, whatever order the list is in) while they don't have Pro, for example after a refund. It can be opened and deleted, but not started or edited, and it is left out of Today and Reminders. Its Workouts and Records stay. Buying or restoring Pro unlocks it, and so can deleting an older Routine. A Workout in progress on it may be finished first. A Routine that can't be edited during a Workout in progress is "blocked by a Workout in progress", not locked.
+A Routine past the lifter's 3 oldest (by when it was created, whatever order the list is in) while they don't have Pro, for example after a refund. It can be opened and deleted, but not started or edited, and it is left out of Today and Reminders. Its Workouts and Records stay. Buying or restoring Pro unlocks it, and so can deleting an older Routine. A Workout in progress on it may be finished first. A Routine that can't be edited during a Workout in progress is "blocked by a Workout in progress", not locked.
 _Avoid_: Pro routine, paused routine, disabled routine
 
 **Restore purchase**:

@@ -93,8 +93,9 @@ describe("planReminders", () => {
   });
 
   it("plans nothing for a Locked routine on free, and everything with Pro", () => {
-    const locked: PlannerRoutine = { id: 3, name: "Legs", days: SUN, exerciseCount: 3 };
-    const routines = [pushA, pullB, locked];
+    const filler: PlannerRoutine = { id: 3, name: "Core", days: 0, exerciseCount: 2 };
+    const locked: PlannerRoutine = { id: 4, name: "Legs", days: SUN, exerciseCount: 3 };
+    const routines = [pushA, pullB, filler, locked];
     const lockedIds = free(routines);
     expect(plan({ routines, lockedIds }).map((r) => r.id)).toEqual(plan().map((r) => r.id));
     expect(plan({ routines, lockedIds }).some((r) => r.title.includes("Legs"))).toBe(false);
@@ -103,7 +104,7 @@ describe("planReminders", () => {
 
   it("plans nothing when the only routine with days is Locked", () => {
     const quiet = (id: number): PlannerRoutine => ({ id, name: `Q${id}`, days: 0, exerciseCount: 1 });
-    const routines = [quiet(1), quiet(2), { id: 3, name: "Legs", days: SUN, exerciseCount: 3 }];
+    const routines = [quiet(1), quiet(2), quiet(3), { id: 4, name: "Legs", days: SUN, exerciseCount: 3 }];
     expect(plan({ routines, lockedIds: free(routines) })).toEqual([]);
   });
 });

@@ -3,14 +3,14 @@ import { routineCounterParts } from "./routineListText";
 
 export interface RoutineCounterCard {
   kind: "pro" | "free" | "locked";
-  /** The bold part, e.g. "2 of 2" or "2 routines locked.". */
+  /** The bold part, e.g. "3 of 3" or "2 routines locked.". */
   strong: string;
   rest: string;
 }
 
 /**
  * Pure: what the Routines tab shows above the list. With Pro, the plain count. Free with nothing
- * locked, the "N of 2" counter. Free with any Locked routine, the "N routines locked." card.
+ * locked, the "N of 3" counter. Free with any Locked routine, the "N routines locked." card.
  * Also the set of locked ids, so rows can dim themselves.
  */
 export function routineListState(

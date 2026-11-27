@@ -37,12 +37,21 @@ describe("routinePreview", () => {
 
 describe("routineCounter", () => {
   it("shows used of the free limit", () => {
-    expect(routineCounter(1, false)).toBe("1 of 2 free routines used");
-    expect(routineCounter(2, false)).toBe("2 of 2 free routines used");
+    expect(routineCounter(1, false)).toBe("1 of 3 free routines used");
+    expect(routineCounter(3, false)).toBe("3 of 3 free routines used");
+  });
+
+  it.each([
+    [0, "0 of 3 free routines used"],
+    [1, "1 of 3 free routines used"],
+    [2, "2 of 3 free routines used"],
+    [3, "3 of 3 free routines used"],
+  ])("reads the free counter for %i routines", (count, line) => {
+    expect(routineCounter(count, false)).toBe(line);
   });
 
   it("splits the bold number from the rest", () => {
-    expect(routineCounterParts(2, false)).toEqual({ strong: "2 of 2", rest: "free routines used" });
+    expect(routineCounterParts(3, false)).toEqual({ strong: "3 of 3", rest: "free routines used" });
     expect(routineCounterParts(3, true)).toEqual({ strong: "3", rest: "routines" });
   });
 

@@ -4,7 +4,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { Pressable, ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Button, RoundButton, Text } from "@/components";
+import { Button, Text } from "@/components";
 import { LimitMeter } from "@/routines/LimitMeter";
 import { LimitSheet } from "@/routines/LimitSheet";
 import { RoutineRow } from "@/routines/RoutineRow";
@@ -40,12 +40,9 @@ export default function RoutinesScreen() {
           gap: 14,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Text variant="heading" accessibilityRole="header" style={textStyle.screenTitle}>
-            Routines
-          </Text>
-          <RoundButton icon="add" label="New routine" filled onPress={create} />
-        </View>
+        <Text variant="heading" accessibilityRole="header" style={textStyle.screenTitle}>
+          Routines
+        </Text>
         {routines === undefined ? null : routines.length === 0 ? (
           <View style={{ paddingVertical: spacing.xl, gap: spacing.lg }}>
             <Text variant="title">No routines yet</Text>

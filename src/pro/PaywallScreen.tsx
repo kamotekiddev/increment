@@ -22,6 +22,7 @@ import {
 import {
   boughtPendingAfter,
   paywallState,
+  routinesRowFree,
   productAfterReload,
   restoreOutcome,
   restoreResult,
@@ -30,7 +31,7 @@ import {
 } from "./paywallState";
 import { buyPro, fetchProProduct, proStore, useProPending } from "./usePro";
 
-/** A table cell's value: included, not included, or a short text ("Unlimited", "2"). */
+/** A table cell's value: included, not included, or a short text ("Unlimited", "3"). */
 type Cell = true | false | string;
 
 /** The Free/Pro table, top to bottom, as drawn on the canvas. */
@@ -39,7 +40,7 @@ const ROWS: { feature: string; free: Cell; pro: Cell }[] = [
   { feature: "Log workouts", free: "Unlimited", pro: "Unlimited" },
   { feature: "Move to a new phone", free: false, pro: true },
   { feature: "Automatic backups", free: false, pro: true },
-  { feature: "Routines", free: "2", pro: "Unlimited" },
+  { feature: "Routines", free: routinesRowFree(), pro: "Unlimited" },
   { feature: "Charts and records", free: false, pro: true },
   { feature: "Custom exercises", free: false, pro: true },
   { feature: "Export to CSV or PDF", free: false, pro: true },

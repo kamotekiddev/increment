@@ -15,10 +15,11 @@ import { finishWorkout, startWorkout } from "./workoutQueries";
 jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
 const db: Db = jest.requireMock("@/db/client").db;
 
-/** Two older routines, then a third (past the 2 free) with three Clean 60 kg × 8 workouts. */
+/** Three older routines, then a fourth (past the 3 free) with three Clean 60 kg × 8 workouts. */
 function thirdRoutineWithHistory(): number {
   db.insert(routines).values({ name: "Pull" }).run();
   db.insert(routines).values({ name: "Legs" }).run();
+  db.insert(routines).values({ name: "Core" }).run();
   const exercise = db.insert(exercises).values({ name: "Bench press", equipment: "barbell", loadType: "weighted" }).returning().get();
   const routine = db.insert(routines).values({ name: "Push" }).returning().get();
   db.insert(routineExercises)
@@ -38,7 +39,7 @@ function thirdRoutineWithHistory(): number {
   return routine.id;
 }
 
-describe("a refund lands in the middle of a workout on a routine past the 2 oldest", () => {
+describe("a refund lands in the middle of a workout on a routine past the 3 oldest", () => {
   it("lets the lifter resume, finish, take the Offer and carry the accepted Target into the next workout", async () => {
     const routineId = thirdRoutineWithHistory();
     const adapter = new FakeProStoreAdapter();

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ScrollView, View } from "react-native";
 
 import { BottomSheet, Button, Card, Input, Pill, Text } from "@/components";
+import { FREE_ROUTINE_LIMIT } from "@/routines";
 import { spacing, useColors } from "@/theme";
 
 /** Developer-only: every base component in one place. Not reachable in release builds. */
@@ -51,7 +52,7 @@ export default function Gallery() {
       <Text variant="caption" tone="muted">Bottom sheet (tap Start workout)</Text>
       <BottomSheet visible={open} onDismiss={() => setOpen(false)}>
         <Text variant="title">Limit reached</Text>
-        <Text tone="muted">Free includes 2 routines. Unlock Pro for more.</Text>
+        <Text tone="muted">Free includes {FREE_ROUTINE_LIMIT} routines. Unlock Pro for more.</Text>
         <Button label="Close" onPress={() => setOpen(false)} />
       </BottomSheet>
     </ScrollView>

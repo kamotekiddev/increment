@@ -70,10 +70,10 @@ describe("toTodayInput", () => {
     const monday = new Date(2026, 10, 16, 9).getTime();
     const row = (id: number, days: number) => ({ id, name: `R${id}`, days, exerciseCount: 1 });
 
-    it("drops them from the input, keeping the 2 lowest ids", () => {
-      const rows = [row(9, MON), row(1, MON), row(4, MON), row(2, MON)];
+    it("drops them from the input, keeping the 3 lowest ids", () => {
+      const rows = [row(9, MON), row(1, MON), row(4, MON), row(2, MON), row(3, MON)];
       const input = toTodayInput(5, rows, [], null, freeLocks(rows));
-      expect(input.routines.map((r) => r.id)).toEqual([1, 2]);
+      expect(input.routines.map((r) => r.id)).toEqual([1, 2, 3]);
     });
 
     it("keeps them all with Pro", () => {
@@ -81,28 +81,28 @@ describe("toTodayInput", () => {
     });
 
     it("makes a day with only a Locked routine a rest day, next preview from open routines", () => {
-      const rows = [row(1, WED), row(2, 0), row(3, MON)];
+      const rows = [row(1, WED), row(2, 0), row(3, 0), row(4, MON)];
       const free = buildToday({ ...toTodayInput(monday, rows, [], null, freeLocks(rows)), now: monday });
       expect(free.state).toMatchObject({ kind: "rest", next: { routineId: 1, weekday: "Wednesday" } });
       const pro = buildToday({ ...toTodayInput(monday, rows, [], null, none), now: monday });
-      expect(pro.state).toMatchObject({ kind: "cards", cards: [{ routineId: 3 }] });
+      expect(pro.state).toMatchObject({ kind: "cards", cards: [{ routineId: 4 }] });
     });
 
     it("reads as a rest day with no next, not noDays, when only a Locked routine has days", () => {
-      const rows = [row(1, 0), row(2, 0), row(3, MON)];
+      const rows = [row(1, 0), row(2, 0), row(3, 0), row(4, MON)];
       const { state, strip } = buildToday(toTodayInput(monday, rows, [], null, freeLocks(rows)));
       expect(state).toEqual({ kind: "rest", next: null, week: { planned: 0, done: 0 } });
       expect(strip.some((d) => d.planned)).toBe(false);
     });
 
     it("keeps the nudge when no routine at all has days", () => {
-      const rows = [row(1, 0), row(2, 0), row(3, 0)];
+      const rows = [row(1, 0), row(2, 0), row(3, 0), row(4, 0)];
       expect(buildToday(toTodayInput(monday, rows, [], null, freeLocks(rows))).state).toEqual({ kind: "noDays" });
     });
 
     it("shows the nudge with Pro when no routine has days, and cards when the third has today", () => {
-      const rows = [row(1, 0), row(2, 0), row(3, MON)];
-      expect(buildToday(toTodayInput(monday, rows, [], null, none)).state).toMatchObject({ kind: "cards", cards: [{ routineId: 3 }] });
+      const rows = [row(1, 0), row(2, 0), row(3, 0), row(4, MON)];
+      expect(buildToday(toTodayInput(monday, rows, [], null, none)).state).toMatchObject({ kind: "cards", cards: [{ routineId: 4 }] });
     });
   });
 });
