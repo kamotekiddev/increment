@@ -4,12 +4,12 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] The constant is 3. Without Pro, creating a routine is allowed with 0, 1 or 2 routines and blocked with 3 or more; with Pro it is always allowed.
-- [ ] The limit pop-up title reads "You've used your 3 free routines" and its buttons and Paywall pitch are unchanged.
-- [ ] The Paywall's Routines row reads 3 against "Unlimited", and the gallery line says 3.
-- [ ] Each of these strings is built from the constant. Tests check the create rule and that the pop-up title and Paywall row contain the constant's value.
-- [ ] `npx tsc --noEmit`, `npx expo lint` and the Jest suite pass.
+- [x] The constant is 3. Without Pro, creating a routine is allowed with 0, 1 or 2 routines and blocked with 3 or more; with Pro it is always allowed.
+- [x] The limit pop-up title reads "You've used your 3 free routines" and its buttons and Paywall pitch are unchanged.
+- [x] The Paywall's Routines row reads 3 against "Unlimited", and the gallery line says 3.
+- [x] Each of these strings is built from the constant. Tests check the create rule and that the pop-up title and Paywall row contain the constant's value.
+- [x] `npx tsc --noEmit`, `npx expo lint` and the Jest suite pass.
 
 ## Comments

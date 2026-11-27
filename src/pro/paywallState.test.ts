@@ -1,4 +1,6 @@
-import { boughtPendingAfter, paywallState, productAfterReload, restoreOutcome, restoreResult } from "./paywallState";
+import { FREE_ROUTINE_LIMIT } from "@/routines/routineLimit";
+
+import { boughtPendingAfter, paywallState, productAfterReload, restoreOutcome, restoreResult, routinesRowFree } from "./paywallState";
 
 describe("keeping the loaded price", () => {
   const failed = { kind: "failed" } as const;
@@ -151,5 +153,12 @@ describe("Restore purchase result", () => {
       expect(restoreResult("found", platform)).toEqual({ kind: "none" });
       expect(restoreResult("pending", platform)).toEqual({ kind: "none" });
     }
+  });
+});
+
+describe("Paywall Routines row", () => {
+  it("reads the free limit, 3, against Unlimited", () => {
+    expect(routinesRowFree()).toBe("3");
+    expect(routinesRowFree()).toBe(String(FREE_ROUTINE_LIMIT));
   });
 });

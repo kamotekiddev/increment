@@ -1,8 +1,10 @@
+import { FREE_ROUTINE_LIMIT } from "./routineLimit";
 import { LIMIT_SHEET_BENEFITS, LIMIT_SHEET_BODY, limitSheetTitle } from "./limitSheetText";
 
 describe("limit pop-up text", () => {
   it("titles the pop-up with the free limit", () => {
-    expect(limitSheetTitle()).toBe("You’ve used your 2 free routines");
+    expect(limitSheetTitle()).toBe("You’ve used your 3 free routines");
+    expect(limitSheetTitle()).toContain(String(FREE_ROUTINE_LIMIT));
   });
 
   it("pitches Pro and does not tell the lifter to delete", () => {

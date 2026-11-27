@@ -2,7 +2,7 @@ import { lockedRoutineIds } from "@/routines/routineLimit";
 
 import { remindersDaysNote } from "./remindersDaysNote";
 
-const MON = 1, TUE = 2, THU = 8, FRI = 16, SUN = 64;
+const MON = 1, TUE = 2, WED = 4, THU = 8, FRI = 16, SUN = 64;
 let nextId = 0;
 const none: ReadonlySet<number> = new Set();
 const free = (rs: readonly { id: number }[]) => new Set(lockedRoutineIds(rs.map((x) => x.id), false));
@@ -22,12 +22,12 @@ describe("remindersDaysNote", () => {
     expect(remindersDaysNote([], none)).toBeNull();
   });
   it("leaves out Locked routines on free", () => {
-    const list = [{ id: 1, days: MON }, { id: 2, days: TUE }, { id: 3, days: FRI }];
-    expect(remindersDaysNote(list, free(list))).toBe("Mon, Tue");
-    expect(remindersDaysNote(list, none)).toBe("Mon, Tue, Fri");
+    const list = [{ id: 1, days: MON }, { id: 2, days: TUE }, { id: 3, days: WED }, { id: 4, days: FRI }];
+    expect(remindersDaysNote(list, free(list))).toBe("Mon, Tue, Wed");
+    expect(remindersDaysNote(list, none)).toBe("Mon, Tue, Wed, Fri");
   });
   it("is null when only a Locked routine has days", () => {
-    const rows = [{ id: 1, days: 0 }, { id: 2, days: 0 }, { id: 3, days: FRI }];
+    const rows = [{ id: 1, days: 0 }, { id: 2, days: 0 }, { id: 3, days: 0 }, { id: 4, days: FRI }];
     expect(remindersDaysNote(rows, free(rows))).toBeNull();
   });
 });

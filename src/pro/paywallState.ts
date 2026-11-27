@@ -1,3 +1,5 @@
+import { FREE_ROUTINE_LIMIT } from "@/routines/routineLimit";
+
 import type { StoreAnswer } from "./entitlementDecision";
 import type { ProProduct } from "./storeAdapter";
 
@@ -111,4 +113,9 @@ export function paywallState({ product, pending, inFlight }: PaywallInputs): Pay
     case "failed":
       return { ...usual, enabled: false, spinner: false, line: "Connect to the internet to buy Pro.", lineStrong: true };
   }
+}
+
+/** The Paywall table's Routines row, free column: the free routine limit, built from the one constant. */
+export function routinesRowFree(): string {
+  return String(FREE_ROUTINE_LIMIT);
 }

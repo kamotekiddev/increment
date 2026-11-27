@@ -10,14 +10,14 @@ export function routineSubtitle(days: number, exerciseCount: number): string {
 
 /**
  * Pure: the counter above the list in two parts, so the number can be bold:
- * "2 of 2" + "free routines used" (free), or "3" + "routines" (Pro).
+ * "3 of 3" + "free routines used" (free), or "3" + "routines" (Pro).
  */
 export function routineCounterParts(count: number, isPro: boolean): { strong: string; rest: string } {
   if (isPro) return { strong: String(count), rest: count === 1 ? "routine" : "routines" };
   return { strong: `${count} of ${FREE_ROUTINE_LIMIT}`, rest: "free routines used" };
 }
 
-/** Pure: the counter as one line, e.g. "1 of 2 free routines used" (free) or "3 routines" (Pro). */
+/** Pure: the counter as one line, e.g. "1 of 3 free routines used" (free) or "3 routines" (Pro). */
 export function routineCounter(count: number, isPro: boolean): string {
   const { strong, rest } = routineCounterParts(count, isPro);
   return `${strong} ${rest}`;
