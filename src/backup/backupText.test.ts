@@ -5,7 +5,8 @@ import {
   lastBackupAfterShareOn,
   lastBackupLabel,
   settingsSummary,
-  storedLine,
+  backedUpLabel,
+  autoBackupSummary,
   uniqueFileName,
 } from "./backupText";
 
@@ -20,10 +21,25 @@ describe("lastBackupLabel", () => {
   });
 });
 
-describe("storedLine", () => {
-  it("joins where the data lives with the backup state", () => {
-    expect(storedLine(null)).toBe("Stored only on this phone · No backup yet");
-    expect(storedLine(NOV_14)).toBe("Stored only on this phone · Last backup 14 Nov 2026");
+describe("backedUpLabel", () => {
+  const NOW = new Date(2026, 10, 27).getTime();
+  it("says No backup yet before any backup", () => {
+    expect(backedUpLabel(null, NOW)).toBe("No backup yet");
+  });
+  it("shows the day and month for a backup this year", () => {
+    expect(backedUpLabel(NOV_14, NOW)).toBe("Backed up 14 Nov");
+  });
+  it("adds the year when the backup is from another year", () => {
+    expect(backedUpLabel(NOV_14, new Date(2027, 0, 5).getTime())).toBe("Backed up 14 Nov 2026");
+  });
+});
+
+describe("autoBackupSummary", () => {
+  it("is Off when automatic backups are off", () => {
+    expect(autoBackupSummary(false, "Every week", 5)).toBe("Off");
+  });
+  it("joins the frequency and how many files are kept", () => {
+    expect(autoBackupSummary(true, "Every week", 5)).toBe("Every week · keeps 5");
   });
 });
 
