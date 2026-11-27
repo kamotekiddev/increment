@@ -12,7 +12,7 @@ const dim = { opacity: opacity.locked };
 export interface RoutineRowProps {
   routine: RoutineListItem;
   onPress: () => void;
-  /** A Locked routine (free plan, past the 2 oldest): content dimmed, lock icon and Pro tag on the title row. */
+  /** A Locked routine (free plan, past the free limit, the 3 oldest): content dimmed, lock icon and Pro tag on the title row. */
   locked?: boolean;
 }
 

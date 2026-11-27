@@ -27,8 +27,8 @@ describe("lockedRoutineIds", () => {
   });
 
   it("keeps the 3 lowest ids open whatever order the list is in", () => {
-    expect(lockedRoutineIds([7, 3, 5, 9], false).sort()).toEqual([9]);
-    expect(lockedRoutineIds([9, 7, 5, 3], false).sort()).toEqual([9]);
+    expect(lockedRoutineIds([7, 3, 5, 9], false).sort((a, b) => a - b)).toEqual([9]);
+    expect(lockedRoutineIds([9, 7, 5, 3], false).sort((a, b) => a - b)).toEqual([9]);
   });
 
   it("unlocks the next routine when an older one is deleted", () => {
