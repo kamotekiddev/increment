@@ -4,9 +4,9 @@
 
 **Blocked by:** 02, 03, 04
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `docs/decisions.md` entry written in the same style as features 6 and 7.
-- [ ] `.scratch/phase-3/map.md` feature 8 section reads "built, phone check pending".
-- [ ] Phone-check list: the CSV opens in a spreadsheet; the PDF renders on both OSes; Delete all data with Pro, automatic backups on and files in Files, then Restore from a backup.
-- [ ] Type check, lint and tests pass.
+- [x] `docs/decisions.md` entry written in the same style as features 6 and 7.
+- [x] `.scratch/phase-3/map.md` feature 8 section reads "built, phone check pending".
+- [x] Phone-check list: the CSV opens in a spreadsheet; the PDF renders on both OSes; Delete all data with Pro, automatic backups on and files in Files, then Restore from a backup. The full list is `../phone-check.md`.
+- [x] Type check, lint and tests pass.
