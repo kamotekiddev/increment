@@ -61,13 +61,18 @@ function isPickerCancelled(e: unknown): boolean {
  * closes either way, so there a closed sheet counts as shared. Never throws.
  */
 export async function shareBackupFile(file: BackupFile): Promise<ShareResult> {
+  return shareFile(file, "application/json", "Save or share backup");
+}
+
+/** The share sheet for any cached file (a backup, an export): `mimeType` and `dialogTitle` are Android's. Never throws. */
+export async function shareFile(file: BackupFile, mimeType: string, dialogTitle: string): Promise<ShareResult> {
   try {
     if (Platform.OS === "ios") {
       const result = await Share.share({ url: file.uri });
       return result.action === Share.sharedAction ? "shared" : "dismissed";
     }
     if (!(await Sharing.isAvailableAsync())) return "failed";
-    await Sharing.shareAsync(file.uri, { mimeType: "application/json", dialogTitle: "Save or share backup" });
+    await Sharing.shareAsync(file.uri, { mimeType, dialogTitle });
     return "shared";
   } catch {
     return "failed";

@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 
 import { Button, Card, Pill, RoundButton, ScreenHeader, Text } from "@/components";
+import { exportRow } from "@/export/exportPro";
 import { useIsPro } from "@/pro";
 import { useUnit } from "@/settings";
 import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
@@ -25,6 +26,7 @@ export function YourDataScreen() {
   const isPro = useIsPro();
   const createBackupBtn = createBackupButton(isPro);
   const autoRow = autoBackupRow(isPro);
+  const exportEntry = exportRow(isPro);
   const { unit } = useUnit();
   const [stats, setStats] = useState<YourDataStats>({ workouts: 0, sets: 0, records: 0 });
   const [lastBackupAt, setLastBackupAt] = useState<number | null>(null);
@@ -113,6 +115,19 @@ export function YourDataScreen() {
           </Pressable>
         </Card>
         <RestoreCard />
+        <Card style={{ borderRadius: radius.card, paddingVertical: 0 }}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Export your progress"
+            onPress={() => router.push(exportEntry.path)}
+            style={({ pressed }) => ({ minHeight: size.pickerRow, flexDirection: "row", alignItems: "center", gap: spacing.md, opacity: pressed ? opacity.pressed : 1 })}
+          >
+            <Ionicons name="download-outline" size={size.icon + 2} color={colors.ink} />
+            <Text style={{ flex: 1, fontSize: fontSize.body, fontFamily: fontFamily.semibold }}>Export your progress</Text>
+            {exportEntry.showProTag ? <Pill label="Pro" tone="neutral" /> : null}
+            <Ionicons name="chevron-forward" size={size.check} color={colors.iconFaint} />
+          </Pressable>
+        </Card>
       </ScrollView>
     </View>
   );

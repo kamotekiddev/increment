@@ -4,10 +4,10 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] CSV has date, workout, exercise, set, reps, `weight`, `unit`, `weight_kg` (two decimals) and `is_warmup`; done sets of finished workouts only; a Workout in progress and skipped sets are left out; commas and quotes in names are quoted correctly.
-- [ ] The range filters by workout date; the button count equals the row count; an empty range gives zero rows.
-- [ ] The share sheet gets `Increment export {date}.csv`, which opens in a spreadsheet on both OSes.
-- [ ] The row replaces the "Later" placeholders on Your data; the Pro gate is read through the one gate.
-- [ ] Unit tests for the export build (seam 1) and the gate (seam 3); type check, lint and tests pass.
+- [x] CSV has date, workout, exercise, set, reps, `weight`, `unit`, `weight_kg` (two decimals) and `is_warmup`; done sets of finished workouts only; a Workout in progress and skipped sets are left out; commas and quotes in names are quoted correctly.
+- [x] The range filters by workout date; the button count equals the row count; an empty range gives zero rows.
+- [x] The share sheet gets `Increment export {date}.csv`, which opens in a spreadsheet on both OSes.
+- [x] The row replaces the "Later" placeholders on Your data; the Pro gate is read through the one gate.
+- [x] Unit tests for the export build (seam 1) and the gate (seam 3); type check, lint and tests pass.
