@@ -1,5 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
 import { Alert, Pressable, View } from "react-native";
 
 import { BottomSheet, Button, Input, Pill, Text } from "@/components";
@@ -33,6 +34,9 @@ export function DeleteAllCard({ isPro, stats, onCreateBackup, onDeleted }: Props
   const [typed, setTyped] = useState("");
   const [routineCount, setRoutineCount] = useState(0);
   const [deleted, setDeleted] = useState(false);
+
+  // The "deleted" note is only true until the lifter leaves and comes back (a Restore or a new workout makes it stale).
+  useFocusEffect(useCallback(() => setDeleted(false), []));
 
   function onOpen() {
     if (hasWorkoutInProgress(db)) {
@@ -68,14 +72,24 @@ export function DeleteAllCard({ isPro, stats, onCreateBackup, onDeleted }: Props
       Alert.alert("Couldn’t delete your data", "Nothing was deleted. Try again in a moment.");
       return;
     }
-    // The settings stores cache the old row; reload them so the defaults show and are never written back over it.
-    unitStore.getState().load();
-    workoutStore.getState().load();
-    reminderStore.getState().load();
-    void refreshReminders(); // reminders are now off, so this cancels every planned one
-    close();
-    setDeleted(true);
-    onDeleted();
+    // The delete is committed. Whatever the refresh does, the sheet closes and the state says it was deleted.
+    try {
+      // The settings stores cache the old row; reload them so the defaults show and are never written back over it.
+      unitStore.getState().load();
+      workoutStore.getState().load();
+      reminderStore.getState().load();
+      void refreshReminders().catch(() => {}); // reminders are now off, so this cancels every planned one
+    } catch {
+      // Stale stores fix themselves on the next load; the data is gone either way.
+    } finally {
+      close();
+      setDeleted(true);
+      try {
+        onDeleted();
+      } catch {
+        // Your data reads its numbers again on the next focus.
+      }
+    }
   }
 
   const counts: [number, string][] = [
