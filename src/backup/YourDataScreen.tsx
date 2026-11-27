@@ -13,6 +13,7 @@ import { autoBackupRow, createBackupButton } from "./backupPro";
 import { createBackup, readLastBackup, yourDataStats, type YourDataStats } from "./backupQueries";
 import { writeBackupFile } from "./backupShare";
 import { storedLine } from "./backupText";
+import { DeleteAllCard } from "./DeleteAllCard";
 import { RestoreCard } from "./RestoreCard";
 import { useReadyBackup } from "./readyStore";
 
@@ -29,13 +30,12 @@ export function YourDataScreen() {
   const [stats, setStats] = useState<YourDataStats>({ workouts: 0, sets: 0, records: 0 });
   const [lastBackupAt, setLastBackupAt] = useState<number | null>(null);
 
+  const load = useCallback(() => {
+    setStats(yourDataStats(unit));
+    setLastBackupAt(readLastBackup());
+  }, [unit]);
   // Read again each time the screen shows, so Last backup moves after Backup ready closes.
-  useFocusEffect(
-    useCallback(() => {
-      setStats(yourDataStats(unit));
-      setLastBackupAt(readLastBackup());
-    }, [unit]),
-  );
+  useFocusEffect(load);
 
   function onCreateBackup() {
     try {
@@ -113,6 +113,7 @@ export function YourDataScreen() {
           </Pressable>
         </Card>
         <RestoreCard />
+        <DeleteAllCard isPro={isPro} stats={stats} onCreateBackup={onCreateBackup} onDeleted={load} />
       </ScrollView>
     </View>
   );

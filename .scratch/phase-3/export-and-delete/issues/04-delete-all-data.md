@@ -4,9 +4,9 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] The Pro entitlement, library exercises, `seed_version` and saved backup files are untouched.
-- [ ] A Workout in progress shows "Finish or discard your workout first." and changes nothing.
-- [ ] A free lifter doesn't see the backup shortcut; a Pro lifter's shortcut opens the Backup flow and returns to Your data.
-- [ ] Unit tests for the delete (seam 2) and the shortcut gate (seam 3); type check, lint and tests pass.
+- [x] The Pro entitlement, library exercises, `seed_version` and saved backup files are untouched.
+- [x] A Workout in progress shows "Finish or discard your workout first." and changes nothing.
+- [x] A free lifter doesn't see the backup shortcut; a Pro lifter's shortcut opens the Backup flow and returns to Your data.
+- [x] Unit tests for the delete (seam 2) and the shortcut gate (seam 3); type check, lint and tests pass.
