@@ -1,26 +1,39 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
-import { Alert, ScrollView, View } from "react-native";
+import { Alert, Pressable, ScrollView, View } from "react-native";
 
 import { deleteCachedFile, shareFile, writeBackupFile } from "@/backup/backupShare";
 import { Button, Card, RoundButton, ScreenHeader, Text } from "@/components";
+import { useUnit } from "@/settings";
 import { Segmented } from "@/settings/Segmented";
 import { fontFamily, fontSize, lineHeight, radius, size, spacing, useColors } from "@/theme";
 
 import { buildExport, csvText, EXPORT_RANGES, exportFileName, previewLines, type ExportRange } from "./exportBuild";
+import { buildReport, reportFileName, reportHtml, reportSummary } from "./reportBuild";
+import { writeReportFile } from "./reportFile";
+
+type Format = "csv" | "pdf";
+
+const FORMATS: { value: Format; label: string; detail: string; icon: "grid-outline" | "document-text-outline" }[] = [
+  { value: "csv", label: "Spreadsheet", detail: "CSV, every done set", icon: "grid-outline" },
+  { value: "pdf", label: "PDF report", detail: "Totals, records and a chart per exercise", icon: "document-text-outline" },
+];
 
 /**
- * Export progress (Pro): Spreadsheet ticked, a Time range, the Preview and "Export N sets", which hands the CSV to the
- * share sheet. The PDF report joins the Format picker in a later ticket.
+ * Export progress (Pro): Spreadsheet ticked (or the PDF report), a Time range, the Preview and "Export N sets", which
+ * hands the file to the share sheet. Both formats read the same sets, so the count is the same.
  */
 export function ExportScreen() {
   const colors = useColors();
+  const { unit } = useUnit();
+  const [format, setFormat] = useState<Format>("csv");
   const [range, setRange] = useState<ExportRange>("all");
   const [busy, setBusy] = useState(false);
   const [now] = useState(() => Date.now());
   const build = useMemo(() => buildExport(range, now), [range, now]);
-  const preview = previewLines(build.rows);
+  const report = useMemo(() => (format === "pdf" ? buildReport(range, now, unit) : null), [format, range, now, unit]);
+  const preview = format === "pdf" && report ? [reportSummary(report)] : previewLines(build.rows);
   const empty = build.setCount === 0;
 
   async function onExport() {
@@ -28,9 +41,13 @@ export function ExportScreen() {
     setBusy(true);
     let uri: string | null = null;
     try {
-      const file = writeBackupFile(exportFileName(new Date()), csvText(build.rows));
+      const today = new Date();
+      const file =
+        format === "pdf" && report
+          ? await writeReportFile(reportFileName(today), reportHtml(report, unit, today))
+          : writeBackupFile(exportFileName(today), csvText(build.rows));
       uri = file.uri;
-      const result = await shareFile(file, "text/csv", "Save or share export");
+      const result = await shareFile(file, format === "pdf" ? "application/pdf" : "text/csv", "Save or share export");
       if (result === "failed") Alert.alert("Couldn't share the export", "Your data is unchanged. Try again in a moment.");
     } catch {
       Alert.alert("Couldn't create the export", "Your data is unchanged. Try again in a moment.");
@@ -48,16 +65,28 @@ export function ExportScreen() {
           Format
         </Text>
         <Card style={{ borderRadius: radius.card, paddingVertical: 0 }}>
-          <View accessibilityRole="radio" accessibilityState={{ selected: true }} accessibilityLabel="Spreadsheet" style={{ minHeight: size.pickerRow, flexDirection: "row", alignItems: "center", gap: spacing.md }}>
-            <Ionicons name="grid-outline" size={size.icon + 2} color={colors.ink} />
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: fontSize.body, fontFamily: fontFamily.semibold }}>Spreadsheet</Text>
-              <Text tone="muted" style={{ fontSize: fontSize.small }}>
-                CSV, every done set
-              </Text>
-            </View>
-            <Ionicons name="checkmark-circle" size={size.icon + 2} color={colors.accent} />
-          </View>
+          {FORMATS.map((f) => {
+            const on = f.value === format;
+            return (
+              <Pressable
+                key={f.value}
+                accessibilityRole="radio"
+                accessibilityState={{ selected: on }}
+                accessibilityLabel={f.label}
+                onPress={() => setFormat(f.value)}
+                style={{ minHeight: size.pickerRow, flexDirection: "row", alignItems: "center", gap: spacing.md }}
+              >
+                <Ionicons name={f.icon} size={size.icon + 2} color={colors.ink} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: fontSize.body, fontFamily: fontFamily.semibold }}>{f.label}</Text>
+                  <Text tone="muted" style={{ fontSize: fontSize.small }}>
+                    {f.detail}
+                  </Text>
+                </View>
+                <Ionicons name={on ? "checkmark-circle" : "ellipse-outline"} size={size.icon + 2} color={on ? colors.accent : colors.iconFaint} />
+              </Pressable>
+            );
+          })}
         </Card>
 
         <Text tone="muted" style={{ fontSize: fontSize.small, fontFamily: fontFamily.medium, paddingHorizontal: spacing.snug }}>

@@ -67,6 +67,14 @@ describe("the CSV", () => {
     expect(text).toContain('"Push, Pull","Press, ""Strict""\nSeated"');
   });
 
+  it("defuses a name a spreadsheet would run as a formula, leaving numbers and other names as they are", () => {
+    workout("2026-11-20", "=HYPERLINK(\"x\")", [{ w: 40, r: 5 }], { routine: "+Push" });
+    workout("2026-11-21", "Curl-up", [{ w: 12.5, r: 5 }]);
+    const [a, b] = lines(csvText(buildExport("all", NOW).rows)).slice(1);
+    expect(a).toBe("2026-11-20,'+Push,\"'=HYPERLINK(\"\"x\"\")\",1,5,40,kg,40.00,false");
+    expect(b).toBe("2026-11-21,Workout,Curl-up,1,5,12.5,kg,12.50,false");
+  });
+
   it("keeps decimals of a typed weight and a bodyweight 0", () => {
     workout("2026-11-20", "Curl", [{ w: 12.5, r: 10 }, { w: 0, r: 10 }]);
     const [a, b] = buildExport("all", NOW).rows;
