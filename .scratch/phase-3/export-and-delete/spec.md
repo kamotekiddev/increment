@@ -10,7 +10,7 @@ A lifter's history lives only on their phone. A Pro lifter who wants to look at 
 
 ## Solution
 
-Two things on Your data. **Export your progress** (Pro): one row that opens the Export progress screen, where the lifter picks Spreadsheet (CSV, every done set) or PDF report (totals, Records and a chart per exercise), picks a time range, sees a preview and the count, and hands the file to the share sheet. **Delete all data** (free for everyone): a red link that opens a typed-confirmation sheet and removes everything the lifter made from the phone, leaving Pro and any saved backup files alone.
+Two things on Your data. **Export your progress** (Pro): one row that opens the Export progress screen, where the lifter picks Spreadsheet (CSV, every done set) or PDF report (totals, Records and a chart per exercise), picks a time range, sees a preview and the count, and hands the file to the share sheet. **Delete all data** (free for everyone): a red row that opens a typed-confirmation sheet and removes everything the lifter made from the phone, leaving Pro and any saved backup files alone.
 
 ## Owner decisions (2026-11-27)
 
@@ -27,6 +27,7 @@ Two things on Your data. **Export your progress** (Pro): one row that opens the 
 11. **Typed confirmation** is the word DELETE (the mockup's field), compared ignoring case and surrounding spaces. The red **Delete everything** button is disabled until it matches. The sheet shows the counts it will remove, and "Your Pro purchase isn't affected."
 12. **Refund:** Export locks again for a free lifter (row opens the Paywall); Delete all data is unaffected. Anything already exported or saved stays with the lifter.
 13. **No ADR.** Reversible, nothing stored, no schema change.
+14. **Your data was redesigned** (owner decision 2026-11-27, option A of three prototypes): a stats card with a "Backed up 26 Nov" or "No backup yet" pill; a **Back up** card (Create backup, then Automatic backups); a **Restore and export** card (Restore from a backup, Export your progress); and Delete all data as its own red row. Every row is one shared shape, and Create backup is the only filled button. See `docs/decisions.md`, "Your data layout".
 
 ## User Stories
 
@@ -67,7 +68,7 @@ Two things on Your data. **Export your progress** (Pro): one row that opens the 
 - **PDF** is an HTML string built from the PDF data model and handed to `expo-print`; the chart is inline SVG drawn with the same geometry helper as the Progress chart. The Pro gate is read through the existing single gate. Check the Expo SDK docs for `expo-print` and `expo-sharing` before writing; add `expo-print` with `npx expo install`.
 - **File names:** `Increment export {date}.csv` and `Increment report {date}.pdf`, never colliding with a `.increment` backup.
 - **Export screen:** format radio (Spreadsheet, PDF report), Time range segmented control, Preview card (first 3 rows for CSV; a one-line summary for PDF), a note that this is a copy for reading and not a backup that restores, and a bottom button "Export N sets" that hands the file to the share sheet. A Export with zero sets is disabled with "No sets in this range."
-- **Your data:** the "Later" placeholder rows for Spreadsheet, PDF report and Delete all data are replaced by the one Export row (Pro tag when free, locked, opening the Paywall) and a red Delete all data link below it.
+- **Your data:** the "Later" placeholder rows for Spreadsheet, PDF report and Delete all data are replaced by the one Export row (Pro tag when free, locked, opening the Paywall) and a red Delete all data row below (a redesign on 2026-11-27 made it a row, see decision 14).
 - **Delete all data** is one transaction over the database: delete children first (sets, workout exercises, workouts, routine exercises, routines, custom exercises), reset the `user_settings` row to its defaults, clear the automatic backup settings, `last_backup_at` and `last_backup_hash`, and leave `entitlements`, the seeded library and the `seed_version` flag alone. It returns "workout-in-progress" and changes nothing if one exists (the same check Restore uses). After a success the caller cancels the planned reminders and refreshes the stores that show data; it never deletes files on disk.
 - **Confirm sheet:** the shortcut row only for Pro; the typed field and Delete everything button; Cancel. The counts come from the same stats query Your data already uses.
 - **No schema change, no migration.**

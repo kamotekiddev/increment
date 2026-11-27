@@ -3,7 +3,7 @@ import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, Pressable, View } from "react-native";
 
-import { BottomSheet, Button, Input, Pill, Text } from "@/components";
+import { BottomSheet, Button, Card, Input, Pill, Text } from "@/components";
 import { db } from "@/db/client";
 import { routines } from "@/db/schema";
 import { refreshReminders } from "@/reminders";
@@ -12,6 +12,7 @@ import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useCo
 
 import type { YourDataStats } from "./backupQueries";
 import { deleteAllData, deleteConfirmed, deleteSheetBackupShortcut } from "./deleteAllData";
+import { DataRow } from "./DataRow";
 import { hasWorkoutInProgress } from "./restoreBackup";
 
 interface Props {
@@ -106,14 +107,9 @@ export function DeleteAllCard({ isPro, stats, onCreateBackup, onDeleted }: Props
           All your data was deleted.
         </Text>
       ) : null}
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Delete all data"
-        onPress={onOpen}
-        style={({ pressed }) => ({ height: size.tile + 4, alignItems: "center", justifyContent: "center", opacity: pressed ? opacity.pressed : 1 })}
-      >
-        <Text style={{ color: colors.danger, fontSize: fontSize.label, fontFamily: fontFamily.semibold }}>Delete all data</Text>
-      </Pressable>
+      <Card style={{ borderRadius: radius.card, paddingVertical: 0, marginTop: spacing.sm }}>
+        <DataRow danger icon="trash-outline" title="Delete all data" subtitle="Removes everything from this phone" onPress={onOpen} />
+      </Card>
       <BottomSheet visible={open} onDismiss={close}>
         <View style={{ alignItems: "center", gap: spacing.sm }}>
           <View style={{ width: size.emptyIcon, height: size.emptyIcon, borderRadius: radius.pill, backgroundColor: colors.dangerTint, alignItems: "center", justifyContent: "center" }}>
@@ -135,7 +131,9 @@ export function DeleteAllCard({ isPro, stats, onCreateBackup, onDeleted }: Props
           >
             <Ionicons name="share-outline" size={size.icon + 2} color={colors.ink} />
             <Text style={{ flex: 1, fontSize: fontSize.body, fontFamily: fontFamily.semibold }}>Create a backup first</Text>
-            <Pill label="Pro" tone="neutral" />
+            <View>
+              <Pill label="Pro" tone="neutral" />
+            </View>
           </Pressable>
         ) : null}
         <Input value={typed} onChangeText={setTyped} placeholder="Type DELETE to confirm" autoCapitalize="characters" autoCorrect={false} accessibilityLabel="Type DELETE to confirm" />

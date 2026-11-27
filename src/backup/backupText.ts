@@ -12,9 +12,20 @@ export function lastBackupLabel(lastBackupAt: number | null): string {
   return `Last backup ${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
-/** The line under the stats: where the data lives, then the backup state. */
-export function storedLine(lastBackupAt: number | null): string {
-  return `Stored only on this phone · ${lastBackupLabel(lastBackupAt)}`;
+/**
+ * The pill under the stats: "No backup yet" or "Backed up 14 Nov" (local date; the year is added only when it isn't
+ * the current one, so the pill stays short).
+ */
+export function backedUpLabel(lastBackupAt: number | null, now: number): string {
+  if (lastBackupAt === null) return "No backup yet";
+  const d = new Date(lastBackupAt);
+  const year = d.getFullYear() === new Date(now).getFullYear() ? "" : ` ${d.getFullYear()}`;
+  return `Backed up ${d.getDate()} ${MONTHS[d.getMonth()]}${year}`;
+}
+
+/** The Automatic backups row's second line on Your data: "Off", or "Every week · keeps 5". */
+export function autoBackupSummary(on: boolean, frequencyLabel: string, keep: number): string {
+  return on ? `${frequencyLabel} · keeps ${keep}` : "Off";
 }
 
 /** The stored Last backup date after a share: only a finished share moves it; a cancel or a failure keeps the old one. */

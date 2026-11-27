@@ -29,4 +29,6 @@ Run on a real iPhone and a real Android phone, with Pro unlocked unless stated.
 - [ ] The backup files in Files are still there; Restore from a backup brings the workouts and routines back.
 
 ## Owner action
-- [ ] Fix the canvas frames `DataExport`, `DataBackup` and `DataBackupPro` (https://claude.ai/artifact/Ny2LFGjeieuBmcCGHeGb7e): `DataExport` still says "Weights export in kg, your current unit" (replace with weights as typed, unit and kg columns); `DataBackup` and `DataBackupPro` still show two Export rows (Spreadsheet, PDF report) and "Later" placeholders; they become the single "Export your progress" row and the red Delete all data link.
+- [x] The canvas frames `DataExport`, `DataBackup`, `DataBackupPro` and `DeleteAll` were updated on 2026-11-27 (https://claude.ai/artifact/Ny2LFGjeieuBmcCGHeGb7e).
+- [ ] Check the canvas frames `DataShare` (Backup ready) and `DataAuto` against the new Your data layout; they were not reviewed.
+- [ ] On a phone, check the redesigned Your data screen for a free lifter and a Pro lifter: the Pro tag sits level with the title, and the rows are the same height on iOS and Android.

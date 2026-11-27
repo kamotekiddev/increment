@@ -1,6 +1,6 @@
 # 04: Delete all data
 
-**What to build:** The red Delete all data link on Your data opens a sheet with the counts, the Pro-only "Create a backup first" shortcut, and the typed DELETE confirmation. It is blocked, before typing, while a Workout is in progress. Confirming deletes training data, resets preferences to defaults, cancels reminders, switches automatic backups off and clears Last backup, then lands on Your data with zeros, "No backup yet" and "All your data was deleted."
+**What to build:** The red Delete all data row on Your data opens a sheet with the counts, the Pro-only "Create a backup first" shortcut, and the typed DELETE confirmation. It is blocked, before typing, while a Workout is in progress. Confirming deletes training data, resets preferences to defaults, cancels reminders, switches automatic backups off and clears Last backup, then lands on Your data with zeros, "No backup yet" and "All your data was deleted."
 
 **Blocked by:** 01
 

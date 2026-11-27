@@ -3,14 +3,15 @@ import * as DocumentPicker from "expo-document-picker";
 import { File } from "expo-file-system";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { View } from "react-native";
 
-import { BottomSheet, Button, Card, Text } from "@/components";
+import { BottomSheet, Button, Text } from "@/components";
 import { db } from "@/db/client";
-import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
+import { fontSize, lineHeight, radius, size, spacing, useColors } from "@/theme";
 
 import { parseBackup } from "./backupFile";
 import { deleteCachedFile } from "./backupShare";
+import { DataRow } from "./DataRow";
 import { hasWorkoutInProgress } from "./restoreBackup";
 import { usePickedBackup } from "./restoreStore";
 
@@ -23,11 +24,11 @@ interface Notice {
 const BLOCKED: Notice = { title: "Workout in progress", message: "Finish or discard your workout first.", icon: "time-outline" };
 
 /**
- * The Restore from a backup row on Your data: open for everyone, no Pro check. Picks a file, checks all of it
+ * The Restore from a backup row on Your data (one row of its "Restore and export" card): open for everyone, no Pro check. Picks a file, checks all of it
  * (`parseBackup`) and opens the preview; a workout in progress, a newer version or an invalid file shows its sheet
  * and nothing changes.
  */
-export function RestoreCard() {
+export function RestoreRow() {
   const colors = useColors();
   const [notice, setNotice] = useState<Notice | null>(null);
   const [busy, setBusy] = useState(false);
@@ -73,25 +74,7 @@ export function RestoreCard() {
 
   return (
     <>
-      <Card style={{ borderRadius: radius.card, paddingVertical: 0 }}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Restore from a backup"
-          onPress={onPress}
-          style={({ pressed }) => ({ flexDirection: "row", alignItems: "center", gap: spacing.md, minHeight: size.row, opacity: pressed ? opacity.pressed : 1 })}
-        >
-          <View style={{ width: size.tile, height: size.tile, borderRadius: radius.tile, backgroundColor: colors.accentTint, alignItems: "center", justifyContent: "center" }}>
-            <Ionicons name="download-outline" size={size.icon} color={colors.accent} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: fontSize.body, fontFamily: fontFamily.semibold }}>Restore from a backup</Text>
-            <Text tone="muted" style={{ fontSize: fontSize.caption, lineHeight: lineHeight.small }}>
-              Pick an Increment backup file. Free for everyone.
-            </Text>
-          </View>
-          <Ionicons name="chevron-forward" size={size.check} color={colors.inkMuted} />
-        </Pressable>
-      </Card>
+      <DataRow icon="download-outline" title="Restore from a backup" subtitle="Free for everyone" onPress={onPress} />
       <BottomSheet visible={notice !== null} onDismiss={() => setNotice(null)}>
         {notice && (
           <>
