@@ -239,3 +239,97 @@ export const pro = {
 
 /** The rest panel pinned to the bottom of the live workout: ring size and stroke in points, top corner radius. */
 export const restPanel = { ring: 96, stroke: 6, corner: 32, time: 24, timeLine: 28, label: 11 } as const;
+
+/** The Welcome hero illustration (`OnbWelcome`): box and shapes in points. */
+export const welcomeHero = {
+  height: 380,
+  /** Room kept above the hero when the device has no top inset. */
+  topInset: 36,
+  /** Corner radius of the hero box. */
+  corner: 36,
+  /** Gap between the hero and the heading block, and inside it. */
+  sectionGap: 28,
+  textGap: 10,
+  /** The muted line under the heading, at `fontSize.lead`. */
+  leadLine: 23,
+  /** Padding of the Target card and the Set card. */
+  targetPadV: 14,
+  setPadV: 10,
+  setPadRight: 10,
+  setGap: 10,
+  /** The step badge: gap, padding. */
+  badgeGap: 3,
+  badgePadV: 3,
+  badgePadLeft: 7,
+  badgePadRight: 9,
+  numeralTracking: -0.8,
+  titleTracking: -1.1,
+  /** The floating cards' shadow. */
+  shadowOpacity: 0.12,
+  shadowRadius: 16,
+  shadowOffsetY: 8,
+  shadowElevation: 4,
+  disc: 240,
+  discLeft: 75,
+  discTop: 70,
+  ring: 180,
+  ringLeft: 105,
+  ringTop: 100,
+  ringWidth: 22,
+  ringOpacity: 0.12,
+  targetCardWidth: 196,
+  targetCardLeft: 22,
+  targetCardTop: 38,
+  setCardWidth: 220,
+  setCardRight: 22,
+  setCardBottom: 44,
+  checkCircle: 40,
+  /** The big-number text of the Target card. */
+  numeral: 26,
+  numeralLine: 30,
+  /** The step badge and the unit beside the number. */
+  badge: 12,
+  setNumber: 17,
+  title: 38,
+  titleLine: 44,
+} as const;
+
+/** The Quick start screen (`OnbQuick`): row heights and tiles in points. */
+export const quickStart = {
+  /** The sparkle tile above the heading, and its glyph. */
+  heroTile: 48,
+  heroGlyph: 24,
+  title: 30,
+  titleLine: 36,
+  /** A default row, its label column, and the Default tag text. */
+  defaultRow: 48,
+  labelWidth: 92,
+  tag: 11,
+  /** A plan row, and the day badge at its start. */
+  planRow: 60,
+  badgeWidth: 52,
+  badgeHeight: 40,
+  badgeText: 12,
+  /** Room kept under the content for the pinned Start training button. */
+  footerSpace: 120,
+  /** Extra room under the plan rows for the error line that grows the pinned footer upward. */
+  errorSpace: 28,
+  titleTracking: -0.9,
+  /** Gap between the blocks of the screen. */
+  contentGap: 14,
+  /** The heading block's side inset, and the Default rows' right padding and inner gap. */
+  headingInset: 2,
+  defaultPadRight: 14,
+  defaultGap: 10,
+  /** The Default tag's vertical padding and the plan card's vertical padding. */
+  tagPadV: 1,
+  planPadV: 2,
+  /** Corner of a day badge. */
+  badgeCorner: 13,
+  /** Half-point text sizes of the Default value and the plan subtitle. */
+  valueText: 14.5,
+  subtitleText: 12.5,
+} as const;
+
+/** Side margin of an onboarding screen and the pinned footer under it (`OnboardingFooter`). */
+export const onboardingGutter = 20;

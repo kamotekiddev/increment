@@ -13,6 +13,7 @@ import { AppState, View } from "react-native";
 
 import { scheduleAutoBackup } from "@/backup/autoBackupRun";
 import { Text } from "@/components";
+import { loadOnboardedOnce, useOnboarded } from "@/onboarding";
 import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
 import { loadProOnce, proStore, startProStoreChecks, useProUnlockedScreen } from "@/pro";
@@ -20,6 +21,13 @@ import { loadReminderSettingsOnce, loadUnitOnce, loadWorkoutSettingsOnce } from 
 import { useReminderTap } from "@/reminders/useReminderTap";
 import { spacing, useColors } from "@/theme";
 import { setupRestNotifications } from "@/workout/restNotification";
+
+/**
+ * A fresh install opens "/" (the tabs), which is protected until onboarding is done. Without an anchor Expo Router falls back to
+ * the first screen it finds (the Paywall, a modal, so GO_BACK has nowhere to go); with one it lands on Welcome. Once onboarded,
+ * Welcome is protected and the first available screen, the tabs, is used.
+ */
+export const unstable_settings = { anchor: "welcome" };
 
 SplashScreen.preventAutoHideAsync();
 setupRestNotifications();
@@ -41,7 +49,8 @@ export default function RootLayout() {
   const workoutError = dbReady ? loadWorkoutSettingsOnce() : null;
   const reminderError = dbReady ? loadReminderSettingsOnce() : null;
   const proError = dbReady ? loadProOnce() : null;
-  const dbError = openError ?? unitError ?? workoutError ?? reminderError ?? proError;
+  const onboardedError = dbReady ? loadOnboardedOnce() : null;
+  const dbError = openError ?? unitError ?? workoutError ?? reminderError ?? proError ?? onboardedError;
 
   const fontsDone = fontsLoaded || fontError != null;
   const done = fontsDone && (dbReady || dbError != null);
@@ -87,10 +96,26 @@ export default function RootLayout() {
     );
   }
 
+  return <RootStack />;
+}
+
+/**
+ * Mounted only after the startup reads, so it never subscribes to the onboarding store while `loadOnboardedOnce` sets it
+ * during RootLayout's render (a store update from inside a render of a subscribed component is a React error).
+ */
+function RootStack() {
+  const onboarded = useOnboarded();
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {/* The tabs come first, so a modal declared below never becomes the first screen. */}
-      <Stack.Screen name="(tabs)" />
+      {/* Welcome until onboarding is done, then the tabs. Each guard removes the other side from the history, so the
+          back button never reaches an empty app. The tabs come first, so a modal declared below never becomes the first screen. */}
+      <Stack.Protected guard={onboarded}>
+        <Stack.Screen name="(tabs)" />
+      </Stack.Protected>
+      <Stack.Protected guard={!onboarded}>
+        <Stack.Screen name="welcome" />
+        <Stack.Screen name="quick-start" />
+      </Stack.Protected>
       <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
       <Stack.Screen name="pro-unlocked" options={{ presentation: "modal" }} />
       <Stack.Screen name="backup-ready" options={{ presentation: "modal" }} />

@@ -203,3 +203,36 @@ describe("migration 0013: exercise references cascade", () => {
     expect(sqlite.prepare("SELECT COUNT(*) AS n FROM workouts").get()).toEqual({ n: 1 });
   });
 });
+
+/** Migration 0014: `user_settings.onboarded`, set for every install that already has data. */
+describe("migration 0014: onboarded flag for existing installs", () => {
+  const onboarded = (sqlite: ReturnType<typeof createDbAtMigration>["sqlite"]) =>
+    sqlite.prepare("SELECT onboarded FROM user_settings").all() as { onboarded: number }[];
+
+  it("an empty old database has no settings row and so reads not onboarded", () => {
+    const { sqlite, migrateTo } = createDbAtMigration(13);
+    migrateTo(14);
+    expect(onboarded(sqlite)).toEqual([]);
+  });
+
+  it("an old database with a settings row reads onboarded, and keeps its other settings", () => {
+    const { sqlite, migrateTo } = createDbAtMigration(13);
+    sqlite.prepare("INSERT INTO user_settings (id, unit) VALUES (1, 'lb')").run();
+    migrateTo(14);
+    expect(sqlite.prepare("SELECT unit, onboarded FROM user_settings").all()).toEqual([{ unit: "lb", onboarded: 1 }]);
+  });
+
+  it("an old database with a routine but no settings row reads onboarded", () => {
+    const { sqlite, migrateTo } = createDbAtMigration(13);
+    sqlite.prepare("INSERT INTO routines (id, name, days, position) VALUES (1, 'Push', 5, 0)").run();
+    migrateTo(14);
+    expect(onboarded(sqlite)).toEqual([{ onboarded: 1 }]);
+  });
+
+  it("an old database with a workout but no settings row reads onboarded", () => {
+    const { sqlite, migrateTo } = createDbAtMigration(13);
+    sqlite.prepare("INSERT INTO workouts (id, started_at, date, in_progress) VALUES (1, 1, '2026-11-01', 0)").run();
+    migrateTo(14);
+    expect(onboarded(sqlite)).toEqual([{ onboarded: 1 }]);
+  });
+});

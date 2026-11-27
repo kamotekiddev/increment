@@ -28,7 +28,8 @@ export type RoutineExerciseRow = Select<typeof routineExercises>;
 export type WorkoutRow = Select<typeof workouts>;
 export type WorkoutExerciseRow = Select<typeof workoutExercises>;
 export type SetRow = Select<typeof sets>;
-export type UserSettingsRow = Select<typeof userSettings>;
+/** The backup shape: `onboarded` is device state and never travels. */
+export type UserSettingsRow = Omit<Select<typeof userSettings>, "onboarded">;
 
 /** The rows `buildBackup` takes: everything on the phone. It does the leaving-out itself. */
 export interface BackupSource {
