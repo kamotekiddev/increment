@@ -59,3 +59,12 @@ Line heights that a component sets itself come from `lineHeight` in `src/theme` 
 - **Paywall and Pro unlocked**: both are modal screens. The Paywall's Free/Pro table is a white card whose Pro column sits on the accent tint, divided by `accent-tint-line`. Its main button is 56 pt like a large Button; while a payment is pending it turns accent tint with accent text and a clock. Pro unlocked opens with an accent hero (`size.hero`, `radius.hero`) holding a white check circle inside two faint rings. Their sizes come from `pro` in `src/theme`.
 - **Increment Pro card** (top of Settings): a white `radius.card` row, `size.pickerRow` (62 pt) tall, with a `pro.cardIcon` (38 pt) accent circle holding a white star, then "Increment Pro". Free ends in an accent "Unlock" and a faint chevron, and opens the Paywall; Pro ends in a muted "Unlocked" and an accent check, and can't be tapped.
 - Touch targets are at least 44 pt.
+
+## Logo and app icon
+
+The mark is **Steps**: three rounded bars rising in equal steps, the shape of progressive overload (owner pick, 2026-11-27). Sources are in `assets/brand/`: `increment-symbol.svg` (accent), `increment-symbol-white.svg`, and `increment-app-icon.svg` (white bars on an accent tile).
+
+- Bars sit on a 100 grid: 16 wide, 4 apart, fully rounded (radius 8), sharing a baseline, 24, 40 and 56 tall.
+- The app icon is white bars on accent `#5B3DF5`, bars about 55% of the tile. The Android adaptive foreground keeps them inside the 66 dp safe circle, the monochrome layer drives Android 13+ themed icons, and the splash is the white bars on accent.
+- Generated files Expo reads: `assets/images/icon.png`, `android-icon-foreground.png`, `android-icon-background.png`, `android-icon-monochrome.png`, `splash-icon.png`, `favicon.png`, and the iOS layer `assets/expo.icon/Assets/increment-steps.svg`. Re-export them from the brand SVGs when the mark changes.
+- Don't recolor the bars individually, add a fourth bar, or put the mark on a color other than white, `bg`, `accent-tint` or accent.

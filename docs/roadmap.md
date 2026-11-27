@@ -17,6 +17,8 @@ Phase 2 is split into seven features, see `.scratch/phase-2/map.md`.
 
 Phase 3 is split into eight features, see `.scratch/phase-3/map.md`.
 
+Phase 4 is split into seven features, see `.scratch/phase-4/map.md`.
+
 ## After launch
 - Apple Watch and Wear OS logging
 - Supersets and circuits

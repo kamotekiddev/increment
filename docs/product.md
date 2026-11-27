@@ -65,7 +65,8 @@ Most gym apps record what you did. Increment tells you **what to do next**: when
 ### Onboarding
 Welcome → Goal → Experience → Schedule → Equipment → Units → Your plan → Reminders, with a Quick start path for people who skip.
 - Every question can be skipped.
-- The answers pick a starter split (full body, push/pull/legs, upper/lower) that fits within the 2-routine free limit. **Open:** push/pull/legs is 3 routines, so the plan generator in Phase 4 must change the split or the limit.
+- The Schedule answer picks the starter split: 2 or 4 days Upper/Lower, 3 days Full body A/B, 5 or 6 days Push/Pull/Legs. Push/pull/legs is 3 routines, so the free limit goes from 2 to 3 first (Phase 3 extra ticket, owner decision 2026-11-27). Goal, Experience and Equipment pick the exercises, sets, rep range and rest from hand-written lists. See `.scratch/phase-4/map.md`.
+- Onboarding shows once, on a fresh install. Restoring a backup and Delete all data never re-open it.
 - Permission for reminders is asked after the plan is shown, not before. Until Phase 4 builds onboarding, the rest timer asks for notification permission once, at the first rest, and only if the OS has not been asked yet. A denial is never asked again and the timer still works without the notification.
 - **"I already have Increment"** goes straight to Welcome back to restore a Pro purchase and a backup, skipping the questions.
 

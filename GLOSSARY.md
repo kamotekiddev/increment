@@ -159,3 +159,19 @@ _Avoid_: Log, session history, Exercise history
 **Unit**:
 The weight system the lifter has chosen to see and type weights in, kg or lb. One global choice. It changes only what is shown and read; a set keeps the number and unit it was typed in, and switching never changes a stored set.
 _Avoid_: Measurement system, weight mode
+
+**Onboarding**:
+The first-launch flow on a fresh install: Welcome, the questions, Your plan and the Reminders step, or Quick start, or Welcome back. It shows once. It is done when the lifter taps Start training, Quick start or Done on Welcome back, never before, and restoring a Backup or deleting all data never brings it back.
+_Avoid_: Setup, tutorial, intro
+
+**Starter plan**:
+The Routines onboarding creates from the lifter's answers: one split (Full body A/B, Upper/Lower or Push/Pull/Legs) with days set, exercises, sets, Rep range and rest filled in. It always fits within the free Routine limit.
+_Avoid_: Generated plan, program
+
+**Quick start**:
+The onboarding path for a lifter who skips the questions: default answers (Stay fit and healthy, Just starting, 3 days Mon, Wed, Fri, Full gym) that still make a Starter plan, which the lifter can change before starting.
+_Avoid_: Skip, express setup
+
+**Welcome back**:
+The onboarding screen for a lifter who already has Increment: it shows whether Pro was found, offers Restore purchase and Restore from a Backup, then opens Today.
+_Avoid_: Sign in, login
