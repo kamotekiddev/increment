@@ -60,6 +60,14 @@ _Avoid_: Export (a CSV or PDF for reading, not for restoring), Restore purchase
 A Backup the app makes by itself for a Pro lifter, into one folder, on a schedule they chose: after every workout, daily, weekly or monthly. Daily, weekly and monthly ones are made only when the data has changed since the last Backup. The app keeps the last few automatic backups (3, 5, 10 or 20) and never deletes a Backup the lifter made by hand. A manual Backup and an automatic one share the one Last backup date. Pausing it after a refund keeps its settings and files. They are the only files Files shows on iOS; the database is kept out of that folder.
 _Avoid_: Auto-save, sync, cloud backup (it writes to a folder; whether that folder syncs is the lifter's choice)
 
+**Export**:
+A copy of the lifter's finished Workouts made for reading, not for restoring: a spreadsheet (CSV) with every done set, or a PDF report with totals, Records and one chart per exercise. Both cover a time range the lifter picks and leave out a Workout in progress. Made by a Pro lifter.
+_Avoid_: Backup (a Backup is the file that restores on a new phone)
+
+**Delete all data**:
+Removes everything the lifter made from this phone: Workouts, Routines, Custom exercises and settings go back to their defaults, and Automatic backups switch off. It never touches the Pro purchase or Backup files already saved, and it is blocked while a Workout is in progress. Free for everyone.
+_Avoid_: Reset, wipe
+
 **Step**:
 How a Target rises once progression is Earned: add weight (by the Jump), add reps (by the Rep step), or both. It is set per exercise.
 _Avoid_: Progression type, mode
