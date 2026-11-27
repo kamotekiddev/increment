@@ -18,7 +18,7 @@ import {
 import { chart, lightColors } from "@/theme/tokens";
 import { formatNumber, type Unit } from "@/units";
 
-import { buildExport, dateString, rangeStartDate, type ExportRange } from "./exportBuild";
+import { buildExport, dateString, rangeStartDate, type ExportRange, type ExportRow } from "./exportBuild";
 
 /**
  * The PDF report: a data model (totals, a records row and a chart series per exercise) and the HTML built from it.
@@ -52,8 +52,7 @@ export interface Report {
 }
 
 /** The report for the range: totals from the export rows, records and chart points per exercise, in `unit`. */
-export function buildReport(range: ExportRange, now: number, unit: Unit): Report {
-  const { rows } = buildExport(range, now);
+export function buildReport(range: ExportRange, now: number, unit: Unit, rows: ExportRow[] = buildExport(range, now).rows): Report {
   const dates = rows.map((r) => r.date).sort();
   const start = rangeStartDate(range, now);
 

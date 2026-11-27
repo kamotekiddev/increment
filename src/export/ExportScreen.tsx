@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 
-import { deleteCachedFile, shareFile, writeBackupFile } from "@/backup/backupShare";
+import { shareFile, writeBackupFile } from "@/backup/backupShare";
 import { Button, Card, RoundButton, ScreenHeader, Text } from "@/components";
 import { useUnit } from "@/settings";
 import { Segmented } from "@/settings/Segmented";
@@ -11,7 +11,7 @@ import { fontFamily, fontSize, lineHeight, radius, size, spacing, useColors } fr
 
 import { buildExport, csvText, EXPORT_RANGES, exportFileName, previewLines, type ExportRange } from "./exportBuild";
 import { buildReport, reportFileName, reportHtml, reportSummary } from "./reportBuild";
-import { writeReportFile } from "./reportFile";
+import { clearStaleExports, writeReportFile } from "./reportFile";
 
 type Format = "csv" | "pdf";
 
@@ -32,27 +32,26 @@ export function ExportScreen() {
   const [busy, setBusy] = useState(false);
   const [now] = useState(() => Date.now());
   const build = useMemo(() => buildExport(range, now), [range, now]);
-  const report = useMemo(() => (format === "pdf" ? buildReport(range, now, unit) : null), [format, range, now, unit]);
+  const report = useMemo(() => (format === "pdf" ? buildReport(range, now, unit, build.rows) : null), [format, range, now, unit, build]);
   const preview = format === "pdf" && report ? [reportSummary(report)] : previewLines(build.rows);
   const empty = build.setCount === 0;
 
   async function onExport() {
     if (busy || empty) return;
     setBusy(true);
-    let uri: string | null = null;
     try {
+      clearStaleExports();
       const today = new Date();
       const file =
         format === "pdf" && report
           ? await writeReportFile(reportFileName(today), reportHtml(report, unit, today))
           : writeBackupFile(exportFileName(today), csvText(build.rows));
-      uri = file.uri;
       const result = await shareFile(file, format === "pdf" ? "application/pdf" : "text/csv", "Save or share export");
       if (result === "failed") Alert.alert("Couldn't share the export", "Your data is unchanged. Try again in a moment.");
     } catch {
       Alert.alert("Couldn't create the export", "Your data is unchanged. Try again in a moment.");
     } finally {
-      if (uri) deleteCachedFile(uri);
+      // The file stays in the cache until the next export (clearStaleExports): a receiving app may read it after the sheet closes.
       setBusy(false);
     }
   }

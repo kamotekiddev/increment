@@ -49,11 +49,17 @@ export interface ExportBuild {
 const pad = (n: number) => String(n).padStart(2, "0");
 export const dateString = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
+/** The same day `months` months back, clamped to the target month's last day (31 May - 3 months = 28 Feb, not 3 Mar). */
+function monthsBack(d: Date, months: number): Date {
+  const lastDay = new Date(d.getFullYear(), d.getMonth() - months + 1, 0).getDate();
+  return new Date(d.getFullYear(), d.getMonth() - months, Math.min(d.getDate(), lastDay));
+}
+
 /** The first workout date (local, `YYYY-MM-DD`) the range includes, or null for All time. */
 export function rangeStartDate(range: ExportRange, now: number): string | null {
   if (range === "all") return null;
   const d = new Date(now);
-  const start = range === "30d" ? new Date(d.getFullYear(), d.getMonth(), d.getDate() - 30) : new Date(d.getFullYear(), d.getMonth() - 3, d.getDate());
+  const start = range === "30d" ? new Date(d.getFullYear(), d.getMonth(), d.getDate() - 30) : monthsBack(d, 3);
   return dateString(start);
 }
 

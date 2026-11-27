@@ -99,6 +99,16 @@ describe("the time range", () => {
     expect(buildExport("all", NOW).rows).toHaveLength(2);
   });
 
+  it("3 months clamps to the last day of a shorter target month, and 30 days crosses months and years", () => {
+    expect(rangeStartDate("3m", new Date(2026, 4, 31).getTime())).toBe("2026-02-28");
+    expect(rangeStartDate("3m", new Date(2026, 7, 31).getTime())).toBe("2026-05-31");
+    expect(rangeStartDate("3m", new Date(2026, 11, 31).getTime())).toBe("2026-09-30");
+    expect(rangeStartDate("3m", new Date(2028, 4, 31).getTime())).toBe("2028-02-29");
+    expect(rangeStartDate("3m", new Date(2026, 1, 15).getTime())).toBe("2025-11-15");
+    expect(rangeStartDate("30d", new Date(2026, 2, 1).getTime())).toBe("2026-01-30");
+    expect(rangeStartDate("30d", new Date(2027, 0, 5).getTime())).toBe("2026-12-06");
+  });
+
   it("orders rows oldest first, and the count equals the row count; an empty range has zero rows", () => {
     workout("2026-11-22", "Late", [{ w: 1, r: 1 }]);
     workout("2026-11-20", "Early", [{ w: 1, r: 1 }, { w: 1, r: 2 }]);

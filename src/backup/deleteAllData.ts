@@ -24,16 +24,6 @@ const CLEARED_SETTING_KEYS = [
   "last_backup_at",
 ];
 
-/** The preferences a fresh install starts with (the `user_settings` column defaults). */
-const DEFAULT_PREFERENCES = {
-  unit: "kg",
-  defaultRestS: 90,
-  showPreviousSet: true,
-  keepScreenAwake: true,
-  remindersOn: false,
-  reminderTimeMin: 1080,
-} as const;
-
 /**
  * Removes everything the lifter made, in one transaction (all or nothing): workouts and their sets, routines, Custom
  * exercises, then resets `user_settings` to its defaults and clears the automatic backup settings, Last backup and the
@@ -53,10 +43,9 @@ export function deleteAllData(db: Db): DeleteAllResult {
     tx.delete(routines).run();
     tx.delete(exercises).where(eq(exercises.isCustom, true)).run();
 
-    tx.insert(userSettings)
-      .values({ id: USER_SETTINGS_ROW_ID, ...DEFAULT_PREFERENCES })
-      .onConflictDoUpdate({ target: userSettings.id, set: DEFAULT_PREFERENCES })
-      .run();
+    // Drop the row and insert it bare, so every column takes its schema default (no second list of defaults here).
+    tx.delete(userSettings).run();
+    tx.insert(userSettings).values({ id: USER_SETTINGS_ROW_ID }).run();
     tx.delete(settings).where(inArray(settings.key, CLEARED_SETTING_KEYS)).run();
     return "deleted";
   });
