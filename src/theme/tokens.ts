@@ -268,3 +268,23 @@ export const welcomeHero = {
   title: 38,
   titleLine: 44,
 } as const;
+
+/** The Quick start screen (`OnbQuick`): row heights and tiles in points. */
+export const quickStart = {
+  /** The sparkle tile above the heading, and its glyph. */
+  heroTile: 48,
+  heroGlyph: 24,
+  title: 30,
+  titleLine: 36,
+  /** A default row, its label column, and the Default tag text. */
+  defaultRow: 48,
+  labelWidth: 92,
+  tag: 11,
+  /** A plan row, and the day badge at its start. */
+  planRow: 60,
+  badgeWidth: 52,
+  badgeHeight: 40,
+  badgeText: 12,
+  /** Room kept under the content for the pinned Start training button. */
+  footerSpace: 120,
+} as const;

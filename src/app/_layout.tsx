@@ -99,6 +99,7 @@ export default function RootLayout() {
       </Stack.Protected>
       <Stack.Protected guard={!onboarded}>
         <Stack.Screen name="welcome" />
+        <Stack.Screen name="quick-start" />
       </Stack.Protected>
       <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
       <Stack.Screen name="pro-unlocked" options={{ presentation: "modal" }} />

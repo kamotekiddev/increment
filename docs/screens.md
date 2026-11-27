@@ -5,7 +5,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 ## 1 · Onboarding
 | Screen | Notes |
 |---|---|
-| Welcome | Start, or "I already have Increment" → Welcome back. Built (feature 1, ticket 02; route `/welcome`, frame `OnbWelcome`): hero illustration, "Lift a little more every week", one line of body, **Get started** and **I already have Increment**. It sits outside the tabs (no tab bar, no in-progress bar) and is the root of the stack, so Android back leaves the app. A fresh install opens on it until onboarding is done; an install that is onboarded never sees it. Temporary: Get started does nothing until Quick start (ticket 03), and "I already have Increment" opens the existing Restore from a backup flow (file picker, then the Restore a backup preview) instead of Welcome back; a successful restore marks onboarding done and opens Today, and cancelling the picker or the preview returns to Welcome with nothing saved. Not run on a phone yet (owner check) |
+| Welcome | Start, or "I already have Increment" → Welcome back. Built (feature 1, ticket 02; route `/welcome`, frame `OnbWelcome`): hero illustration, "Lift a little more every week", one line of body, **Get started** and **I already have Increment**. It sits outside the tabs (no tab bar, no in-progress bar) and is the root of the stack, so Android back leaves the app. A fresh install opens on it until onboarding is done; an install that is onboarded never sees it. Temporary: Get started opens Quick start until the questions exist (feature 2 points it at Goal), and "I already have Increment" opens the existing Restore from a backup flow (file picker, then the Restore a backup preview) instead of Welcome back; a successful restore marks onboarding done and opens Today, and cancelling the picker or the preview returns to Welcome with nothing saved. Not run on a phone yet (owner check) |
 | Goal | Strength, muscle, general fitness… |
 | Experience | Beginner / intermediate / advanced |
 | Schedule | Training days per week |
@@ -13,7 +13,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 | Units | kg or lb |
 | Your plan | Generated starter split |
 | Reminders | Notification permission, asked here |
-| Quick start | Defaults for people who skip |
+| Quick start | Defaults for people who skip. Built (feature 1, ticket 03; route `/quick-start`, frame `OnbQuick`): "You're all set", the four defaults (Goal Stay fit and healthy, Experience Just starting, Schedule 3 days · Mon, Wed, Fri, Equipment Full gym) each tagged Default, a Kilograms / Pounds choice (kilograms preselected, held in screen state only), and the two plan rows (Full body A on Mon, Fri; Full body B on Wed) listing their real exercises and `4 exercises` (the frame says 5; the spec follows the map). **Start training** creates the plan, saves the unit and the onboarded flag in one transaction and the root gate opens Today with 2 routines on the week strip. Outside the tabs, like Welcome; back returns to Welcome and nothing is saved until Start training, so killing the app restarts at Welcome. Temporary: the Default rows have no chevron and "Answer the questions instead" is hidden until the questions exist (feature 2). Not run on a phone yet (owner check) |
 | Welcome back | Restore Pro purchase and a backup file |
 
 ## 2 · Train

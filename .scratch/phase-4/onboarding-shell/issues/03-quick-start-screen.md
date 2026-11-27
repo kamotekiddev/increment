@@ -4,13 +4,13 @@
 
 **Blocked by:** 01, 02
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Get started opens Quick start; Start training creates Full body A (Mon, Fri) and B (Wed), saves the unit and opens Today, and Welcome never shows again.
 - [ ] Choosing Pounds saves lb; the first workout shows pounds.
 - [ ] Leaving or killing the app before Start training saves no routines, no unit and no flag.
 - [ ] Quick start matches `OnbQuick` (with the 4-exercise count from the spec) in light and dark, with design tokens only.
-- [ ] Docs updated, with the temporary stand-ins listed.
-- [ ] `npx tsc --noEmit`, `npx expo lint` and the Jest suite pass.
+- [x] Docs updated, with the temporary stand-ins listed.
+- [x] `npx tsc --noEmit`, `npx expo lint` and the Jest suite pass.
 
 ## Comments

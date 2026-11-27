@@ -1,4 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { router } from "expo-router";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -7,8 +8,8 @@ import { useRestorePicker } from "@/backup/RestoreCard";
 import { fontFamily, fontSize, lineHeight, radius, size, spacing, useColors, welcomeHero as hero } from "@/theme";
 
 /**
- * Welcome (`OnbWelcome`): the first screen of a fresh install, outside the tabs. Get started is a placeholder until the
- * Quick start screen exists. "I already have Increment" runs the existing Restore from a backup flow (temporary, until
+ * Welcome (`OnbWelcome`): the first screen of a fresh install, outside the tabs. Get started opens Quick start (temporary,
+ * until the questions exist). "I already have Increment" runs the existing Restore from a backup flow (temporary, until
  * Welcome back); the preview marks onboarding done after a restore, and backing out lands here with nothing saved.
  */
 export function WelcomeScreen() {
@@ -109,8 +110,8 @@ export function WelcomeScreen() {
         </View>
       </View>
       <View style={{ position: "absolute", left: spacing.xl - spacing.xs, right: spacing.xl - spacing.xs, bottom: Math.max(insets.bottom, spacing.xl), gap: spacing.snug }}>
-        {/* Placeholder until the Quick start screen (ticket 03). */}
-        <Button label="Get started" large onPress={() => {}} />
+        {/* Temporary: feature 2 points Get started at Goal. */}
+        <Button label="Get started" large onPress={() => router.push("/quick-start")} />
         <Button label="I already have Increment" variant="secondary" large onPress={pick} />
       </View>
       {sheet}
