@@ -5,7 +5,7 @@
 Phase 4 feature 1 (see `.scratch/phase-4/map.md`). Built on its own branch from `main`. It is the first Phase 4 feature and ends with something usable on a phone: a fresh install shows Welcome once, and Quick start gets the lifter to Today with a plan.
 
 > **Temporary by design.** Feature 1 ships before the Questions (feature 2), the plan generator (feature 3) and Welcome back (feature 4), so three things in it are stand-ins that later features replace:
-> 1. **The Quick start plan is hard-coded** (one fixed Full body A/B plan), not generated. Feature 3 replaces it with the generator and must produce the same plan for the Quick start defaults.
+> 1. **The Starter plan is hard-coded** (one fixed Full body A/B plan), not generated. Feature 3 replaces it with the generator and must produce the same plan for the Quick start defaults.
 > 2. **"Get started" goes to Quick start**, because the questions don't exist yet. Feature 2 points it at Goal.
 > 3. **"I already have Increment" opens the existing Restore from a backup flow**, then Today, because Welcome back doesn't exist yet. Feature 4 points it at Welcome back.
 
@@ -54,7 +54,7 @@ A fresh install shows Welcome once. Welcome offers "Get started" and "I already 
 33. As a new lifter, I want the Android back button on Welcome to leave the app rather than open an empty Today, so that onboarding cannot be skipped by accident.
 34. As a new lifter, I want to reach my first logged set in under 3 minutes, so that the Phase 4 gate can be met.
 35. As the owner, I want the plan, unit and done flag written together or not at all, so that a crash cannot leave routines without `onboarded` or the reverse.
-36. As the owner, I want the hard-coded plan in one place, so that feature 3 replaces it in one move.
+36. As the owner, I want the hard-coded Starter plan in one place, so that feature 3 replaces it in one move.
 37. As the owner, I want the "onboarded" decision for existing installs made by the migration, so that no runtime guess is needed.
 38. As the owner, I want a test that an old database reads as onboarded, so that no update ever shows Welcome to a lifter with data.
 
@@ -62,12 +62,12 @@ A fresh install shows Welcome once. Welcome offers "Get started" and "I already 
 
 - **One new module, "onboarding".** It is the only place that knows whether onboarding is done and how it finishes. Interface:
   - `isOnboarded(db)`: reads the `onboarded` flag.
-  - `finishQuickStart(db, unit)`: in one all-or-nothing transaction, creates the Quick start plan, saves the unit and sets `onboarded`.
+  - `finishQuickStart(db, unit)`: in one all-or-nothing transaction, creates the Starter plan, saves the unit and sets `onboarded`.
   - `finishOnboarding(db)`: sets `onboarded` only (used by the restore path now, and by Welcome back's Done in feature 4).
   - A small pure routing function: onboarded or not, to "welcome" or "tabs".
 - **Schema:** one new `onboarded` boolean column on `user_settings`, default false (a Drizzle migration; never edit a shipped one). The migration sets it to true for every existing install, meaning an install that has a settings row, any routine or any workout. A fresh install has none of these when the migration runs, so it starts false. The settings row is created on first read as today.
 - **Nothing is written before the finish call.** Welcome and Quick start hold their choices (the kg or lb pick) in screen state only. Killing the app mid-way restarts at Welcome. The unit is saved only inside `finishQuickStart`.
-- **Quick start plan (hard-coded, feature 1 only).** The defaults are the Quick start defaults from the Glossary: Stay fit and healthy, Just starting, 3 days Mon, Wed, Fri, Full gym. The plan is the Full body A/B split from the map:
+- **Starter plan (hard-coded, feature 1 only).** The defaults are the Quick start defaults from the Glossary: Stay fit and healthy, Just starting, 3 days Mon, Wed, Fri, Full gym. The plan is the Full body A/B split from the map:
   - Full body A on Monday and Friday (the first and third day), Full body B on Wednesday.
   - 4 library exercises per routine (Just starting = 4 exercises; see Further Notes), chosen from the Full gym list and named in the plan constant.
   - 3 sets, Rep range 10 to 15, rest 1:00 (Stay fit and healthy).
@@ -80,7 +80,7 @@ A fresh install shows Welcome once. Welcome offers "Get started" and "I already 
 - **"I already have Increment" (temporary):** opens the existing Restore from a backup flow. A successful restore calls `finishOnboarding` and opens Today. Backing out returns to Welcome with nothing saved. Restoring never resets `onboarded`.
 - **Restore from a backup and Delete all data never reset `onboarded`.** Delete all data already resets preferences to defaults, so it must be told to keep this flag.
 - **Backup file:** `onboarded` is device state, not lifter data. It is not added to the backup file and needs no format bump. A restored backup does not change it.
-- **Docs in the same change:** Glossary (Onboarding, Quick start already exist; note the temporary routes only in the spec), `docs/screens.md` rows for Welcome and Quick start, `docs/architecture.md` (the `onboarded` column and the routing gate), `docs/product.md` Onboarding section if wording changes, `docs/decisions.md` (the `onboarded` rules and the hard-coded plan). No ADR: reversible and nothing surprising.
+- **Docs in the same change:** Glossary (Onboarding, Quick start already exist; note the temporary routes only in the spec), `docs/screens.md` rows for Welcome and Quick start, `docs/architecture.md` (the `onboarded` column and the routing gate), `docs/product.md` Onboarding section if wording changes, `docs/decisions.md` (the `onboarded` rules and the hard-coded Starter plan). No ADR: reversible and nothing surprising.
 - **Design canvas** (`OnbWelcome`, `OnbQuick`) is the source for layout. The owner updates the canvas for the map's notes (the Schedule hint, Reminders, Quick start matching the map). This work does not edit the canvas.
 
 ## Testing Decisions
@@ -103,7 +103,7 @@ A fresh install shows Welcome once. Welcome offers "Get started" and "I already 
 ## Out of Scope
 
 - The questions: Goal, Experience, Schedule, Equipment and Units (feature 2). So "Get started" goes to Quick start for now, and the Default rows are not tappable.
-- The plan generator, the 28 exercise lists and Your plan with "I'll build my own routines" (feature 3). The Quick start plan is hard-coded here.
+- The plan generator, the 28 exercise lists and Your plan with "I'll build my own routines" (feature 3). The Starter plan is hard-coded here.
 - The Reminders step and Welcome back, including the Pro row and Restore purchase (feature 4).
 - Accessibility pass and haptics (features 5 and 6), though labels and 44 pt targets follow the app's normal rules.
 - The splash screen (feature 7).

@@ -38,7 +38,7 @@ export function finishOnboarding(db: Db): void {
 }
 
 /**
- * Creates the Quick start plan, saves the unit and sets the flag in one all-or-nothing transaction. Any failure
+ * Creates the Starter plan, saves the unit and sets the flag in one all-or-nothing transaction. Any failure
  * (a library exercise missing, a write error) rolls everything back and rethrows.
  */
 export function finishQuickStart(db: Db, unit: Unit): void {

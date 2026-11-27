@@ -1,10 +1,12 @@
 import { useStore } from "zustand";
 
 import { db } from "@/db/client";
+import { refreshReminders } from "@/reminders";
+import { unitStore } from "@/settings";
 
 import { createOnboardingStore } from "./onboardingStore";
 
-export const onboardingStore = createOnboardingStore(db);
+export const onboardingStore = createOnboardingStore(db, { unitStore, refreshReminders: () => void refreshReminders() });
 
 let onboardedLoad: { error: Error | null } | null = null;
 

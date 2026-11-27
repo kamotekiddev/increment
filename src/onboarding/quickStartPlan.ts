@@ -1,7 +1,7 @@
 import type { Unit } from "@/units";
 
 /**
- * TEMPORARY (Phase 4 feature 1): the hard-coded Quick start plan. It is replaced by the plan generator in feature 3,
+ * TEMPORARY (Phase 4 feature 1): the hard-coded Starter plan. It is replaced by the plan generator in feature 3,
  * which must return exactly this plan for the Quick start defaults (Stay fit and healthy, Just starting, 3 days
  * Mon/Wed/Fri, Full gym); a test there pins that. Replace this one constant, nothing else knows the plan.
  *
@@ -22,6 +22,7 @@ const FRI = 1 << 4;
 
 export const QUICK_START_SETUP = { sets: 3, repMin: 10, repMax: 15, restS: 60 } as const;
 
+/** The Starter plan for the Quick start defaults (the constant keeps the Quick start name; the concept is the Starter plan). */
 export const QUICK_START_PLAN: readonly QuickStartRoutine[] = [
   {
     name: "Full body A",

@@ -30,7 +30,7 @@ function badge(mask: number): string {
   return DAY_LABELS.filter((_, i) => isDaySet(mask, i)).join(", ");
 }
 
-/** Pure: one row per routine of the hard-coded plan, so the screen never repeats the plan's text. */
+/** Pure: one row per routine of the hard-coded Starter plan, so the screen never repeats the plan's text. */
 export function quickStartPlanRows(): QuickStartPlanRow[] {
   return QUICK_START_PLAN.map((r) => ({
     days: badge(r.days),
