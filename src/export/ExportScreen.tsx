@@ -1,6 +1,6 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { router } from "expo-router";
-import { useMemo, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, Pressable, ScrollView, View } from "react-native";
 
 import { shareFile, writeBackupFile } from "@/backup/backupShare";
@@ -30,7 +30,9 @@ export function ExportScreen() {
   const [format, setFormat] = useState<Format>("csv");
   const [range, setRange] = useState<ExportRange>("all");
   const [busy, setBusy] = useState(false);
-  const [now] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+  // A screen left open across midnight (or the app in the background) would keep a stale window and count.
+  useFocusEffect(useCallback(() => setNow(Date.now()), []));
   const build = useMemo(() => buildExport(range, now), [range, now]);
   const report = useMemo(() => (format === "pdf" ? buildReport(range, now, unit, build.rows) : null), [format, range, now, unit, build]);
   const preview = format === "pdf" && report ? [reportSummary(report)] : previewLines(build.rows);
@@ -41,11 +43,14 @@ export function ExportScreen() {
     setBusy(true);
     try {
       clearStaleExports();
-      const today = new Date();
+      // Build again from the clock at the moment of export, so the content and the file name's date always agree.
+      const at = Date.now();
+      const today = new Date(at);
+      const fresh = buildExport(range, at);
       const file =
-        format === "pdf" && report
-          ? await writeReportFile(reportFileName(today), reportHtml(report, unit, today))
-          : writeBackupFile(exportFileName(today), csvText(build.rows));
+        format === "pdf"
+          ? await writeReportFile(reportFileName(today), reportHtml(buildReport(range, at, unit, fresh.rows), unit, today))
+          : writeBackupFile(exportFileName(today), csvText(fresh.rows));
       const result = await shareFile(file, format === "pdf" ? "application/pdf" : "text/csv", "Save or share export");
       if (result === "failed") Alert.alert("Couldn't share the export", "Your data is unchanged. Try again in a moment.");
     } catch {

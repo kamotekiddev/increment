@@ -5,6 +5,7 @@ import { Alert, Pressable, View } from "react-native";
 
 import { BottomSheet, Button, Card, Input, Pill, Text } from "@/components";
 import { db } from "@/db/client";
+import { clearStaleExports } from "@/export/reportFile";
 import { routines } from "@/db/schema";
 import { refreshReminders } from "@/reminders";
 import { reminderStore, unitStore, workoutStore } from "@/settings";
@@ -80,6 +81,7 @@ export function DeleteAllCard({ isPro, stats, onCreateBackup, onDeleted }: Props
       workoutStore.getState().load();
       reminderStore.getState().load();
       void refreshReminders().catch(() => {}); // reminders are now off, so this cancels every planned one
+      clearStaleExports(); // an exported CSV or PDF still in the cache holds the history that was just deleted
     } catch {
       // Stale stores fix themselves on the next load; the data is gone either way.
     } finally {

@@ -1,7 +1,7 @@
 import type { Db } from "@/db/client";
 import { exercises, routines, sets, workoutExercises, workouts } from "@/db/schema";
 
-import { buildReport, reportFileName, reportHtml, reportSummary } from "./reportBuild";
+import { buildReport, isExportFileName, reportFileName, reportHtml, reportSummary } from "./reportBuild";
 
 jest.mock("@/db/client", () => ({ db: jest.requireActual("../../test-support/testDb").createTestDb() }));
 const db: Db = jest.requireMock("@/db/client").db;
@@ -131,5 +131,28 @@ describe("the PDF summary and name", () => {
 
   it("names the file by local date", () => {
     expect(reportFileName(new Date(2026, 10, 27))).toBe("Increment report 2026-11-27.pdf");
+  });
+});
+
+describe("a range with only warm-up sets", () => {
+  it("says there are no working sets instead of drawing an empty table and Progress heading", () => {
+    workout("2026-11-20", "Bench Press", [{ w: 20, r: 8, warmup: true }, { w: 30, r: 8, warmup: true }]);
+    const report = buildReport("all", NOW, "kg");
+    expect([report.sets, report.exercises.length]).toEqual([2, 0]);
+    const html = reportHtml(report, "kg", new Date(2026, 10, 27));
+    expect(html).toContain("No working sets in this range yet");
+    expect(html).not.toContain("<h2>Progress</h2>");
+    expect(html).not.toContain("<table>");
+  });
+});
+
+describe("isExportFileName", () => {
+  it("matches the CSV and PDF files an export leaves in the cache, and nothing else", () => {
+    expect(isExportFileName("Increment export 2026-11-27.csv")).toBe(true);
+    expect(isExportFileName("Increment report 2026-11-27.pdf")).toBe(true);
+    expect(isExportFileName(reportFileName(new Date(2026, 10, 27)))).toBe(true);
+    expect(isExportFileName("Increment backup 2026-11-27.increment")).toBe(false);
+    expect(isExportFileName("Increment auto backup 27 Nov 2026 18-42.increment")).toBe(false);
+    expect(isExportFileName("notes.pdf")).toBe(false);
   });
 });

@@ -117,6 +117,11 @@ export function reportFileName(date: Date): string {
   return `Increment report ${dateString(date)}.pdf`;
 }
 
+/** True for a file an export leaves in the cache: `Increment export {date}.csv` or `Increment report {date}.pdf`. */
+export function isExportFileName(name: string): boolean {
+  return /^Increment (export .*\.csv|report .*\.pdf)$/.test(name);
+}
+
 /** Every user-typed string goes through this before it meets the HTML. */
 export function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -185,6 +190,14 @@ export function reportHtml(report: Report, unit: Unit, generated: Date): string 
       return `<tr><td>${escapeHtml(e.name)}</td><td>${escapeHtml(r.best)}</td><td>${escapeHtml(r.oneRepMax)}</td><td>${escapeHtml(r.volume)}</td><td>${escapeHtml(r.reps)}</td><td>${escapeHtml(r.date)}</td></tr>`;
     })
     .join("");
+  // Only working sets count toward Records, so a range of warm-ups alone has no exercises to list.
+  const body =
+    report.exercises.length === 0
+      ? `<h2>Records</h2><p class="muted">No working sets in this range yet. Warm-ups don't count toward Records.</p>`
+      : `<h2>Records</h2>
+<table><thead><tr><th>Exercise</th><th>Best weight</th><th>Est. 1RM</th><th>Best volume</th><th>Reps</th><th>Date</th></tr></thead><tbody>${rows}</tbody></table>
+<h2>Progress</h2>
+${report.exercises.map((e) => exerciseBlock(e, unit)).join("\n")}`;
   return `<!DOCTYPE html><html><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <style>
 body { font-family: -apple-system, Helvetica, Arial, sans-serif; color: ${ink}; margin: 0; padding: 24px; font-size: 12px; }
@@ -201,9 +214,6 @@ tr { break-inside: avoid; page-break-inside: avoid; }
 <h1>Increment report</h1>
 <p class="muted">${escapeHtml(`${plural(report.workouts, "workout")} · ${plural(report.sets, "set")} · ${span}`)}</p>
 <p class="muted">${escapeHtml(`Made ${dateString(generated)}`)}</p>
-<h2>Records</h2>
-<table><thead><tr><th>Exercise</th><th>Best weight</th><th>Est. 1RM</th><th>Best volume</th><th>Reps</th><th>Date</th></tr></thead><tbody>${rows}</tbody></table>
-<h2>Progress</h2>
-${report.exercises.map((e) => exerciseBlock(e, unit)).join("\n")}
+${body}
 </body></html>`;
 }

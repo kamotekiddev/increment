@@ -3,6 +3,8 @@ import * as Print from "expo-print";
 
 import { deleteCachedFile, type BackupFile } from "@/backup/backupShare";
 
+import { isExportFileName } from "./reportBuild";
+
 /** Renders the report HTML to a PDF named `fileName` in the cache (a copy is shared, nothing else keeps it). */
 export async function writeReportFile(fileName: string, html: string): Promise<BackupFile> {
   const printed = await Print.printToFileAsync({ html });
@@ -24,7 +26,7 @@ export async function writeReportFile(fileName: string, html: string): Promise<B
 export function clearStaleExports(): void {
   try {
     for (const item of Paths.cache.list()) {
-      if (item instanceof File && /^Increment export .*\.(csv|pdf)$/.test(item.name)) deleteCachedFile(item.uri);
+      if (item instanceof File && isExportFileName(item.name)) deleteCachedFile(item.uri);
     }
   } catch {
     // The cache is cleared by the system anyway.
