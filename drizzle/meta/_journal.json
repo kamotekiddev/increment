@@ -99,6 +99,13 @@
       "when": 1795597558471,
       "tag": "0013_exercise_delete_cascade",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1795789140481,
+      "tag": "0014_onboarded_flag",
+      "breakpoints": true
     }
   ]
 }

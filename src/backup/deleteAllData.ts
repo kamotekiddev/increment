@@ -3,6 +3,8 @@ import { inArray, eq } from "drizzle-orm";
 import type { Db } from "@/db/client";
 import { exercises, routineExercises, routines, sets, settings, userSettings, workoutExercises, workouts } from "@/db/schema";
 
+import { isOnboarded } from "@/onboarding/onboarding";
+
 import { hasWorkoutInProgress } from "./restoreBackup";
 
 export type DeleteAllResult = "deleted" | "workout-in-progress";
@@ -44,8 +46,10 @@ export function deleteAllData(db: Db): DeleteAllResult {
     tx.delete(exercises).where(eq(exercises.isCustom, true)).run();
 
     // Drop the row and insert it bare, so every column takes its schema default (no second list of defaults here).
+    // `onboarded` is device state and survives: Delete all data never brings Welcome back.
+    const onboarded = isOnboarded(tx);
     tx.delete(userSettings).run();
-    tx.insert(userSettings).values({ id: USER_SETTINGS_ROW_ID }).run();
+    tx.insert(userSettings).values({ id: USER_SETTINGS_ROW_ID, onboarded }).run();
     tx.delete(settings).where(inArray(settings.key, CLEARED_SETTING_KEYS)).run();
     return "deleted";
   });

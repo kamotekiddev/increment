@@ -8,6 +8,7 @@ import { defaultRule, type LoadType, type OverloadRule } from "@/engine";
 import type { Jumps } from "@/units";
 import { exercises, routineExercises, routines, workouts } from "@/db/schema";
 
+import { insertRoutine, insertRoutineExercise } from "./routineInsert";
 import { jumpColumns } from "@/workout/workoutQueries";
 
 import type { ExerciseSetup } from "./routineSetup";
@@ -72,11 +73,7 @@ export function useRoutines(): RoutineListItem[] | undefined {
  * transaction. The expo-sqlite driver runs a transaction synchronously, so the callback is not async.
  */
 export function createRoutine(name: string, days: number): number {
-  const id = db.transaction((tx) => {
-    const [{ n }] = tx.select({ n: count() }).from(routines).all();
-    const row = tx.insert(routines).values({ name, days, position: n }).returning({ id: routines.id }).get();
-    return row.id;
-  });
+  const id = db.transaction((tx) => insertRoutine(tx, name, days));
   void refreshReminders();
   return id;
 }
@@ -194,20 +191,7 @@ export function addRoutineExercise(
   jumps: Partial<Jumps> = {},
   rule: OverloadRule = defaultRule(loadType),
 ): boolean {
-  const added = db.transaction((tx) => {
-    const [{ n }] = tx
-      .select({ n: count() })
-      .from(routineExercises)
-      .where(eq(routineExercises.routineId, routineId))
-      .all();
-    const inserted = tx
-      .insert(routineExercises)
-      .values({ routineId, exerciseId, position: n, ...setup, ...jumps, rule })
-      .onConflictDoNothing()
-      .returning({ id: routineExercises.id })
-      .all();
-    return inserted.length > 0;
-  });
+  const added = db.transaction((tx) => insertRoutineExercise(tx, routineId, exerciseId, setup, jumps, rule));
   if (added) void refreshReminders();
   return added;
 }

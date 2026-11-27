@@ -58,6 +58,7 @@ describe("deleteAllData", () => {
       keepScreenAwake: true,
       remindersOn: false,
       reminderTimeMin: 1080,
+      onboarded: false, // device state, kept as it was (see the onboarding tests for true)
     });
   });
 

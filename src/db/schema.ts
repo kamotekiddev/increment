@@ -157,6 +157,11 @@ export const userSettings = sqliteTable("user_settings", {
   remindersOn: integer("reminders_on", { mode: "boolean" }).notNull().default(false),
   /** Reminder time as minutes after local midnight (1080 = 6:00 PM). Read through a 0 to 1439 clamp. */
   reminderTimeMin: integer("reminder_time_min").notNull().default(1080),
+  /**
+   * Onboarding is done (Welcome never shows again). Device state, not lifter data: not in the backup file, kept by
+   * Restore from a backup and Delete all data. Set only by the onboarding module; the migration sets it for existing installs.
+   */
+  onboarded: integer("onboarded", { mode: "boolean" }).notNull().default(false),
 });
 
 /**
