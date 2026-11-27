@@ -53,7 +53,7 @@ Export progress to CSV (all sets) or a PDF progress report via expo-print, throu
 - Split by what the lifter can use on the device, not by screen.
 - Feature 1 comes first because every other feature reads the Pro gate. Features 2 to 6 and 8 depend only on it, so they can move earlier or later if the owner wants; 7 needs 6.
 - Pro price: ₱300 for now, the peso base price on both stores (decisions.md, 2026-11-24).
-- Feature 1 grilled 2026-11-24. The store decides Pro and the table is the fallback (ADR 0004). The library is expo-iap. The product is `pro_lifetime` on both stores. After a refund, everything the lifter made stays, and only Pro actions and routines past the 2 oldest lock. Restore purchase is reached from an Increment Pro card at the top of Settings, so that open item is closed. The Locked routine moves to feature 2.
+- Feature 1 grilled 2026-11-24. The store decides Pro and the table is the fallback (ADR 0004). The library is expo-iap. The product is `pro_lifetime` on both stores. After a refund, everything the lifter made stays, and only Pro actions and routines past the 3 oldest lock. Restore purchase is reached from an Increment Pro card at the top of Settings, so that open item is closed. The Locked routine moves to feature 2.
 
 ## Open
 - Plate calculator "and warm-ups" (product.md Pro table): warm-ups are not in the roadmap's Phase 3 list. Decide whether they join feature 5, wait for Phase 4, or are dropped.
