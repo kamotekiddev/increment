@@ -13,6 +13,7 @@ import { AppState, View } from "react-native";
 
 import { scheduleAutoBackup } from "@/backup/autoBackupRun";
 import { Text } from "@/components";
+import { loadOnboardedOnce, useOnboarded } from "@/onboarding";
 import { refreshReminders } from "@/reminders";
 import { useDatabase } from "@/db/useDatabase";
 import { loadProOnce, proStore, startProStoreChecks, useProUnlockedScreen } from "@/pro";
@@ -41,7 +42,9 @@ export default function RootLayout() {
   const workoutError = dbReady ? loadWorkoutSettingsOnce() : null;
   const reminderError = dbReady ? loadReminderSettingsOnce() : null;
   const proError = dbReady ? loadProOnce() : null;
-  const dbError = openError ?? unitError ?? workoutError ?? reminderError ?? proError;
+  const onboardedError = dbReady ? loadOnboardedOnce() : null;
+  const dbError = openError ?? unitError ?? workoutError ?? reminderError ?? proError ?? onboardedError;
+  const onboarded = useOnboarded();
 
   const fontsDone = fontsLoaded || fontError != null;
   const done = fontsDone && (dbReady || dbError != null);
@@ -89,8 +92,14 @@ export default function RootLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      {/* The tabs come first, so a modal declared below never becomes the first screen. */}
-      <Stack.Screen name="(tabs)" />
+      {/* Welcome until onboarding is done, then the tabs. Each guard removes the other side from the history, so the
+          back button never reaches an empty app. The tabs come first, so a modal declared below never becomes the first screen. */}
+      <Stack.Protected guard={onboarded}>
+        <Stack.Screen name="(tabs)" />
+      </Stack.Protected>
+      <Stack.Protected guard={!onboarded}>
+        <Stack.Screen name="welcome" />
+      </Stack.Protected>
       <Stack.Screen name="paywall" options={{ presentation: "modal" }} />
       <Stack.Screen name="pro-unlocked" options={{ presentation: "modal" }} />
       <Stack.Screen name="backup-ready" options={{ presentation: "modal" }} />

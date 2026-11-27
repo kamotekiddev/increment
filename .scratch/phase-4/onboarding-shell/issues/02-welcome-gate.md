@@ -4,14 +4,16 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] A fresh install opens on Welcome; after `finishOnboarding` it never shows again, including after a kill and relaunch.
 - [ ] An install that already has data opens on Today with no Welcome.
 - [ ] "I already have Increment" restores a backup and lands on Today; cancelling the picker or the preview returns to Welcome and writes nothing.
 - [ ] Welcome has no tab bar or in-progress bar, and Android back does not reach the tabs.
 - [ ] Welcome matches `OnbWelcome` in light and dark, with design tokens only.
-- [ ] Docs updated in the same change.
-- [ ] `npx tsc --noEmit`, `npx expo lint` and the Jest suite pass.
+- [x] Docs updated in the same change.
+- [x] `npx tsc --noEmit`, `npx expo lint` and the Jest suite pass.
 
 ## Comments
+
+- Boxes 1 to 5 are wired but need a phone to verify (fresh install, update install, restore flow, Android back, light and dark look); left unticked.

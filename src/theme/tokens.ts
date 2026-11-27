@@ -239,3 +239,32 @@ export const pro = {
 
 /** The rest panel pinned to the bottom of the live workout: ring size and stroke in points, top corner radius. */
 export const restPanel = { ring: 96, stroke: 6, corner: 32, time: 24, timeLine: 28, label: 11 } as const;
+
+/** The Welcome hero illustration (`OnbWelcome`): box and shapes in points. */
+export const welcomeHero = {
+  height: 380,
+  topInset: 60,
+  disc: 240,
+  discLeft: 75,
+  discTop: 70,
+  ring: 180,
+  ringLeft: 105,
+  ringTop: 100,
+  ringWidth: 22,
+  ringOpacity: 0.12,
+  targetCardWidth: 196,
+  targetCardLeft: 22,
+  targetCardTop: 38,
+  setCardWidth: 220,
+  setCardRight: 22,
+  setCardBottom: 44,
+  checkCircle: 40,
+  /** The big-number text of the Target card. */
+  numeral: 26,
+  numeralLine: 30,
+  /** The step badge and the unit beside the number. */
+  badge: 12,
+  setNumber: 17,
+  title: 38,
+  titleLine: 44,
+} as const;

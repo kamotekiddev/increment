@@ -24,16 +24,16 @@ interface Notice {
 const BLOCKED: Notice = { title: "Workout in progress", message: "Finish or discard your workout first.", icon: "time-outline" };
 
 /**
- * The Restore from a backup row on Your data (one row of its "Restore and export" card): open for everyone, no Pro check. Picks a file, checks all of it
- * (`parseBackup`) and opens the preview; a workout in progress, a newer version or an invalid file shows its sheet
- * and nothing changes.
+ * The Restore from a backup flow, shared by Your data and Welcome: open for everyone, no Pro check. `pick` picks a file,
+ * checks all of it (`parseBackup`) and opens the preview; cancelling the picker, a workout in progress, a newer version or
+ * an invalid file shows its sheet (or nothing) and changes nothing. Render `sheet` once beside the control that calls `pick`.
  */
-export function RestoreRow() {
+export function useRestorePicker() {
   const colors = useColors();
   const [notice, setNotice] = useState<Notice | null>(null);
   const [busy, setBusy] = useState(false);
 
-  async function onPress() {
+  async function pick() {
     if (busy) return;
     if (hasWorkoutInProgress(db)) {
       setNotice(BLOCKED);
@@ -72,9 +72,8 @@ export function RestoreRow() {
     }
   }
 
-  return (
+  const sheet = (
     <>
-      <DataRow icon="download-outline" title="Restore from a backup" subtitle="Free for everyone" onPress={onPress} />
       <BottomSheet visible={notice !== null} onDismiss={() => setNotice(null)}>
         {notice && (
           <>
@@ -93,6 +92,18 @@ export function RestoreRow() {
           </>
         )}
       </BottomSheet>
+    </>
+  );
+  return { pick, sheet };
+}
+
+/** The Restore from a backup row on Your data (one row of its "Restore and export" card). */
+export function RestoreRow() {
+  const { pick, sheet } = useRestorePicker();
+  return (
+    <>
+      <DataRow icon="download-outline" title="Restore from a backup" subtitle="Free for everyone" onPress={pick} />
+      {sheet}
     </>
   );
 }

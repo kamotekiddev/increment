@@ -5,7 +5,7 @@ All screens are designed on the [design canvas](https://claude.ai/artifact/Ny2LF
 ## 1 · Onboarding
 | Screen | Notes |
 |---|---|
-| Welcome | Start, or "I already have Increment" → Welcome back |
+| Welcome | Start, or "I already have Increment" → Welcome back. Built (feature 1, ticket 02; route `/welcome`, frame `OnbWelcome`): hero illustration, "Lift a little more every week", one line of body, **Get started** and **I already have Increment**. It sits outside the tabs (no tab bar, no in-progress bar) and is the root of the stack, so Android back leaves the app. A fresh install opens on it until onboarding is done; an install that is onboarded never sees it. Temporary: Get started does nothing until Quick start (ticket 03), and "I already have Increment" opens the existing Restore from a backup flow (file picker, then the Restore a backup preview) instead of Welcome back; a successful restore marks onboarding done and opens Today, and cancelling the picker or the preview returns to Welcome with nothing saved. Not run on a phone yet (owner check) |
 | Goal | Strength, muscle, general fitness… |
 | Experience | Beginner / intermediate / advanced |
 | Schedule | Training days per week |

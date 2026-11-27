@@ -5,6 +5,7 @@ import { Alert, Pressable, ScrollView, View } from "react-native";
 
 import { Button, Card, RoundButton, ScreenHeader, Text } from "@/components";
 import { db } from "@/db/client";
+import { onboardingStore } from "@/onboarding";
 import { refreshReminders } from "@/reminders";
 import { reminderStore, unitStore, workoutStore } from "@/settings";
 import { fontFamily, fontSize, lineHeight, opacity, radius, size, spacing, useColors } from "@/theme";
@@ -45,6 +46,9 @@ export function RestorePreviewScreen() {
       reminderStore.getState().load();
       void refreshReminders();
       close();
+      // Restoring from Welcome finishes onboarding (the restored file leaves the flag false on a fresh install), which
+      // sends the lifter to Today. From Your data it is already done and this is a no-op.
+      if (!onboardingStore.getState().onboarded) onboardingStore.getState().finish();
       Alert.alert("Backup restored", "Your routines, workouts, custom exercises and settings are back.");
     } catch (e) {
       if (e instanceof MissingLibraryExerciseError) {
