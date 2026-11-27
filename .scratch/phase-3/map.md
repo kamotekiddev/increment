@@ -17,7 +17,7 @@ The roadmap's "rule panel" is not a feature here: it became free for everyone in
 | 5 | ~~Plate calculator~~ (removed from Pro in PR #31) | 1 |
 | 6 | Backup and restore (built, phone check pending) | 1 |
 | 7 | Automatic backups (built, phone check pending) | 6 |
-| 8 | Export and delete all data (grilled 2026-11-27) | 1 |
+| 8 | Export and delete all data (built, phone check pending) | 1 |
 
 ### 1 · Pro purchase and restore
 The one-time Pro unlock with no subscription: the Paywall (9-row Free/Pro table, "Unlock Pro · [Price]", "One-time payment. No subscription. Works offline."), Pro unlocked, and Restore purchase on the paywall. The store's on-device answer decides Pro at launch, on return to the app, after a purchase and after Restore purchase. The answer is cached in `entitlements` (`isPro`), so Pro works with no network, and a refund or a hand edit is undone at the next check ([ADR 0004](../../docs/adr/0004-the-store-decides-pro.md)). The feature also adds an Increment Pro card in Settings (the Paywall's entry point and Restore purchase's home after onboarding), a pending-payment state, and a dev-only Pro source switch. Spec: `.scratch/phase-3/pro-purchase/spec.md`. Adds one `isPro` gate every later feature reads (Pro limits in one place, product rule). The Welcome back restore is Phase 4 onboarding; only the restore function lands here. Gate half one: Pro unlocks offline on both stores.
@@ -46,7 +46,7 @@ The Your data section in Settings: free state shows the backup row locked, openi
 ### 7 · Automatic backups (built, phone check pending; grilled 2026-11-26, spec: `.scratch/phase-3/automatic-backups/spec.md`)
 Automatic backups (Pro): frequency (after every workout, daily, weekly or monthly), location and number of files kept, checked when the app opens. On iOS to the app's own folder (Files › On My iPhone › Increment, no iCloud Drive); on Android to a folder the lifter picks.
 
-### 8 · Export and delete all data (grilled 2026-11-27, spec: `.scratch/phase-3/export-and-delete/spec.md`)
+### 8 · Export and delete all data (built, phone check pending; grilled 2026-11-27, spec: `.scratch/phase-3/export-and-delete/spec.md`)
 Export progress to CSV (all sets) or a PDF progress report via expo-print, through the share sheet (Pro). Delete all data with a typed confirmation, free for everyone; it leaves the Pro entitlement alone.
 
 ## Decisions so far
