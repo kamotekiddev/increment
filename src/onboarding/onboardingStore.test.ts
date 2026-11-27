@@ -89,4 +89,19 @@ describe("onboarding store finishQuickStart", () => {
     expect(unitStore.getState().unit).toBe("kg");
     expect(refreshReminders).not.toHaveBeenCalled();
   });
+
+  it("is onboarded once the plan is committed, even when a step after it throws, and a retry adds nothing", () => {
+    const db = createTestDb();
+    seedLibrary(db);
+    const { store, refreshReminders } = build(db);
+    refreshReminders.mockImplementation(() => {
+      throw new Error("scheduling failed");
+    });
+    store.getState().load();
+    expect(() => store.getState().finishQuickStart("lb")).not.toThrow();
+    expect(store.getState().onboarded).toBe(true);
+    expect(isOnboarded(db)).toBe(true);
+    store.getState().finishQuickStart("lb");
+    expect(db.select().from(routines).all()).toHaveLength(2);
+  });
 });

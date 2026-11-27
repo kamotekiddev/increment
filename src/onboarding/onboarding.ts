@@ -39,10 +39,12 @@ export function finishOnboarding(db: Db): void {
 
 /**
  * Creates the Starter plan, saves the unit and sets the flag in one all-or-nothing transaction. Any failure
- * (a library exercise missing, a write error) rolls everything back and rethrows.
+ * (a library exercise missing, a write error) rolls everything back and rethrows. Does nothing once onboarded.
  */
 export function finishQuickStart(db: Db, unit: Unit): void {
   db.transaction((tx) => {
+    // Quick start runs once: a repeat (a double tap, a retry after a later step failed) must never add the plan again.
+    if (isOnboarded(tx)) return;
     for (const routine of QUICK_START_PLAN) {
       const routineId = insertRoutine(tx, routine.name, routine.days);
       for (const name of routine.exercises) {

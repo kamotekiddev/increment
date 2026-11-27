@@ -48,7 +48,13 @@ export function RestorePreviewScreen() {
       close();
       // Restoring from Welcome finishes onboarding (the restored file leaves the flag false on a fresh install), which
       // sends the lifter to Today. From Your data it is already done and this is a no-op.
-      if (!onboardingStore.getState().onboarded) onboardingStore.getState().finish();
+      try {
+        if (!onboardingStore.getState().onboarded) onboardingStore.getState().finish();
+      } catch {
+        // The restore itself committed, so never report it as failed.
+        Alert.alert("Backup restored", "Your data is back, but setup couldn't finish. Close and reopen Increment.");
+        return;
+      }
       Alert.alert("Backup restored", "Your routines, workouts, custom exercises and settings are back.");
     } catch (e) {
       if (e instanceof MissingLibraryExerciseError) {

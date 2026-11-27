@@ -35,9 +35,14 @@ export function createOnboardingStore(db: Db, effects: OnboardingEffects) {
     },
     finishQuickStart: (unit) => {
       finishQuickStart(db, unit);
-      // The unit store cached kg at startup; reload it so the first workout shows the chosen unit.
-      effects.unitStore.getState().load();
-      effects.refreshReminders();
+      // The plan is committed. Nothing after this may report a failure, or a retry would look like a fresh start.
+      try {
+        // The unit store cached kg at startup; reload it so the first workout shows the chosen unit.
+        effects.unitStore.getState().load();
+        effects.refreshReminders();
+      } catch {
+        // Reminders are off by default and the unit reloads on the next launch; the lifter is onboarded either way.
+      }
       set({ onboarded: true });
     },
   }));

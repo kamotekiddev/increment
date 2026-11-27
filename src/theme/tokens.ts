@@ -312,6 +312,8 @@ export const quickStart = {
   badgeText: 12,
   /** Room kept under the content for the pinned Start training button. */
   footerSpace: 120,
+  /** Extra room under the plan rows for the error line that grows the pinned footer upward. */
+  errorSpace: 28,
   titleTracking: -0.9,
   /** Gap between the blocks of the screen. */
   contentGap: 14,

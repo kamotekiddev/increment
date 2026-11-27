@@ -146,6 +146,16 @@ describe("finishQuickStart", () => {
   });
 });
 
+describe("finishQuickStart runs once", () => {
+  it("does nothing when onboarding is already done, so a retry never doubles the plan", () => {
+    const db = seededDb();
+    finishQuickStart(db, "kg");
+    finishQuickStart(db, "lb");
+    expect(counts(db).routines).toBe(2);
+    expect(readUnit(db)).toBe("kg");
+  });
+});
+
 describe("restore and Delete all data keep onboarded", () => {
   it("restoreBackup leaves onboarded true, even when the backup has no settings row", () => {
     const db = seededDb();

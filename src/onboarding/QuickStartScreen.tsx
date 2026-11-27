@@ -1,5 +1,5 @@
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -31,11 +31,17 @@ export function QuickStartScreen() {
   const defaults = quickStartDefaultRows();
   const plan = quickStartPlanRows();
 
+  const starting = useRef(false);
+
   function start() {
+    // The gate unmounts this screen a moment after the write, so a second tap must not run it again.
+    if (starting.current) return;
+    starting.current = true;
     try {
       setError(null);
       onboardingStore.getState().finishQuickStart(unit);
     } catch {
+      starting.current = false;
       setError("Couldn't set up your plan. Try again.");
     }
   }
@@ -46,7 +52,7 @@ export function QuickStartScreen() {
         contentContainerStyle={{
           paddingTop: Math.max(insets.top, spacing.xl),
           paddingHorizontal: onboardingGutter,
-          paddingBottom: quickStart.footerSpace + insets.bottom,
+          paddingBottom: quickStart.footerSpace + insets.bottom + (error ? quickStart.errorSpace : 0),
           gap: quickStart.contentGap,
         }}
       >
