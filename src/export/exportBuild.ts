@@ -22,6 +22,8 @@ export const EXPORT_RANGES: { value: ExportRange; label: string }[] = [
 
 /** One exported set. */
 export interface ExportRow {
+  /** The finished workout the set belongs to (not in the CSV; the PDF counts workouts with it). */
+  workoutId: number;
   /** Workout date, `YYYY-MM-DD`. */
   date: string;
   /** The workout's routine name, or "Workout" when it had none. */
@@ -45,7 +47,7 @@ export interface ExportBuild {
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
-const dateString = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+export const dateString = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
 /** The first workout date (local, `YYYY-MM-DD`) the range includes, or null for All time. */
 export function rangeStartDate(range: ExportRange, now: number): string | null {
@@ -63,6 +65,7 @@ export function buildExport(range: ExportRange, now: number): ExportBuild {
   const start = rangeStartDate(range, now);
   const rows = db
     .select({
+      workoutId: workouts.id,
       date: workouts.date,
       routineName: routines.name,
       exercise: exercises.name,
@@ -81,6 +84,7 @@ export function buildExport(range: ExportRange, now: number): ExportBuild {
     .orderBy(asc(workouts.date), asc(workouts.startedAt), asc(workouts.id), asc(workoutExercises.position), asc(sets.idx))
     .all()
     .map<ExportRow>((r) => ({
+      workoutId: r.workoutId,
       date: r.date,
       workout: routineLabel(r.routineName),
       exercise: r.exercise,
@@ -96,9 +100,14 @@ export function buildExport(range: ExportRange, now: number): ExportBuild {
 
 const CSV_HEADER = ["date", "workout", "exercise", "set", "reps", "weight", "unit", "weight_kg", "is_warmup"];
 
-/** A field in quotes when it holds a comma, a quote or a line break (quotes doubled). */
+/**
+ * A typed name as a CSV field: a leading `=`, `+`, `-`, `@`, tab or return gets a `'` in front so a spreadsheet reads
+ * it as text, never a formula; then in quotes when it holds a comma, a quote or a line break (quotes doubled).
+ * Only names go through here: weights and counts are numbers the app wrote.
+ */
 function csvField(value: string): string {
-  return /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return /[",\r\n]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe;
 }
 
 /** The CSV text: a header, then a row per set, CRLF line ends, behind a UTF-8 BOM so Excel reads names right. */
