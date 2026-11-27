@@ -41,6 +41,15 @@ describe("routineCounter", () => {
     expect(routineCounter(3, false)).toBe("3 of 3 free routines used");
   });
 
+  it.each([
+    [0, "0 of 3 free routines used"],
+    [1, "1 of 3 free routines used"],
+    [2, "2 of 3 free routines used"],
+    [3, "3 of 3 free routines used"],
+  ])("reads the free counter for %i routines", (count, line) => {
+    expect(routineCounter(count, false)).toBe(line);
+  });
+
   it("splits the bold number from the rest", () => {
     expect(routineCounterParts(3, false)).toEqual({ strong: "3 of 3", rest: "free routines used" });
     expect(routineCounterParts(3, true)).toEqual({ strong: "3", rest: "routines" });

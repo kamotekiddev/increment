@@ -38,6 +38,23 @@ describe("lockedRoutineIds", () => {
 
   it("locks nothing with Pro", () => {
     expect(lockedRoutineIds([1, 2, 3, 4, 5], true)).toEqual([]);
+    expect(lockedRoutineIds([5, 1, 4, 2, 3], true)).toEqual([]);
+  });
+
+  it.each([
+    ["3 routines lock none", [[2, 5, 9], [9, 5, 2], [5, 9, 2]], []],
+    ["4 routines lock the newest", [[2, 5, 9, 12], [12, 9, 5, 2], [9, 2, 12, 5]], [12]],
+    ["5 routines lock the 2 newest", [[2, 5, 9, 12, 20], [20, 12, 9, 5, 2], [9, 20, 2, 12, 5]], [12, 20]],
+  ] as const)("%s, in any list order", (_name, orders, expected) => {
+    for (const order of orders) {
+      expect([...lockedRoutineIds(order, false)].sort((a, b) => a - b)).toEqual(expected);
+    }
+  });
+
+  it("unlocks the next routine when one of the 3 oldest is deleted, in any list order", () => {
+    expect(lockedRoutineIds([12, 2, 20, 5, 9], false).sort((a, b) => a - b)).toEqual([12, 20]);
+    expect(lockedRoutineIds([12, 20, 5, 9], false)).toEqual([20]);
+    expect(lockedRoutineIds([20, 12, 9], false)).toEqual([]);
   });
 
   it("does not change the input", () => {
